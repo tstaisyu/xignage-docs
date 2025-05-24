@@ -1,0 +1,21 @@
+name: verify-diagrams
+on:
+  push:
+    paths-ignore: ["README.md", "*.md"]
+  pull_request:
+
+jobs:
+  diff-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install drawio CLI
+        run: sudo snap install drawio
+
+      - name: Re-export diagrams and check diff
+        run: |
+          bash scripts/export-diagrams.sh
+          git diff --exit-code
