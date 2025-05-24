@@ -1,14 +1,20 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Extract *.drawio on stage
+# --- 1) Regenerate drawing if .drawio has changed ---------------------------
 changed_drawio=$(git diff --cached --name-only --diff-filter=ACM | grep -E '\.drawio$' || true)
+if [ -n "$changed_drawio" ]; then
+  bash scripts/export-diagrams.sh
+  git add architecture/*.png architecture/*.pdf
+fi
 
-# Skip if no drawio files are changed
-[ -z "$changed_drawio" ] && exit 0
+# --- 2) Markdown Lint (npx) --------------------------
+changed_md=$(git diff --cached --name-only --diff-filter=ACM | grep -E '\.md$' || true)
+if [ -n "$changed_md" ]; then
+  npx -y markdownlint-cli $changed_md
+fi
 
-# Automatically convert diagrams to PNG/PDF
-bash scripts/export-diagrams.sh
-
-# Include artifacts in a commit
-git add architecture/*.png architecture/*.pdf
+# --- 3) Link Check (npx) -----------------------------
+if [ -n "$changed_md" ]; then
+  npx -y markdown-link-check -q $changed_md
+fi
