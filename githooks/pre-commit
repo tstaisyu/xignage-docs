@@ -1,6 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Extract *.drawio on stage
+changed_drawio=$(git diff --cached --name-only --diff-filter=ACM | grep -E '\.drawio$' || true)
+
+# Skip if no drawio files are changed
+[ -z "$changed_drawio" ] && exit 0
+
 # Automatically convert diagrams to PNG/PDF
 bash scripts/export-diagrams.sh
 
