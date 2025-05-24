@@ -1,4 +1,6 @@
 name: Export diagrams
+permissions:
+  contents: write 
 on:
   push:
     paths: ["architecture/*.drawio"]
