@@ -10,11 +10,17 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Export to PNG & PDF
+      - name: Export PNG
         uses: rlespinasse/drawio-export-action@v2
         with:
           path: "architecture"
-          format: "png,pdf"
+          format: "png"
+
+      - name: Export PDF
+        uses: rlespinasse/drawio-export-action@v2
+        with:
+          path: "architecture"
+          format: "pdf"
           
       - name: Commit artifacts
         run: |
