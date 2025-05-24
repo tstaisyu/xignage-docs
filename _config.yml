@@ -1,0 +1,8 @@
+title: Xignage Documentation
+theme: just-the-docs
+color_scheme: dark
+just_the_docs:
+  collections:
+    pages:
+      output: true
+      permalink: /:path/
