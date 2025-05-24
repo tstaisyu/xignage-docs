@@ -27,6 +27,7 @@ jobs:
           format: "pdf"
           remove-page-suffix: "true"
           width: "1920"
+          crop: "true"
           
       - name: Commit artifacts
         run: |
