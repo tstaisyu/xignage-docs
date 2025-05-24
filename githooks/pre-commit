@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Automatically convert diagrams to PNG/PDF
+bash scripts/export-diagrams.sh
+
+# Include artifacts in a commit
+git add architecture/*.png architecture/*.pdf
