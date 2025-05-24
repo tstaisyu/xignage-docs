@@ -1,7 +1,7 @@
 # Xignage Documentation
 
 - **System Container Diagram (PNG)**  
-  ![System Container](architecture/system_container.png)
+  ![System Container](architecture/export/system_container.png)
 
 - **System Container Diagram (PDF)**  
-  [Download PDF](architecture/system_container.pdf)
+  [Download PDF](architecture/export/system_container.pdf)
