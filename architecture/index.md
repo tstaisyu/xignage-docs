@@ -1,6 +1,7 @@
 ---
 title: 🖥 システム構成図
 nav_order: 2      # Home の次に並びます
+has_children: true
 ---
 
 {% if site.github %}
