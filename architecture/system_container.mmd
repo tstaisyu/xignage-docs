@@ -1,0 +1,32 @@
+graph LR
+%% ==== Edge レイヤ ====
+subgraph Edge
+    Lite["Xignage-Lite\n(Raspberry Pi 4B)"]
+    Pro["Xignage-Pro\n(Jetson Orin Nano)"]
+
+    subgraph On_device_SW
+        JetsonScripts["signage-jetson\n(bash scripts)"]
+        Server["signage-server\n(Node.js)"]
+        UI["signage-admin-ui\n(React)"]
+    end
+end
+
+%% ==== Cloud レイヤ ====
+subgraph Cloud_AWS
+    API["signage-aws-nodejs\n(REST + WebSocket)"]
+end
+
+%% ==== External ====
+QR_SaaS["QR SaaS\n(発行・利用ログ)"]
+
+%% ==== User ====
+Owner(("店舗オーナー\n(iOS / Android アプリ)"))
+
+%% ---- 実装済み矢印 ----
+Owner -- "HTTP\n(LAN)" --> UI
+Owner -- "REST" --> API
+API   -- "WebSocket\ncmd push" --> Server
+Server -- "WebSocket\nstatus / list" --> API
+
+%% ---- 追加：QR 機能 (破線) ----
+Server -. "QR 生成 / 利用ログ" .-> QR_SaaS
