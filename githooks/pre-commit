@@ -11,7 +11,8 @@ fi
 # --- 2) Markdown Lint (npx) --------------------------
 changed_md=$(git diff --cached --name-only --diff-filter=ACM | grep -E '\.md$' || true)
 if [ -n "$changed_md" ]; then
-  npx -y markdownlint-cli $changed_md
+  npx -y markdownlint-cli --fix $changed_md
+  git add $changed_md
 fi
 
 # --- 3) Link Check (npx) -----------------------------
