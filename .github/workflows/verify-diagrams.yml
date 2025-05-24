@@ -12,10 +12,14 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Install drawio CLI
-        run: sudo snap install drawio
+      - name: Install drawio CLI & Xvfb
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y xvfb
+          sudo snap install drawio
 
       - name: Re-export diagrams and check diff
         run: |
-          bash scripts/export-diagrams.sh
+          xvfb-run --auto-servernum --server-args="-screen 0 1600x1200x24" \
+            bash scripts/export-diagrams.sh
           git diff --exit-code
