@@ -1,8 +1,3 @@
 title: Xignage Documentation
 remote_theme: just-the-docs/just-the-docs
 color_scheme: light
-just_the_docs:
-  collections:
-    pages:
-      output: true
-      permalink: /:path/
