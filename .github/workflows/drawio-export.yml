@@ -17,12 +17,14 @@ jobs:
         with:
           path: "architecture"
           format: "png"
+          remove-page-suffix: "true"
 
       - name: Export PDF
         uses: rlespinasse/drawio-export-action@v2
         with:
           path: "architecture"
           format: "pdf"
+          remove-page-suffix: "true"
           
       - name: Commit artifacts
         run: |
