@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
+shopt -s nullglob
 
 # Batch convert all .drawio to PNG + PDF
 for f in architecture/*.drawio; do
