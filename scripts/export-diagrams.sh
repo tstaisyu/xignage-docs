@@ -6,7 +6,7 @@ for f in architecture/*.drawio; do
   base="${f%.drawio}"
 
   # PNG export
-  drawio --export "$f" \
+  drawio --disable-gpu --export "$f" \
          --output "${base}.png" \
          --format png \
          --remove-page-suffix \
@@ -14,7 +14,7 @@ for f in architecture/*.drawio; do
          --crop
 
   # PDF export
-  drawio --export "$f" \
+  drawio --disable-gpu --export "$f" \
          --output "${base}.pdf" \
          --format pdf \
          --remove-page-suffix \
