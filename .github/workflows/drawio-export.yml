@@ -18,6 +18,7 @@ jobs:
           path: "architecture"
           format: "png"
           remove-page-suffix: "true"
+          width: "1920"
 
       - name: Export PDF
         uses: rlespinasse/drawio-export-action@v2
@@ -25,6 +26,7 @@ jobs:
           path: "architecture"
           format: "pdf"
           remove-page-suffix: "true"
+          width: "1920"
           
       - name: Commit artifacts
         run: |
