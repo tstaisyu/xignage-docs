@@ -6,6 +6,8 @@ repo_url: https://github.com/tstaisyu/xignage-docs
 theme:
   name: material
   language: ja
+  features:
+    - navigation.indexes
 
 plugins:
   - search
@@ -17,15 +19,7 @@ plugins:
           default: true
         - locale: en
           name: English
-      nav_translations:
-        en:
-          ホーム: Home
-          アーキテクチャ: Architecture
-          概要: Overview
-          ソフトウェアスタック: Software Stack
-          ビジネス: Business
-          KPI 概要: KPI Overview
-          ADR: ADR
+      reconfigure_material: true
 
 markdown_extensions:
   - admonition
@@ -37,10 +31,10 @@ markdown_extensions:
   - pymdownx.superfences
 
 nav:
-  - ホーム: index.md
-  - アーキテクチャ:
-      - 概要: architecture/index.md
-      - ソフトウェアスタック: architecture/software_stack.md
-  - ビジネス: business/index.md
-  - KPI 概要: kpi_overview/index.md
+  - Home: index.md
+  - Architecture:
+      - Overview: architecture/index.md
+      - Software Stack: architecture/software_stack.md
+  - Business: business/index.md
+  - KPI Overview: kpi_overview/index.md
   - ADR: adr/index.md
