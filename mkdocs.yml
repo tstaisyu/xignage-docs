@@ -40,6 +40,7 @@ nav:
           - signage-server: developers/packages/signage-server/index.md
           - signage-aws-nodejs: developers/packages/signage-aws-nodejs/index.md
           - signage-admin-ui: developers/packages/signage-admin-ui/index.md
+          - signage-jetson: developers/packages/signage-jetson/index.md
   - Business: business/index.md
   - KPI Overview: kpi_overview/index.md
   - ADR: adr/index.md
