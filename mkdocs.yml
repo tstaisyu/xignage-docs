@@ -41,6 +41,7 @@ nav:
           - signage-aws-nodejs: developers/packages/signage-aws-nodejs/index.md
           - signage-admin-ui: developers/packages/signage-admin-ui/index.md
           - signage-jetson: developers/packages/signage-jetson/index.md
+          - jetson-ab-flash: developers/packages/jetson-ab-flash/index.md
   - Business: business/index.md
   - KPI Overview: kpi_overview/index.md
   - ADR: adr/index.md
