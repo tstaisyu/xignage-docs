@@ -1,0 +1,20 @@
+- component: cloudSocket
+  doc_path: developers/packages/signage-server/components/cloud-socket.md
+  files:
+    - sockets/cloudSocket/index.js
+    - sockets/cloudSocket/configCommands.js
+    - sockets/cloudSocket/deviceCommands.js
+    - sockets/cloudSocket/mediaCommands.js
+    - sockets/cloudSocket/miscCommands.js
+    - sockets/cloudSocket/playlistCommands.js
+    - sockets/cloudSocket/systemCommands.js
+    - sockets/cloudSocket/viewCommands.js
+  interface:
+    kind: socket.io-client
+    endpoint_env: SERVER_URL
+    options:
+      path: /socket.io
+      transports: [websocket]
+  notes:
+    - emits: registerDevice(DEVICE_ID)
+    - registers local IP on connect
