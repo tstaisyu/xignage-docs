@@ -1,0 +1,28 @@
+site_name: Xignage Platform Docs
+site_description: Xignage Documentation
+site_url: https://tstaisyu.github.io/xignage-docs
+repo_url: https://github.com/tstaisyu/xignage-docs
+
+theme:
+  name: material
+
+plugins:
+  - search
+
+markdown_extensions:
+  - admonition
+  - toc:
+      permalink: true
+  - tables
+  - attr_list
+  - footnotes
+  - pymdownx.superfences
+
+nav:
+  - Home: index.md
+  - Architecture:
+      - overview: architecture/index.md
+      - software stack: architecture/software_stack.md
+  - Business: business/index.md
+  - KPI: kpi_overview/index.md
+  - ADR: adr/index.md
