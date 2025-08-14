@@ -1,8 +1,4 @@
----
-title: 📈 KPI 計画
-nav_order: 3          # システム構成図の次
-has_children: true
----
+# KPI 概要
 
 > **WIP（作業中）**  
 > このページでは QR 回収率・人数カウント・視線検知など、  

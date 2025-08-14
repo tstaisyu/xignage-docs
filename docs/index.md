@@ -1,8 +1,4 @@
----
-layout: default
-title: Home
-nav_order: 1
----
+# ホーム
 
 可動型 Edge-AI サイネージの開発・運用ドキュメントです。  
 左のメニューから各セクションへ移動してください。
