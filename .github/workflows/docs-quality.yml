@@ -1,9 +1,13 @@
 name: docs-quality
 on:
   push:
-    paths: ["**/*.md"]
+    paths:
+      - '**/*.md'
+      - 'mkdocs.yml'
   pull_request:
-    paths: ["**/*.md"]
+    paths:
+      - '**/*.md'
+      - 'mkdocs.yml'
 
 jobs:
   lint:
