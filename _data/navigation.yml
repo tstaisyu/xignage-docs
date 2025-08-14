@@ -1,9 +1,0 @@
-main:
-  - title: 🖥 システム構成図
-    url: /architecture/system_container.pdf
-  - title: 📈 KPI 計画 (今後追加)
-    url: /kpi_overview/
-  - title: 📝 ADR 一覧
-    url: /adr/
-  - title: 💼 ビジネス資料
-    url: /business/
