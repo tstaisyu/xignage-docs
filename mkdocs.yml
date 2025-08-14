@@ -35,6 +35,9 @@ nav:
   - Architecture:
       - Overview: architecture/index.md
       - Software Stack: architecture/software_stack.md
+  - Developers:
+      - Packages:
+          - signage-server: developers/packages/signage-server/index.md
   - Business: business/index.md
   - KPI Overview: kpi_overview/index.md
   - ADR: adr/index.md
