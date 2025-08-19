@@ -31,7 +31,7 @@ markdown_extensions:
   - pymdownx.superfences
 
 nav:
-#  - Home: index.md
+  - Home: index.md
 #  - Architecture:
 #      - Overview: architecture/index.md
 #      - Software Stack: architecture/software_stack.md
@@ -43,6 +43,7 @@ nav:
 #          - signage-aws-nodejs: developers/packages/signage-aws-nodejs/index.md
 #          - signage-admin-ui: developers/packages/signage-admin-ui/index.md
           - signage-jetson:
+              - Overview: developers/packages/signage-jetson/index.md
               - setup(000-099): developers/packages/signage-jetson/units/setup_000_099.md
 #          - jetson-ab-flash: developers/packages/jetson-ab-flash/index.md
 #  - Business: business/index.md
