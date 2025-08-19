@@ -31,17 +31,20 @@ markdown_extensions:
   - pymdownx.superfences
 
 nav:
-  - Home: index.md
-  - Architecture:
-      - Overview: architecture/index.md
-      - Software Stack: architecture/software_stack.md
+#  - Home: index.md
+#  - Architecture:
+#      - Overview: architecture/index.md
+#      - Software Stack: architecture/software_stack.md
   - Developers:
       - Packages:
-          - signage-server: developers/packages/signage-server/index.md
-          - signage-aws-nodejs: developers/packages/signage-aws-nodejs/index.md
-          - signage-admin-ui: developers/packages/signage-admin-ui/index.md
-          - signage-jetson: developers/packages/signage-jetson/index.md
-          - jetson-ab-flash: developers/packages/jetson-ab-flash/index.md
-  - Business: business/index.md
-  - KPI Overview: kpi_overview/index.md
-  - ADR: adr/index.md
+#          - signage-server: 
+#              - overview: developers/packages/signage-server/index.md
+#              - cloudsocket: developers/packages/signage-server/components/cloud-socket.md
+#          - signage-aws-nodejs: developers/packages/signage-aws-nodejs/index.md
+#          - signage-admin-ui: developers/packages/signage-admin-ui/index.md
+          - signage-jetson:
+              - setup(000-099): developers/packages/signage-jetson/units/setup_000_099.md
+#          - jetson-ab-flash: developers/packages/jetson-ab-flash/index.md
+#  - Business: business/index.md
+#  - KPI Overview: kpi_overview/index.md
+#  - ADR: adr/index.md
