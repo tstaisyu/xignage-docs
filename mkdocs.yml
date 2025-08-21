@@ -47,6 +47,7 @@ nav:
               - setup(000-099): developers/packages/signage-jetson/units/setup_000_099.md
               - setup(100-199): developers/packages/signage-jetson/units/setup_100_199.md
               - setup(200-599): developers/packages/signage-jetson/units/setup_200_599.md
+              - setup(600-899): developers/packages/signage-jetson/units/setup_600_899.md
 #          - jetson-ab-flash: developers/packages/jetson-ab-flash/index.md
 #  - Business: business/index.md
 #  - KPI Overview: kpi_overview/index.md
