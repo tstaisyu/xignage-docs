@@ -25,40 +25,41 @@
 
 ### **4) 実行ガイド**  
 
-1. **初回の配置（`releases/initial`）**
+#### 4-1. **初回の配置（`releases/initial`）**
 
-   ```bash
-   sudo mkdir -p /opt/signage-core/signage-jetson/releases
-   sudo chown -R "$USER:$USER" /opt/signage-core
-   cd /opt/signage-core/signage-jetson/releases
+```bash
+sudo mkdir -p /opt/signage-core/signage-jetson/releases
+sudo chown -R "$USER:$USER" /opt/signage-core
+cd /opt/signage-core/signage-jetson/releases
 
-   # signage-jetsonリポのクローン
-   git clone https://github.com/<your-org-or-user>/signage-jetson.git initial
-   cd initial
-   ```  
+# signage-jetsonリポのクローン
+git clone https://github.com/<your-org-or-user>/signage-jetson.git initial
+cd initial
+```  
 
-2. **一括セットアップの実行**  
-   `setup_all.sh` は `scripts/setup/` の `nnn_*.sh` を **番号順**に実行します。**000 のみ** 次の 5 引数（`DEVICE_ID`, `BOARD_TYPE`, `GH_TOKEN`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`）を受け取り、それ以外のスクリプトは **引数なし**で実行されます。  
-   （`000_*.sh` は `if [ $# -lt 5 ]; then ... exit 1` で引数数を検証）
+#### 4-2. **一括セットアップの実行**  
 
-   ```bash
-   sudo bash setup_all.sh \
-     <DEVICE_ID> \
-     <BOARD_TYPE> \
-     <GH_TOKEN> \
-     <AWS_ACCESS_KEY_ID> \
-     <AWS_SECRET_ACCESS_KEY>
+`setup_all.sh` は `scripts/setup/` の `nnn_*.sh` を **番号順**に実行します。**000 のみ** 次の 5 引数（`DEVICE_ID`, `BOARD_TYPE`, `GH_TOKEN`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`）を受け取り、それ以外のスクリプトは **引数なし**で実行されます。  
+（`000_*.sh` は `if [ $# -lt 5 ]; then ... exit 1` で引数数を検証）
 
-   # 例
-   sudo bash setup_all.sh \
-     XIG-JON-000 \
-     jetsonorinnano \
-     ghp_xxxxxxxxxxxxxxxxxxxxx \
-     AKIAxxxxxxxxxxxxxxxx \
-     wJalrXUtnFEMI/K7MDENG/bPxRfiCYxxxxxxxx
-   ```  
+```bash
+sudo bash setup_all.sh \
+  <DEVICE_ID> \
+  <BOARD_TYPE> \
+  <GH_TOKEN> \
+  <AWS_ACCESS_KEY_ID> \
+  <AWS_SECRET_ACCESS_KEY>
 
-3. **引数の意味**  
+# 例
+sudo bash setup_all.sh \
+  XIG-JON-000 \
+  jetsonorinnano \
+  ghp_xxxxxxxxxxxxxxxxxxxxx \
+  AKIAxxxxxxxxxxxxxxxx \
+  wJalrXUtnFEMI/K7MDENG/bPxRfiCYxxxxxxxx
+```  
+
+#### 4-3. **引数の意味**  
 
 | 引数                      | 例                               | 説明                            |
 | ----------------------- | ------------------------------- | ----------------------------- |
