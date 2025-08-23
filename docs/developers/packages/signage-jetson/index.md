@@ -76,23 +76,23 @@ sudo bash setup_all.sh \
 
 ### **5) 各ユニットドキュメントの詳細**  
 
-> [**setup(000-099) - 初期セットアップ**](units/setup_000_099.md)
+> [**setup(000-099) - 初期セットアップ**](units/setup-000-099.md)
 
 デバイス識別子・資格情報の配置、Wi-Fi 名称の安定化（`wlanINT`/`wlanUSB`）と経路メトリックによる主従切替、journald の永続化、AWS CLI / Fluent Bit の最小構成など、運用前に必要な初期化を **冪等（再実行可）**なスクリプト群として提供します。Jetson / Raspberry Pi を自動判別し、不要処理は安全にスキップします。
 
-> [**setup(100-199) - アプリ導入・サービス常駐化**](units/setup_100_199.md)
+> [**setup(100-199) - アプリ導入・サービス常駐化**](units/setup-100-199.md)
 
 Node.js の指定バージョン導入（見つからない場合は 20.x へフォールバック）、`signage-server` / `signage-admin-ui` を GitHub Releases から取得・SHA256 検証・タイムスタンプ展開（`releases/<TIMESTAMP>`）・`current` 切替、（Raspberry Pi 以外での）`xignage-edge-detection` 導入、`xignage-metrics` の配置・依存導入・systemd 常駐化、さらに AWS IoT 証明書の安全配置と `metrics.env` 更新・サービス再起動による反映までを **冪等（再実行可）**なスクリプト群として提供します。ボード種別に応じて不要処理は安全にスキップします。
 
-> [**setup(200-599) - ネットワーク／AP／ブート最適化**](units/setup_200_599.md)
+> [**setup(200-599) - ネットワーク／AP／ブート最適化**](units/setup-200-599.md)
 
 ネットワーク管理を **systemd-networkd に統一**（競合サービス無効化＋`eth0` の netplan 適用）、**AP モード（hostapd/dnsmasq）**の冪等構成、Wi-Fi 接続失敗時の **AP 自動起動（oneshot＋timer）**、ブラウザからの **Wi-Fi 設定 GUI** 配備、そして **起動最適化**（snapd の長期 hold＋ソケット起動化／不要サービスのマスク／`fstrim` タイマー／Raspberry Pi の Bluetooth HCI 無効化）をカバーします。すべて **冪等（再実行可）**で、ボード種別や構成に応じて不要処理は安全にスキップします（ネットワーク切替時の一時断に留意）。
 
-> [**setup(600-899) - 更新基盤・推論ランタイム・公開設定**](units/setup_600_899.md)
+> [**setup(600-899) - 更新基盤・推論ランタイム・公開設定**](units/setup-600-899.md)
 
 `update_runner` / `update_manager` / `healthcheck` の配置と **oneshot ユニット `signage-update.service`** による更新実行、**Jetson 向け TensorRT/PyCUDA/OpenCV 最小ランタイム**導入（Pi は自動スキップ）、コンテンツ格納ディレクトリ整備・**linger 有効化**・**ホスト名設定＋mDNS**・**systemd --user での Node サービス起動**、**PORT=3001** の drop-in 上書き、**Nginx vhost（:3000 → 127.0.0.1:3001／`/admin` 静的配信／`/socket.io` WS／`/api` REST）**、および **UFW 許可ルール**の適用までをカバーします。すべて **冪等（再実行可）**で、ボード種別や構成に応じて不要処理は安全にスキップします。
 
-> [**setup(900-999) - ブート見た目／キオスク化／電源・権限**](units/setup_900_999.md)
+> [**setup(900-999) - ブート見た目／キオスク化／電源・権限**](units/setup-900-999.md)
 
 Jetson の `extlinux.conf`／Raspberry Pi の `config.txt`・`cmdline.txt` を調整して起動ログ/スプラッシュを抑制し、`tty1` 自動ログイン → Openbox + Chromium の **キオスク起動**（Jetson は Xorg の回転・解像度、Pi は KMS オーバレイ）を設定、GDM を停止します。音声は **HDMI を既定 sink** に固定。Pi 向けに **ブートローダ電源設定（halt で電源断／GPIO wake）** と **GPIO18 の電源断制御**を提供。運用用に **sudoers ドロップイン**（電源・更新・Wi-Fi リセット）を最小権限で追加し、適用済みパッチ識別の **パッチマーカー** も生成します。すべて **冪等（再実行可）**で、ボード判定により不要処理は安全にスキップします（自動ログインのセキュリティに注意）。
 
