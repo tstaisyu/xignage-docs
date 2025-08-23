@@ -96,6 +96,18 @@ Node.js の指定バージョン導入（見つからない場合は 20.x へフ
 
 Jetson の `extlinux.conf`／Raspberry Pi の `config.txt`・`cmdline.txt` を調整して起動ログ/スプラッシュを抑制し、`tty1` 自動ログイン → Openbox + Chromium の **キオスク起動**（Jetson は Xorg の回転・解像度、Pi は KMS オーバレイ）を設定、GDM を停止します。音声は **HDMI を既定 sink** に固定。Pi 向けに **ブートローダ電源設定（halt で電源断／GPIO wake）** と **GPIO18 の電源断制御**を提供。運用用に **sudoers ドロップイン**（電源・更新・Wi-Fi リセット）を最小権限で追加し、適用済みパッチ識別の **パッチマーカー** も生成します。すべて **冪等（再実行可）**で、ボード判定により不要処理は安全にスキップします（自動ログインのセキュリティに注意）。
 
+---
+
+## 共通ライブラリ（config.sh / functions.sh）
+
+> [**環境変数リファレンス — `config.sh`**](files/config-sh.md)
+
+すべてのセットアップ／ランタイムスクリプトで共有する **既定値と環境変数**を一元管理。ボード種別、ディレクトリ、ネットワーク/AP、Nginx、GStreamer、キオスク設定などの基準値を提供します。
+
+> [**ユーティリティ関数リファレンス — `functions.sh`**](files/functions-sh.md)  
+
+スクリプト共通の **ヘルパー関数**群。`log_info/warn/error`（ログ）、`install_or_link`（シンボリックリンク配置・退避）、`download_with_retry`（リトライ付き取得）などを収録。
+
 <!--
 ## 目的
 
