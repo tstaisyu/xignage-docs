@@ -49,6 +49,8 @@ nav:
               - setup(200-599): developers/packages/signage-jetson/units/setup-200-599.md
               - setup(600-899): developers/packages/signage-jetson/units/setup-600-899.md
               - setup(900-999): developers/packages/signage-jetson/units/setup-900-999.md
+              - 環境変数リファレンス: developers/packages/signage-jetson/files/config-sh.md
+              - ユーティリティ関数リファレンス: developers/packages/signage-jetson/files/functions-sh.md
 #          - jetson-ab-flash: developers/packages/jetson-ab-flash/index.md
 #  - Business: business/index.md
 #  - KPI Overview: kpi_overview/index.md
