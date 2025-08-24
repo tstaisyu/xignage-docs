@@ -49,6 +49,8 @@ nav:
               - setup(200-599): developers/packages/signage-jetson/units/setup-200-599.md
               - setup(600-899): developers/packages/signage-jetson/units/setup-600-899.md
               - setup(900-999): developers/packages/signage-jetson/units/setup-900-999.md
+              - Wi-Fi boot tools: developers/packages/signage-jetson/components/wifi-boot-tools.md
+              - Update tools: developers/packages/signage-jetson/components/update-tools.md
               - 環境変数リファレンス: developers/packages/signage-jetson/files/config-sh.md
               - ユーティリティ関数リファレンス: developers/packages/signage-jetson/files/functions-sh.md
 #          - jetson-ab-flash: developers/packages/jetson-ab-flash/index.md
