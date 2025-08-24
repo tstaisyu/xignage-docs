@@ -48,6 +48,7 @@ nav:
           - setup(200-599): packages/signage-jetson/units/setup-200-599.md
           - setup(600-899): packages/signage-jetson/units/setup-600-899.md
           - setup(900-999): packages/signage-jetson/units/setup-900-999.md
+          - 依存パッケージ（deps）: packages/signage-jetson/deps.md
           - Wi-Fi ブートツール: packages/signage-jetson/components/wifi-boot-tools.md
           - アップデートツール: packages/signage-jetson/components/update-tools.md
           - 環境変数リファレンス: packages/signage-jetson/files/config-sh.md

@@ -59,6 +59,11 @@ sudo bash setup_all.sh \
   wJalrXUtnFEMI/K7MDENG/bPxRfiCYxxxxxxxx
 ```  
 
+!!! note "注意"
+    - ネットワーク統一／AP 構成の適用中は **SSH が切断**される可能性があります。可能ならローカルコンソールで実行してください。  
+    - すべて **冪等（再実行可）** です。失敗時も同じ手順で再実行できます。  
+    - `releases/initial` の命名は後続スクリプト（例：`090_symlink_initial.sh`）の前提です。
+
 #### 4-3. **引数の意味**  
 
 | 引数                      | 例                               | 説明                            |
@@ -69,10 +74,15 @@ sudo bash setup_all.sh \
 | `AWS_ACCESS_KEY_ID`     | `AKIA...`                       | AWS アクセスキー ID                 |
 | `AWS_SECRET_ACCESS_KEY` | `wJalrXUtnF...`                 | AWS シークレットアクセスキー（機密）          |
 
-!!! note "注意"
-    - ネットワーク統一／AP 構成の適用中は **SSH が切断**される可能性があります。可能ならローカルコンソールで実行してください。  
-    - すべて **冪等（再実行可）** です。失敗時も同じ手順で再実行できます。  
-    - `releases/initial` の命名は後続スクリプト（例：`090_symlink_initial.sh`）の前提です。
+#### 4-4. **依存パッケージ（ `deps` ）**  
+
+セットアップスクリプトは `deps/` 配下のリストを読み取り、**APT / pip の依存を一括導入**します。  
+1 行 1 パッケージ（`#` 以降はコメント）、共通は `pip-common.txt`、**機種別は Jetson/Raspberry Pi 用に分離**。
+
+- `deps/apt-packages.txt` … OS パッケージ（`apt-get install` 対象）
+- `deps/pip-common.txt` … すべての端末で共通の Python パッケージ
+- `deps/pip-jetson.txt` … Jetson 専用の Python 追加分（CUDA/NVIDIA 周辺など）
+- `deps/pip-raspi.txt` … Raspberry Pi 専用の Python 追加分（軽量版やARM最適化など）
 
 ### **5) 各ユニットドキュメントの詳細**  
 
