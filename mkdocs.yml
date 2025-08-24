@@ -38,22 +38,20 @@ nav:
   - Developers:
       - Packages:
 #          - signage-server: 
-#              - overview: developers/packages/signage-server/index.md
-#              - cloudsocket: developers/packages/signage-server/components/cloud-socket.md
-#          - signage-aws-nodejs: developers/packages/signage-aws-nodejs/index.md
-#          - signage-admin-ui: developers/packages/signage-admin-ui/index.md
+#              - overview: packages/signage-server/index.md
+#              - cloudsocket: packages/signage-server/components/cloud-socket.md
+#          - signage-aws-nodejs: packages/signage-aws-nodejs/index.md
+#          - signage-admin-ui: packages/signage-admin-ui/index.md
           - signage-jetson:
-              - Overview: developers/packages/signage-jetson/index.md
-              - setup(000-099): developers/packages/signage-jetson/units/setup-000-099.md
-              - setup(100-199): developers/packages/signage-jetson/units/setup-100-199.md
-              - setup(200-599): developers/packages/signage-jetson/units/setup-200-599.md
-              - setup(600-899): developers/packages/signage-jetson/units/setup-600-899.md
-              - setup(900-999): developers/packages/signage-jetson/units/setup-900-999.md
-              - Wi-Fi ブートツール: developers/packages/signage-jetson/components/wifi-boot-tools.md
-              - アップデートツール: developers/packages/signage-jetson/components/update-tools.md
-              - 環境変数リファレンス: developers/packages/signage-jetson/files/config-sh.md
-              - ユーティリティ関数リファレンス: developers/packages/signage-jetson/files/functions-sh.md
-#          - jetson-ab-flash: developers/packages/jetson-ab-flash/index.md
-#  - Business: business/index.md
-#  - KPI Overview: kpi_overview/index.md
+              - Overview: packages/signage-jetson/index.md
+              - setup(000-099): packages/signage-jetson/units/setup-000-099.md
+              - setup(100-199): packages/signage-jetson/units/setup-100-199.md
+              - setup(200-599): packages/signage-jetson/units/setup-200-599.md
+              - setup(600-899): packages/signage-jetson/units/setup-600-899.md
+              - setup(900-999): packages/signage-jetson/units/setup-900-999.md
+              - Wi-Fi ブートツール: packages/signage-jetson/components/wifi-boot-tools.md
+              - アップデートツール: packages/signage-jetson/components/update-tools.md
+              - 環境変数リファレンス: packages/signage-jetson/files/config-sh.md
+              - ユーティリティ関数リファレンス: packages/signage-jetson/files/functions-sh.md
+#          - jetson-ab-flash: packages/jetson-ab-flash/index.md
 #  - ADR: adr/index.md
