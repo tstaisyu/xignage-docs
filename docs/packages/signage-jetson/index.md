@@ -192,6 +192,14 @@ Jetson の `extlinux.conf`／Raspberry Pi の `config.txt`・`cmdline.txt` を�
 
 スクリプト共通の **ヘルパー関数**群。`log_info/warn/error`（ログ）、`install_or_link`（シンボリックリンク配置・退避）、`download_with_retry`（リトライ付き取得）などを収録。
 
+---
+
+## **インフラ（AWS IoT 証明書）**
+
+> [**AWS IoT 証明書作成 — `create_iot.sh`**](infra/aws-iot-certs.md)
+
+開発機で Thing/Policy/証明書を生成し、セットアップ前に端末へ配布する手順と注意点をまとめています。
+
 <!--
 ## 目的
 

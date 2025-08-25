@@ -53,5 +53,6 @@ nav:
           - アップデートツール: packages/signage-jetson/components/update-tools.md
           - 環境変数リファレンス: packages/signage-jetson/files/config-sh.md
           - ユーティリティ関数リファレンス: packages/signage-jetson/files/functions-sh.md
+          - インフラ / AWS IoT 証明書: packages/signage-jetson/infra/aws-iot-certs.md
 #      - jetson-ab-flash: packages/jetson-ab-flash/index.md
 #  - ADR: adr/index.md
