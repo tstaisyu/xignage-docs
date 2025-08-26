@@ -5,15 +5,15 @@
 
 - **想定 Base URL**: `/api`（最終的なパスは `app.use()` のマウント設定に依存）
 - **主な責務**:
-  - ルーティング定義、簡易バリデーション、入出力整形
-  - ビジネスロジックは Controller / Service に委譲
+  ルーティング定義、簡易バリデーション、入出力整形
+  ビジネスロジックは Controller / Service に委譲
 - **戻り形式**:
-  - JSON API: `application/json`
-  - 静的ページ: `text/html`
+  JSON API: `application/json`
+  静的ページ: `text/html`
 - **エラー処理**: 一部エンドポイントは `next(err)` により `middlewares/errorHandler.js` へ委譲
 
 !!! note "実パスの確定"
-ここに記載のパスは **ルーター内の相対パス**です。実際の URL はアプリ側のマウント構成（`app.use('/api/...', router)`）により決まります。
+    ここに記載のパスは **ルーター内の相対パス**です。実際の URL はアプリ側のマウント構成（`app.use('/api/...', router)`）により決まります。
 
 ## **クイックリンク**
 
