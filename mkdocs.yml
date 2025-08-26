@@ -36,8 +36,9 @@ nav:
 #      - Overview: architecture/index.md
 #      - Software Stack: architecture/software_stack.md
   - Packages:
-#      - signage-server: 
-#          - overview: packages/signage-server/index.md
+      - signage-server: 
+          - overview: packages/signage-server/index.md
+          - ユーティリティ: packages/signage-server/utils.md
 #          - cloudsocket: packages/signage-server/components/cloud-socket.md
 #      - signage-aws-nodejs: packages/signage-aws-nodejs/index.md
 #      - signage-admin-ui: packages/signage-admin-ui/index.md
