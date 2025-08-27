@@ -4,6 +4,8 @@
 
 Express ベースの **HTTP レイヤ**。**ルーティング（routes）** を入口に、**コントローラー（controllers）/ Service** へ処理を委譲します。静的ページ配信と JSON API が混在します。
 
+※ エラーハンドラについては、[`API`](./api/index.md) の「エラーハンドラ」節を参照
+
 > ## [**ユーティリティ（utils/）**](./utils.md)
 
 Node 実行時に用いる補助関数群。Jetson/Raspberry Pi の計測（`tegrastats` / `vcgencmd`）、パッチ／マイグレーション状態の集約、将来の共通ロガーを含みます。同期実行（`execSync`）が多いため、ポーリング間隔や権限に注意。

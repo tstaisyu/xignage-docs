@@ -38,6 +38,31 @@
 - **ヘッダ例**: `X-Request-Id`, `Cache-Control: no-store`
 - **認証/認可**: 現状コードには未実装（必要に応じて今後追加）
 
+### **エラーハンドラ（`middlewares/errorHandler.js`）**
+
+Express のエラー処理用ミドルウェア。スタックをログ出力し、Express の `res` でない場合は `next(err)` に委譲。既定では **HTTP 500** を JSON で返す。
+
+> **応答仕様（現実装）**
+
+```json
+{ "error": "Internal Server Error または err.message" }
+```
+
+> **処理の流れ**
+
+1) `console.error(err.stack)` でスタックを出力  
+
+2) `!res || typeof res.status !== 'function'` の場合は警告ログを出して `next(err)` へ委譲  
+
+3) `res.status(500).json({ error: err.message || 'Internal Server Error' })` を返却
+
+!!! note
+    - 現実装は **常に 500** を返します。入力エラー等で **4xx** を返したい場合は、各ルートで明示的に `res.status(...).json(...)` するか、**エラークラス→HTTPステータス**のマッピングを本ミドルウェアに追加してください。  
+    - スタック等の機微情報は **レスポンスに含めない**（ログのみ）。本番では `err.message` の詳細露出も最小化を検討。  
+    - 推奨フォーマット（`{ error: { code, message, details } }`）に合わせる場合、本ミドルウェアで **ラップ**してください。  
+    - Express のエラーハンドラは **最後に `app.use(errorHandler)`** で登録すること（順序依存）。  
+    - Multer 等のミドルウェア由来エラー（例：`LIMIT_FILE_SIZE`）を **個別に 4xx/413** へ変換する処理を追加すると UX が向上します。
+
 ## **変更時の注意**
 
 - ルーティングの追加・変更は `api/routes.md` に必ず反映すること
