@@ -43,6 +43,7 @@ nav:
               - ルーティング: packages/signage-server/api/routes.md
               - コントローラー: packages/signage-server/api/controllers.md
           - ユーティリティ: packages/signage-server/utils.md
+          - 設定(config): packages/signage-server/config.md
 #          - cloudsocket: packages/signage-server/components/cloud-socket.md
 #      - signage-aws-nodejs: packages/signage-aws-nodejs/index.md
 #      - signage-admin-ui: packages/signage-admin-ui/index.md

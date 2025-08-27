@@ -1,8 +1,16 @@
 # signage-server
 
+> ## [**API**](./api/index.md)
+
+Express ベースの **HTTP レイヤ**。**ルーティング（routes）** を入口に、**コントローラー（controllers）/ Service** へ処理を委譲します。静的ページ配信と JSON API が混在します。
+
 > ## [**ユーティリティ（utils/）**](./utils.md)
 
 Node 実行時に用いる補助関数群。Jetson/Raspberry Pi の計測（`tegrastats` / `vcgencmd`）、パッチ／マイグレーション状態の集約、将来の共通ロガーを含みます。同期実行（`execSync`）が多いため、ポーリング間隔や権限に注意。
+
+> ## [**設定（Config）**](./config.md)
+
+`config/index.js` は **.env の読込（dotenv）** と **主要パス／起動ポート等の定義**を担い、**読み込み時に必要ディレクトリを自動作成**します（`images/`, `images/thumbnails/`, `videos/`, `videos/thumbnails/`, `uploads/`）。
 
 <!--
 ## 目的
