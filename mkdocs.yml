@@ -41,6 +41,7 @@ nav:
           - API:
               - overview: packages/signage-server/api/index.md
               - ルーティング: packages/signage-server/api/routes.md
+              - コントローラー: packages/signage-server/api/controllers.md
           - ユーティリティ: packages/signage-server/utils.md
 #          - cloudsocket: packages/signage-server/components/cloud-socket.md
 #      - signage-aws-nodejs: packages/signage-aws-nodejs/index.md
