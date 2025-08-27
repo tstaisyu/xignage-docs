@@ -36,12 +36,16 @@ nav:
 #      - Overview: architecture/index.md
 #      - Software Stack: architecture/software_stack.md
   - Packages:
+      - Overview: packages/index.md
       - signage-server: 
           - overview: packages/signage-server/index.md
           - API:
               - overview: packages/signage-server/api/index.md
               - ルーティング: packages/signage-server/api/routes.md
               - コントローラー: packages/signage-server/api/controllers.md
+          - サービス(services):
+              - overview: packages/signage-server/services/index.md
+              - Media / Content: packages/signage-server/services/media.md
           - ユーティリティ: packages/signage-server/utils.md
           - 設定(config): packages/signage-server/config.md
 #          - cloudsocket: packages/signage-server/components/cloud-socket.md
