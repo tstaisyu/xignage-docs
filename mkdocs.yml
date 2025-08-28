@@ -48,6 +48,10 @@ nav:
               - System / Platform: packages/signage-server/services/system.md
               - Network / Registration: packages/signage-server/services/network.md
               - Media / Content: packages/signage-server/services/media.md
+          - コンポーネント:
+              - overview: packages/signage-server/components/index.md
+              - クラウドソケット: packages/signage-server/components/cloud-socket.md
+              - ローカルソケット: packages/signage-server/components/local-socket.md
           - ユーティリティ: packages/signage-server/utils.md
           - 設定(config): packages/signage-server/config.md
 #          - cloudsocket: packages/signage-server/components/cloud-socket.md

@@ -6,6 +6,21 @@ Express ベースの **HTTP レイヤ**。**ルーティング（routes）** を
 
 ※ エラーハンドラについては、[`API`](./api/index.md) の「エラーハンドラ」節を参照
 
+> ## [**サービス（Services）**](./services/index.md)
+
+端末内ロジックのサービス層を**用途別**に集約。  
+
+- **System / Platform**：端末情報・OS/時刻/NTP・GPU統計・回転・電源/再起動・更新トリガ・ローカル設定  
+- **Network / Registration**：IP/MAC 検出と登録・端末情報のクラウド登録・Wi-Fi設定クリア/再起動  
+- **Media / Content**：プレイリスト管理・画像/動画サムネイル生成・アップロード
+
+> ## [**コンポーネント（Components）**](./components/index.md)
+
+リアルタイム連携（Socket.IO）の**ブリッジ群**。  
+
+- **Cloud Socket**：端末→クラウドの Socket.IO クライアント。接続時 `registerDevice`、5秒ごとに DNS 監視とローカルIP再登録、各種イベントを端末へ橋渡し  
+- **Local Socket**：端末内 Socket.IO（`/` と `/admin`）のブリッジ。`setVolume`/`toggleVolume` 等をローカル↔クラウドに中継
+
 > ## [**ユーティリティ（utils/）**](./utils.md)
 
 Node 実行時に用いる補助関数群。Jetson/Raspberry Pi の計測（`tegrastats` / `vcgencmd`）、パッチ／マイグレーション状態の集約、将来の共通ロガーを含みます。同期実行（`execSync`）が多いため、ポーリング間隔や権限に注意。
