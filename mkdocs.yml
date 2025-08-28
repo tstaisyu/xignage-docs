@@ -45,6 +45,8 @@ nav:
               - コントローラー: packages/signage-server/api/controllers.md
           - サービス(services):
               - overview: packages/signage-server/services/index.md
+              - System / Platform: packages/signage-server/services/system.md
+              - Network / Registration: packages/signage-server/services/network.md
               - Media / Content: packages/signage-server/services/media.md
           - ユーティリティ: packages/signage-server/utils.md
           - 設定(config): packages/signage-server/config.md
