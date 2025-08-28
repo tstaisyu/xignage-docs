@@ -1,42 +1,40 @@
-# cloudSocket（cloud ↔ device）
+# クラウドソケット（cloud-socket）
 
-> ファイル: `sockets/cloudSocket/index.js`  
-> 役割: **クラウド側 Socket.IO へのクライアント接続**の初期化と、受信イベントの各サブモジュールへの委譲。接続時/定期的な**端末ローカルIPの再登録**と、**DNSベースのオンライン監視**を行う。
+本ページは `sockets/cloudSocket/` 配下のファイル群の**仕様を1ページに統合**したものです。  
 
-## 目的
+## **概要**
 
-クラウド側エンドポイントへ **Socket.IO クライアント**として外向き接続し、受信イベントを端末内の処理へ橋渡しする。
+- **役割**：クラウド側エンドポイント（`SERVER_URL`）へ Socket.IO クライアントで接続し、画像/動画/プレイリスト/設定/システム操作などのイベントを**受信→処理→応答**し、端末内の処理へ橋渡しする。ローカル Socket.IO（`ioLocal`）への**ブリッジ**も担う。
 
-## 役割（index.js 反映）
+- **接続**: `ioClient(SERVER_URL, { path: '/socket.io', transports: ['websocket'] })`
 
-- `SERVER_URL`（既定: `https://api.xrobotics.jp`）に接続（`path: /socket.io`, `transports: ['websocket']`）。
-- **接続時**に `emit('registerDevice', DEVICE_ID)` を送信。
-- **接続時/定期的（5sごと）**に `safeRegisterLocalIp(DEVICE_ID)` を呼び出して**ローカルIPを再登録**。
-- **オンライン監視**: `dns.resolve('google.com')` により到達可否をチェックし、`[cloudSocket] Network status: online/offline` をログ出力。
-- **切断時**: 理由をログ出力（再接続は Socket.IO 既定の挙動）。
-- **クリーンアップAPI**: `initCloudSocket()` の戻り値 `{ cleanup }` により、**タイマー停止**と**ソケットクローズ**を一括実行。
+- **接続時**:
+  `emit('registerDevice', DEVICE_ID)`
+  `safeRegisterLocalIp(DEVICE_ID)` を実行
 
-## ライフサイクル / 接続
+- **定期タスク（5s）**:
+  **DNSベースのオンライン監視**: `dns.resolve('google.com')` で `isOnline` を更新
+  **端末ローカルIPの再登録**: `safeRegisterLocalIp(DEVICE_ID)` を再実行
 
-- **接続**  
-  - Endpoint: `SERVER_URL`（`/socket.io`）  
-  - Transport: `websocket`
-- **接続時フロー**
-  1. ログ: `[cloudSocket] Connected to cloud server`
-  2. `emit('registerDevice', DEVICE_ID)`
-  3. `safeRegisterLocalIp(DEVICE_ID)` を実行（成功/失敗をログ）
-- **定期タスク（5秒間隔）**
-  - `dns.resolve('google.com')` により `isOnline`（内部状態）を更新してログ出力
-  - `safeRegisterLocalIp(DEVICE_ID)` を実行（失敗時はエラーログ）
-- **切断時**
-  - ログ: `[cloudSocket] Disconnected: <reason>`
-- **クリーンアップ**
-  - `cleanup()` で `setInterval` を停止し、ソケットを `close()`。  
-    ログ: `[cloudSocket] Cleanup done`
+- **クリーンアップ**: `initCloudSocket()` の戻り `{ cleanup }` で interval 停止 & ソケット close
 
-## サブモジュール登録（イベント受信の委譲）
+## **ライフサイクル / 接続（`index.js` 反映）**
 
-本モジュールでクラウドソケットを生成し、以下の**イベントハンドラ群**を登録します（詳細なイベント一覧とペイロードは各ファイルで後述）。
+1) 接続: `SERVER_URL`（`/socket.io`、transport=`websocket`）  
+
+2) 接続成功 → ログ出力 → `registerDevice(DEVICE_ID)` 送出 → `safeRegisterLocalIp(DEVICE_ID)`  
+
+3) 切断時 → 理由をログ  
+
+4) ハンドラ登録
+
+5) オンライン監視： 5秒ごとに DNS 解決＆ローカルIP再登録  
+
+6) `cleanup()` で **タイマー停止**＆**ソケットクローズ**
+
+## **サブモジュール登録（イベント受信の委譲）**
+
+`initCloudSocket()` 内で以下を登録（実装は各ファイル）:
 
 - `handleSystemCommands(cloudSocket, ioLocal)`
 - `handleSystemCommands2(cloudSocket, ioLocal)`
@@ -47,53 +45,140 @@
 - `handleConfigCommands(cloudSocket, ioLocal)`
 - `handlePlaylistCommands(cloudSocket, ioLocal)`
 
-> **注**: `ioLocal` は端末内の Socket.IO サーバインスタンス。クラウドからの指示を端末内へ中継する用途で使用。
+> `ioLocal` は端末内の Socket.IO（ブラウザ等）へ中継するためのローカルサーバ。
 
-## 公開インターフェース（Socket.IO）
+## **イベント早見表（cloud → device／device → cloud / ioLocal）**
 
-- **方向**：デバイス → クラウド（client）
-- **このファイルでの送信イベント**
+| グループ | 受信イベント | 主ペイロード | 応答 / 送出 | 概要 |
+|---|---|---|---|---|
+| **Device** | `getVersions` | `{ requestId }` | `versionsResponse { requestId, serverVersion, uiVersion, farmVersion }` | バージョン取得（pkg.json/VERSION.txt） |
+|  | `requestDeviceInfo` | `{ requestId }` | `deviceInfoResponse { requestId, info }` | 端末情報（model/OS/kernel/GPU/時刻/NTP…） |
+|  | `getPatchMigState` | `{ requestId }` | `patchMigStateResponse { requestId, state｜error }` | パッチ＋マイグ状態（`getCombinedState`） |
+| **Config** | `getConfig` | `{ deviceId }` | `configResponse { deviceId, …settings }` | ローカル設定取得（deviceId一致時） |
+|  | `updateConfig` | `{ deviceId, ...updates }` | `configUpdated { deviceId, …settings }` | ローカル設定更新（マージ保存） |
+| **System** | `shutdownCommand` | — | — | 電源断 |
+|  | `rebootCommand` | — | — | 再起動 |
+|  | `startUpdate` | 任意 | — | `systemctl start signage-update.service` |
+|  | `networkResetCommand` | 任意 | — | wpa_cli 全削除 → 再起動 |
+|  | `toggleRotation` | 任意 | — | 画面回転トグル（jetson/xrandr） |
+|  | `forceKiosk` | — | — | キオスク再起動（外部実装前提） |
+|  | `deleteAllFiles` | `{ requestId }` | `deleteAllFilesResponse { requestId, success｜error }` | 画像/動画配下の全ファイル削除 |
+| **Media: Images** | `getImageList` | `{ requestId, deviceId? }` | `imageListResponse { requestId, records[] }` | 必要サムネを自動生成→返却 |
+|  | `getImageThumbnail` | `{ requestId, fileName }` | `thumbnailResponse { requestId, buffer｜error }` | サムネバイナリ送出 |
+|  | `uploadImage` | `{ requestId, fileName, fileData }` | `uploadImageResponse { requestId, success｜error }` | 画像を保存 |
+|  | `deleteImage` | `{ requestId, fileName }` | `deleteImageResponse { requestId, success｜error }` | 画像削除 |
+| **Media: Videos** | `getVideoList` | `{ requestId, deviceId? }` | `videoListResponse { requestId, records[] }` | 必要サムネ生成→返却 |
+|  | `getVideoThumbnail` | `{ requestId, fileName }` | `thumbnailResponse { requestId, buffer｜error }` | サムネバイナリ送出 |
+|  | `uploadVideo` | `{ requestId, fileName, fileData }` | `uploadVideoResponse { requestId, success｜error }` | 動画を保存 |
+|  | `deleteVideo` | `{ requestId, fileName }` | `deleteVideoResponse { requestId, success｜error }` | 動画削除 |
+| **Playlist** | `startPlaylist` | 任意 | `ioLocal.emit('startPlaylist', payload)` | ローカルへ開始通知 |
+|  | `stopPlaylist` | 任意 | `ioLocal.emit('stopPlaylist', payload)` | ローカルへ停止通知 |
+|  | `updatePlaylist` | `{ requestId, action, uuid?, contentId?, targetIndex?, duration? }` | `playlistUpdateResponse { requestId, playlist }` | list/add/insert/move/remove |
+|  | `clearPlaylistFile` | `{ requestId, playlistName }` | `playlistUpdateResponse { requestId, success }` | `PLAYLISTS_DIR/<name>.json` を削除 |
+| **View** | `switchView` | `<viewName>` | `ioLocal.emit('switchView', viewName)` | ビュー切替 |
+|  | `showImage` | `<imageFileName>` | `ioLocal.emit('showImage', …)` or **保留**→`clientReady`で再送 | 未接続時はキュー |
+|  | `playVideo` | `<payload>` | `ioLocal.emit('playVideo', …)` or **保留**→`clientReady`で再送 | 未接続時はキュー |
+|  | `playYoutube` | `{ youtubeUrl? , playlistId? }` | `ioLocal.emit('playYoutubeLocal', { youtubeUrl })` | 最終URLを決定して送出 |
+| **Misc** | `updateText` | `{ text }` | — | `textStore` を更新 |
+|  | `setVolume` | `{ volume }` | — | `pactl set-sink-volume <sink> <volume>` |
+|  | `toggleVolume` | 任意 | `ioLocal.emit('toggleVolume', payload)` | ローカルへ転送 |
+| *(local→cloud)* | — | — | `volumeStatusChanged` を cloud / `/admin` に転送 | local-bridge |
 
-  | 方向 | イベント名        | 例                                   | 説明                       |
-  |------|-------------------|--------------------------------------|----------------------------|
-  | →    | `registerDevice`  | `registerDevice(DEVICE_ID)`          | 端末をクラウドへ登録       |
+## **コマンド詳細**
 
-> 受信イベントのハンドラは以下のサブモジュールに分割されています。  
-> `configCommands.js`, `deviceCommands.js`, `mediaCommands.js`, `miscCommands.js`, `playlistCommands.js`, `systemCommands.js`, `viewCommands.js`  
-> （各ファイルの内容に基づき、この表へ**受信イベント**を逐次追記します）
+> ### **Device（`deviceCommands.js`）**
 
-## 設定（Environment Variables）
+- **`getVersions`** → `versionsResponse`  
+  serverVersion：`/opt/signage-core/signage-server/current/package.json`  
+  uiVersion：`/var/www/admin-ui/VERSION.txt`  
+  farmVersion：`/opt/signage-core/signage-jetson/current/VERSION.txt`
 
-| Key        | Required | Default                     | Note                                                |
-|------------|----------|-----------------------------|-----------------------------------------------------|
-| SERVER_URL | yes      | `https://api.xrobotics.jp`  | Socket.IO サーバ（クラウド）エンドポイント          |
-| DEVICE_ID  | yes      | —                           | `registerDevice` で送信される端末ID                |
+- **`requestDeviceInfo`** → `deviceInfoResponse`（`getDeviceInfo()`）
 
-> タイマー間隔は **5秒固定**（現状ENVでのカスタマイズは無し）。
+- **`getPatchMigState`** → `patchMigStateResponse`（`getCombinedState({ patchFile, migrationDir, doneDir })`）
 
-## 依存関係
+> ### **Config（`configCommands.js`）**
 
-- 外部: `socket.io-client`, Node.js 標準 `dns`
-- ローカル: `../../config`, `../../services/networkRegistration`（`safeRegisterLocalIp` など）
-- サブモジュール: `systemCommands`, `systemCommands2`, `deviceCommands`, `miscCommands`, `mediaCommands`, `viewCommands`, `configCommands`, `playlistCommands`
+- **`getConfig`**（deviceId一致のみ応答）→ `configResponse`（`loadSettings()`）  
 
-## 失敗時挙動
+- **`updateConfig`**（deviceId一致のみ保存）→ `configUpdated`（保存後に再読込で返す）
 
-- **接続失敗/切断**: Socket.IO の自動再接続に準拠（本ファイルでオーバーライド無し）。
-- **IP再登録失敗**: 例外を捕捉してエラーログ（リトライは**次の周期（5s後）**に再試行）。
-- **DNS失敗**: `isOnline=false` としてログ出力（到達復帰時に自動で `online` に戻る）。
+> ### **System（`systemCommands.js` / `systemCommands2`）**
 
-## テスト観点
+- `shutdownCommand` → `execShutdown()`、`rebootCommand` → `execReboot()`  
 
-- 接続成功時に **必ず** `registerDevice(DEVICE_ID)` が送出される。
-- 接続時に `safeRegisterLocalIp(DEVICE_ID)` が呼ばれる（成功/失敗のログ含む）。
-- 周期タスクが **5秒間隔**で  
-  (a) DNS 解決を行い、ログ出力する  
-  (b) `safeRegisterLocalIp(DEVICE_ID)` を実行する。
-- `handle*Commands` 群が **一度ずつ**登録される（重複登録なし）。
-- `cleanup()` 呼び出しで **タイマーが停止**し、**ソケットがクローズ**される。
+- `startUpdate` → `runUpdate()`  
 
-## 監視/運用メモ
+- `networkResetCommand` → `clearWifiConfAndReboot()`  
 
-- 5秒ごとにネットワーク状態ログが出るため、**ログローテーション**の設定に留意。
-- `google.com` への DNS 解決に依存（ネットワーク到達性の近似指標）。
+- `toggleRotation` → `toggleRotation()`  
+
+- `forceKiosk` → **外部関数依存**（実装側で提供）  
+
+- `deleteAllFiles` → 画像/動画ディレクトリ配下の**全ファイル削除** → `deleteAllFilesResponse`
+
+> ### **Media（`mediaCommands.js`）**
+
+- 画像：`getImageList` / `getImageThumbnail` / `uploadImage` / `deleteImage`  
+
+- 動画：`getVideoList` / `getVideoThumbnail` / `uploadVideo` / `deleteVideo`  
+  一覧時は **必要サムネを自動生成** → `records` を返す  
+  サムネ応答は **バイナリ（Buffer）** を `thumbnailResponse` で送出
+
+> ### **Playlist（`playlistCommands.js`）**
+
+- `startPlaylist` / `stopPlaylist`：`ioLocal` へ中継  
+
+- `updatePlaylist`：`action` に応じ **list/add/insert/move/remove** を実行し、`playlistUpdateResponse`  
+
+- `clearPlaylistFile`：`PLAYLISTS_DIR/<name>.json` を削除し `playlistUpdateResponse { success }`
+
+> ### **View（`viewCommands.js`）**
+
+- `switchView`：`ioLocal.emit('switchView', viewName)`  
+
+- `showImage` / `playVideo`：**ローカル接続が無ければキュー**し、`clientReady` でフラッシュ  
+
+- `playYoutube`：`youtubeUrl` or `playlistId` から最終 URL を決定して `playYoutubeLocal` へ送出
+
+> ### **Misc（`miscCommands.js`）**
+
+- `updateText`：`textStore` を更新  
+
+- `setVolume`：`BOARD_TYPE` から sink 名を推定し `pactl set-sink-volume` を実行  
+
+- `toggleVolume`：`ioLocal` に転送  
+
+- ローカルの `volumeStatusChanged` を cloud / `/admin` に **双方向ブリッジ**
+
+## **公開インターフェース（送信：device → cloud）**
+
+- `registerDevice(DEVICE_ID)`（接続時）
+
+> 受信イベントの詳細は上記早見表と各サブモジュール節を参照。
+
+## **設定（Environment Variables）**
+
+| Key | Required | Default | Note |
+|---|---|---|---|
+| `SERVER_URL` | yes | `https://api.xrobotics.jp` | Cloud Socket.IO エンドポイント（`/socket.io`） |
+| `DEVICE_ID` | yes | — | 接続時に `registerDevice` で送信 |
+| `WIFI_PRIORITY_INTERFACES` | no | `wlP1p1s0,wlanUSB,wlanINT` | IP/MAC 検出の優先IF順（networkRegistration） |
+
+## **失敗時挙動**
+
+- **接続失敗/切断**: Socket.IO の自動再接続に準拠（独自再試行なし）
+- **IP再登録失敗**: 例外はログのみ → 次の周期（5s後）に再試行
+- **DNS失敗**: `isOnline=false` としてログ（復帰時に `online` へ）
+
+## **監視/運用メモ**
+
+- 5秒周期のログが出るため **ログローテーション**に留意
+- **deviceId フィルタ**：`getConfig/updateConfig` は `payload.deviceId === config.DEVICE_ID` のときのみ応答します。**他イベントにも同様のフィルタ導入を検討**（誤配送防止）。  
+- **大きなサムネイル**：`thumbnailResponse` は Buffer をそのまま送るため、帯域/メモリに注意。必要なら**サムネ最大サイズ/レート制御**を導入。  
+- **オンライン判定**：`dns.resolve('google.com')` は環境依存（DNS だけ OK のケースも）。HTTP HEAD など**実トラフィック**で再検討の余地あり。
+- **危険操作の保護**：`deleteAllFiles` はディレクトリ配下を**全削除**します。**認可/確認**や**ディレクトリ固定**のガードを推奨。  
+
+!!! note "命名・依存の整合性に注意"
+    - `deviceCommands.getPatchMigState` 内で `PATCH_FILE/MIGR_DIR/DONE_DIR` を参照していますが、**`config.PATCH_FILE` 等を使うのが安全**です（環境変数と実体の不整合を防止）。
+    - `playlistCommands.deletePlaylistFile` は `config.PLAYLISTS_DIR` を参照します。**`config/index.js` に定義が無い場合は追加**してください（例：`PLAYLISTS_DIR = path.join(HOME_DIR, 'playlists')`）。
