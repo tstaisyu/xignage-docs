@@ -1,5 +1,31 @@
 # signage-aws-nodejs
 
+> ## [**ソケット層（双方向通信）**](./socket.md)
+
+`socket/*` は端末（Jetson/Raspberry Pi）とサーバ間の **リアルタイム通信**を担います。  
+接続登録・切断検知、イベント配線、ACK 応答管理、HTTP→Socket ブリッジ（例：音量トグル）を提供します。
+
+**主なコンポーネント**  
+
+- **index.js**：`initSocket(server)` で Socket.IO 初期化／汎用 ACK を配線（`getIO()` を公開）
+- **deviceRegistry.js**：`registerDevice` / `disconnect` で `deviceId ⇢ socketId` を管理
+- **playlistHandlers.js**：`imageListResponse` / `videoListResponse` を共通ハンドラで解決
+- **commonRequests.js**：ACK 共通処理（`handleListResponse` / `handleVersionResponse` / `handlePatchMigResponse`）
+- **toggleVolume.js**：HTTP 経由の音量トグルを発火し、`volumeStatusChanged` で応答待ち
+- **requestStores.js**：共有 Map ストア  
+  `deviceSockets`（`deviceId → socketId`）  
+  `requests`（汎用 ACK 待ち）  
+  `thumbnailRequests`（サムネ用）
+
+**設計の要点**  
+
+- 相関管理：**`requestId`** を往復で一致確認（誤解決防止）
+- リソース管理：**resolve/reject 時に必ず `clearTimeout` と `delete`**
+- セキュリティ：本番では **CORS を特定ドメインに制限**（`origin: '*'` は開発向け）
+
+!!! tip
+    同種イベントを並列に投げる場合でも、`requestId` 単位の待機者分離で衝突を防げます。
+
 > ## [**Services（サービス層）**](./services.md)  
 
 `services/*` は **HTTP ルート／コントローラ** と **Socket 層（端末）** の橋渡しを担います。  
