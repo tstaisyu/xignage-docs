@@ -84,10 +84,10 @@ nav:
   - CI / Automation:
       - Overview: ci/index.md
       - Workflows:
-          - Setup CI: ci/workflows/setup-ci.md
-          - Release TAR: ci/workflows/release-tar.md
-          - Build Patches: ci/workflows/build-patches.md
-          - APT License Check: ci/workflows/apt-license-check.md
-          - Python License Check: ci/workflows/python-license-check.md
-          - Metrics CI: ci/workflows/metrics-ci.md
-          - Update Release Badge: ci/workflows/update-release-badge.md
+          - Setup CI: ci/workflows/signage-jetson/setup-ci.md
+          - Release TAR: ci/workflows/signage-jetson/release-tar.md
+          - Build Patches: ci/workflows/signage-jetson/build-patches.md
+          - APT License Check: ci/workflows/signage-jetson/apt-license-check.md
+          - Python License Check: ci/workflows/signage-jetson/python-license-check.md
+          - Metrics CI: ci/workflows/signage-jetson/metrics-ci.md
+          - Update Release Badge: ci/workflows/signage-jetson/update-release-badge.md

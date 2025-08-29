@@ -218,13 +218,13 @@ Jetson の `extlinux.conf`／Raspberry Pi の `config.txt`・`cmdline.txt` を�
 
 ### **関連CI**
 
-- Setup CI（setupスクリプトの静的解析） → [docs](../../ci/workflows/setup-ci.md)
-- Build Patches（patches_all.zip 生成） → [docs](../../ci/workflows/build-patches.md)
-- Release TAR（signage-jetson リリース） → [docs](../../ci/workflows/release-tar.md)
-- APT License Check → [docs](../../ci/workflows/apt-license-check.md)
-- Python License Check → [docs](../../ci/workflows/python-license-check.md)
-- Metrics CI（メトリクスパッケージのテスト実行） → [docs](../../ci/workflows/metrics-ci.md)
-- Update Release Badge → [docs](../../ci/workflows/update-release-badge.md)
+- Setup CI（setupスクリプトの静的解析） → [docs](../../ci/workflows/signage-jetson/setup-ci.md)
+- Build Patches（patches_all.zip 生成） → [docs](../../ci/workflows/signage-jetson/build-patches.md)
+- Release TAR（signage-jetson リリース） → [docs](../../ci/workflows/signage-jetson/release-tar.md)
+- APT License Check → [docs](../../ci/workflows/signage-jetson/apt-license-check.md)
+- Python License Check → [docs](../../ci/workflows/signage-jetson/python-license-check.md)
+- Metrics CI（メトリクスパッケージのテスト実行） → [docs](../../ci/workflows/signage-jetson/metrics-ci.md)
+- Update Release Badge → [docs](../../ci/workflows/signage-jetson/update-release-badge.md)
 
 <!--
 ## 目的

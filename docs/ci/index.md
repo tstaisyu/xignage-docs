@@ -16,13 +16,13 @@ YAML の細かな手順は各ページ（リンク）に委ね、ここでは **
 
 | Workflow | YAML | 役割 / 保証 | 主トリガ | 生成物 / 副作用 | Secrets / 権限 |
 |---|---|---|---|---|---|
-| **Setup CI（Shell/Python）** | `ci/workflows/setup-ci.md` | ShellCheck と Python 構文チェックで PR 品質を担保 | push / PR（main） | なし（ログのみ） | 既定権限 |
-| **Release TAR / Patches** | `ci/workflows/release-tar.md` | 配布物 `signage-scripts.tar.gz/.sha256` と `patches_all.zip` を **同タグの Release に添付** | tag `v*.*.*`, 手動 | Release Assets 追加/更新 | `contents: write` / `GH_PAT_RELEASE`（or `GITHUB_TOKEN`） |
-| **Build Patches to Release** | `ci/workflows/build-patches.md` | `patches_all.zip` を作り **直近タグ Release に再添付**（置換） | push(main), tag `v*`, create tag | Release Asset 置換 | `GITHUB_TOKEN`（contents: write） |
-| **Metrics CI** | `ci/workflows/metrics-ci.md` | `scripts/metrics/` の Lint / Format / Test | push / PR（パス限定） | なし | 既定権限 |
-| **APT License Check** | `ci/workflows/apt-license-check.md` | APT 依存のライセンス検査で **NG/不明をブロック** | push / PR | なし | 既定権限 |
-| **Python License Check** | `ci/workflows/python-license-check.md` | pip 依存のライセンス検査で **NG/不明をブロック** | push / PR | なし | 既定権限 |
-| **Update Release Badge** | `ci/workflows/update-release-badge.md` | 新規リリース時に **Gist の `release.json` を更新**（Shields endpoint） | release（正式版） | Gist 更新（バッジ反映） | `GH_PAT(gist)` |
+| **Setup CI（Shell/Python）** | `ci/workflows/signage-jetson/setup-ci.md` | ShellCheck と Python 構文チェックで PR 品質を担保 | push / PR（main） | なし（ログのみ） | 既定権限 |
+| **Release TAR / Patches** | `ci/workflows/signage-jetson/release-tar.md` | 配布物 `signage-scripts.tar.gz/.sha256` と `patches_all.zip` を **同タグの Release に添付** | tag `v*.*.*`, 手動 | Release Assets 追加/更新 | `contents: write` / `GH_PAT_RELEASE`（or `GITHUB_TOKEN`） |
+| **Build Patches to Release** | `ci/workflows/signage-jetson/build-patches.md` | `patches_all.zip` を作り **直近タグ Release に再添付**（置換） | push(main), tag `v*`, create tag | Release Asset 置換 | `GITHUB_TOKEN`（contents: write） |
+| **Metrics CI** | `ci/workflows/signage-jetson/metrics-ci.md` | `scripts/metrics/` の Lint / Format / Test | push / PR（パス限定） | なし | 既定権限 |
+| **APT License Check** | `ci/workflows/signage-jetson/apt-license-check.md` | APT 依存のライセンス検査で **NG/不明をブロック** | push / PR | なし | 既定権限 |
+| **Python License Check** | `ci/workflows/signage-jetson/python-license-check.md` | pip 依存のライセンス検査で **NG/不明をブロック** | push / PR | なし | 既定権限 |
+| **Update Release Badge** | `ci/workflows/signage-jetson/update-release-badge.md` | 新規リリース時に **Gist の `release.json` を更新**（Shields endpoint） | release（正式版） | Gist 更新（バッジ反映） | `GH_PAT(gist)` |
 
 > スクリプト補助：`.github/ci/check_apt_licenses.sh` / `.github/ci/check_pip_licenses.sh`（ライセンス判定ロジック）
 
@@ -58,10 +58,10 @@ YAML の細かな手順は各ページ（リンク）に委ね、ここでは **
 
 ## **参照**
 
-- **Setup CI** … `ci/workflows/setup-ci.md`  
-- **Release TAR / Patches** … `ci/workflows/release-tar.md`  
-- **Build Patches** … `ci/workflows/build-patches.md`  
-- **Metrics CI** … `ci/workflows/metrics-ci.md`  
-- **APT License Check** … `ci/workflows/apt-license-check.md`  
-- **Python License Check** … `ci/workflows/python-license-check.md`  
-- **Update Release Badge** … `ci/workflows/update-release-badge.md`
+- **Setup CI** … `ci/workflows/signage-jetson/setup-ci.md`  
+- **Release TAR / Patches** … `ci/workflows/signage-jetson/release-tar.md`  
+- **Build Patches** … `ci/workflows/signage-jetson/build-patches.md`  
+- **Metrics CI** … `ci/workflows/signage-jetson/metrics-ci.md`  
+- **APT License Check** … `ci/workflows/signage-jetson/apt-license-check.md`  
+- **Python License Check** … `ci/workflows/signage-jetson/python-license-check.md`  
+- **Update Release Badge** … `ci/workflows/signage-jetson/update-release-badge.md`
