@@ -25,6 +25,12 @@ Express ベースの **HTTP レイヤ**。**ルーティング（routes）** を
 
 Node 実行時に用いる補助関数群。Jetson/Raspberry Pi の計測（`tegrastats` / `vcgencmd`）、パッチ／マイグレーション状態の集約、将来の共通ロガーを含みます。同期実行（`execSync`）が多いため、ポーリング間隔や権限に注意。
 
+> ## [**Public（UI）**](./public/index.md)
+
+Chromium（キオスク）で表示される **フロントページ群** と、それらに読み込まれる **JSモジュール**の入口。  
+ローカル Socket.IO と連携し、初期化後は **`clientReady`** を送出して保留イベント（`showImage` / `playVideo` など）を受け取ります。  
+アセットは `/images/*`・`/videos/*`（サムネは `…/thumbnails/`）を参照。
+
 > ## [**設定（Config）**](./config.md)
 
 `config/index.js` は **.env の読込（dotenv）** と **主要パス／起動ポート等の定義**を担い、**読み込み時に必要ディレクトリを自動作成**します（`images/`, `images/thumbnails/`, `videos/`, `videos/thumbnails/`, `uploads/`）。

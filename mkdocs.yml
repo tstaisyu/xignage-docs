@@ -53,6 +53,10 @@ nav:
               - クラウドソケット: packages/signage-server/components/cloud-socket.md
               - ローカルソケット: packages/signage-server/components/local-socket.md
           - ユーティリティ: packages/signage-server/utils.md
+          - フロントページ:
+              - overview: packages/signage-server/public/index.md
+              - ページ一覧: packages/signage-server/public/pages.md
+              - JS モジュール: packages/signage-server/public/js.md
           - 設定(config): packages/signage-server/config.md
 #          - cloudsocket: packages/signage-server/components/cloud-socket.md
 #      - signage-aws-nodejs: packages/signage-aws-nodejs/index.md
