@@ -1,5 +1,16 @@
 # signage-server
 
+> ## [**ランタイム（Runtime / Bootstrap）**](./runtime/index.md)
+
+Node プロセスの**起動〜稼働の骨格**。起動時回転の適用 → HTTP/Socket.IO 立ち上げ → Cloud/Local ソケット初期化 → IP/MAC/端末情報の登録までを担います。
+
+- [**Express App 構成・配信・API マウント**](./runtime/express-app.md)  
+  （`/admin` SPA、`/images`・`/videos` 静的配信、`/api/*` ルート、例外 `/localPlaylist`・`/forceKiosk`・`/health`）
+- [**Chromium Manager（キオスク再読込）**](./runtime/chromium-manager.md)  
+  （`killall chrome` を X 環境で実行。`GET /forceKiosk` からトリガ）
+
+※ 起動時の詳細フロー・エラーハンドラ登録・Socket.IO 初期化は [**ランタイム概要**](./runtime/index.md)を参照
+
 > ## [**API**](./api/index.md)
 
 Express ベースの **HTTP レイヤ**。**ルーティング（routes）** を入口に、**コントローラー（controllers）/ Service** へ処理を委譲します。静的ページ配信と JSON API が混在します。
