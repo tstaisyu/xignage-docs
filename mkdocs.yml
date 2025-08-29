@@ -83,7 +83,7 @@ nav:
 #  - ADR: adr/index.md
   - CI / Automation:
       - Overview: ci/index.md
-      - Workflows:
+      - Workflows (signage-jetson):
           - Setup CI: ci/workflows/signage-jetson/setup-ci.md
           - Release TAR: ci/workflows/signage-jetson/release-tar.md
           - Build Patches: ci/workflows/signage-jetson/build-patches.md
@@ -91,3 +91,8 @@ nav:
           - Python License Check: ci/workflows/signage-jetson/python-license-check.md
           - Metrics CI: ci/workflows/signage-jetson/metrics-ci.md
           - Update Release Badge: ci/workflows/signage-jetson/update-release-badge.md
+      - Workflows (signage-server):
+          - Server CI: ci/workflows/signage-server/server-ci.md
+          - License Check: ci/workflows/signage-server/license-check.md
+          - Release TAR (server): ci/workflows/signage-server/release-tar.md
+          - Update Release Badge (server): ci/workflows/signage-server/update-release-badge.md
