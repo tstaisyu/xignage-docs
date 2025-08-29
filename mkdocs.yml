@@ -62,9 +62,6 @@ nav:
               - ページ一覧: packages/signage-server/public/pages.md
               - JS モジュール: packages/signage-server/public/js.md
           - 設定(config): packages/signage-server/config.md
-#          - cloudsocket: packages/signage-server/components/cloud-socket.md
-#      - signage-aws-nodejs: packages/signage-aws-nodejs/index.md
-#      - signage-admin-ui: packages/signage-admin-ui/index.md
       - signage-jetson:
           - Overview: packages/signage-jetson/index.md
           - setup(000-099): packages/signage-jetson/units/setup-000-099.md
@@ -79,6 +76,10 @@ nav:
           - 依存パッケージ（deps）: packages/signage-jetson/deps.md
           - 環境変数リファレンス: packages/signage-jetson/files/config-sh.md
           - ユーティリティ関数リファレンス: packages/signage-jetson/files/functions-sh.md
+      - signage-aws-nodejs:
+          - overview: packages/signage-aws-nodejs/index.md
+          - サービス(services): packages/signage-aws-nodejs/services.md
+#      - signage-admin-ui: packages/signage-admin-ui/index.md
 #      - jetson-ab-flash: packages/jetson-ab-flash/index.md
 #  - ADR: adr/index.md
   - CI / Automation:
