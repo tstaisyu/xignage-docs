@@ -1,5 +1,24 @@
 # signage-aws-nodejs
 
+> ## [**Runtime（Server / Middleware / Utils）**](./runtime.md)
+
+サーバ起動と配線をまとめる層です。`.env` 読込→Express 初期化→HTTP サーバ化→Socket.IO 初期化→ルート登録→共通エラーハンドラ→起動、という流れで **HTTP と WebSocket を束ねます**。
+
+**主な構成**  
+
+- **server.js**：`.env` → `express.json()` / `bodyParser.json()` → `http.createServer(app)` → `initSocket(server)` → `app.use('/', routes(io))` → **共通エラーハンドラ** → `server.listen(PORT)`（既定 **3000**）
+- **Middleware**：`validationResult`（`express-validator` の検証結果を **400** で集約）
+- **Utils**：`extractFileNameFromUrl`（URL からファイル名抽出。失敗時は `'unknown'`。アップロード系で利用）
+
+**設計の要点**  
+
+- **Socket 初期化は 1 回のみ**（`initSocket` → `getIO` で参照共有）
+- **エラー伝播**は `next(err)` ＋ `err.status || 500`。タイムアウトは **504 相当**で扱う方針を推奨
+- **環境変数**：`PORT`（任意）、OpenAI 利用時は `OPENAI_API_KEY` / `OPENAI_MODEL` / `OPENAI_MAX_TOKENS`
+
+!!! tip
+    ルーティングは `routes/index.js` をハブに、Socket は `initSocket()` の **単一初期化**へ集約すると見通しが良く保てます。
+
 > ## [**ルーティング（HTTP API）**](./routes.md)
 
 `routes/*` は Express で組んだ **HTTP エンドポイント群**です。`/api` の下にドメイン別ルータをマウントし、Socket 層（`getIO` / `deviceSockets` / `requests`）と連携して **端末操作・状態取得・アップロード**を行います。

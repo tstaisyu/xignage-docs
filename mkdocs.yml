@@ -78,6 +78,7 @@ nav:
           - ユーティリティ関数リファレンス: packages/signage-jetson/files/functions-sh.md
       - signage-aws-nodejs:
           - overview: packages/signage-aws-nodejs/index.md
+          - Runtime: packages/signage-aws-nodejs/runtime.md
           - ルーティング: packages/signage-aws-nodejs/routes.md
           - ソケット(socket): packages/signage-aws-nodejs/socket.md
           - サービス(services): packages/signage-aws-nodejs/services.md

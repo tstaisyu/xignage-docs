@@ -149,6 +149,17 @@ Socket 層（`getIO`, `deviceSockets`, `requests`, `thumbnailRequests`）と連�
 
 - Socket 経由で `getConfig` / `updateConfig` を送信し、`configResponse` / `configUpdated` の ACK を待機（1s）
 
+### **Controller 挙動（`controllers/deviceSettingsController.js`）**
+
+- **GET** `c.get(req, res, next)`  
+  `deviceId` を `params` または `query` から取得  
+  `svc.get(deviceId)` を呼び、**単一要素配列**で返す：`res.json([cfg])`
+- **PATCH** `c.update(req, res, next)`  
+  `deviceId` は `params`、更新内容は `body`  
+  `svc.update(deviceId, body)` の結果をそのまま返却：`res.json(cfg)`
+
+※ いずれも内部でサービス層（`deviceSettingsService`）の **ACK 往復**（`getConfig` / `updateConfig`）を利用。
+
 ## **5) Random（/api/random/*）**
 
 - `GET /api/random/roomNameAlpha`  
@@ -295,6 +306,36 @@ Socket 層（`getIO`, `deviceSockets`, `requests`, `thumbnailRequests`）と連�
     `DELETE /api/playlist/:uuid` と `DELETE /api/playlist/:playlistName` は  
     **同一パスパターン**のため、定義順でマッチが決まります。  
     競合回避のため、**固定 prefix**（例: `/by-id/:uuid`, `/by-name/:playlistName`）等の採用を検討してください。
+
+#### **Controller 挙動（`controllers/playlistController.js`）**
+
+- **定数**：`SERVER_URL = 'https://api.xrobotics.jp'`  
+  サムネ取得エンドポイント（本サーバの `/api/playlist/thumbnail`）へリンクを組み立てるために使用。
+
+- **GET `/api/playlist?deviceId=...` → `list`**  
+  `playlistSvc.fetchPlaylist(deviceId)` の戻り配列に対し、各項目へ`thumbnailUrl: ${SERVER_URL}/api/playlist/thumbnail?deviceId=${deviceId}&contentId=${item.contentId}` を付加して返却。
+
+- **GET `/api/playlist/thumbnail?deviceId=...&contentId=...` → `thumbnail`**  
+  `contentId` の拡張子で **イベント名を自動判定**：  
+  → 動画：`getVideoThumbnail`（`.mp4`, `.mov`）  
+  → 画像：`getImageThumbnail`（`.jpg|.jpeg|.png`）  
+  サムネファイル名：`<basename>-thumbnail.jpg`  
+  `playlistSvc.fetchThumbnail(deviceId, eventName, thumbFile)` 実行 → `image/jpeg` で返却
+
+- **POST `/api/playlist` → `create`**  
+  Body：`{ deviceId, action: 'add'|'insert', contentId, targetIndex?, duration? }`  
+  `playlistSvc.updateItem(...)` の戻りを返却
+
+- **PATCH `/api/playlist/:uuid?deviceId=...` → `update`**  
+  Body：`{ action: 'move'|'update', targetIndex?, duration?, contentId? }`  
+  `targetIndex` は数値へ正規化（`Number()`）  
+  `playlistSvc.modifyItem(...)` の戻りを返却
+
+- **DELETE `/api/playlist/:uuid?deviceId=...` → `remove`**  
+  `playlistSvc.removeItem(deviceId, uuid)` の戻りを返却
+
+- **DELETE `/api/playlist/:playlistName?deviceId=...` → `clearFile`**  
+  `playlistSvc.clearFile(deviceId, playlistName)` の戻りを `{ message, result }` で返却
 
 ## **7) OpenAI API（/api/openai/*）**
 
