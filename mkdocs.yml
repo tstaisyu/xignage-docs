@@ -83,7 +83,14 @@ nav:
           - ソケット(socket): packages/signage-aws-nodejs/socket.md
           - サービス(services): packages/signage-aws-nodejs/services.md
           - CI / GitHub Actions: ci/workflows/signage-aws-nodejs/ci.md
-#      - signage-admin-ui: packages/signage-admin-ui/index.md
+      - signage-admin-ui:
+          - overview: packages/signage-admin-ui/index.md
+          - API contract: packages/signage-admin-ui/api.md
+          - コンポーネント: packages/signage-admin-ui/components.md
+          - ページ / ルーティング: packages/signage-admin-ui/pages.md
+          - フック: packages/signage-admin-ui/hooks.md
+          - セットアップ: packages/signage-admin-ui/setup.md
+          - CI / GitHub Actions: ci/workflows/signage-admin-ui/ci.md
 #      - jetson-ab-flash: packages/jetson-ab-flash/index.md
 #  - ADR: adr/index.md
   - CI / Automation:
