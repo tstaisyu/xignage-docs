@@ -1,5 +1,34 @@
 # signage-aws-nodejs
 
+> ## [**ルーティング（HTTP API）**](./routes.md)
+
+`routes/*` は Express で組んだ **HTTP エンドポイント群**です。`/api` の下にドメイン別ルータをマウントし、Socket 層（`getIO` / `deviceSockets` / `requests`）と連携して **端末操作・状態取得・アップロード**を行います。
+
+**主要ルート（概要）**  
+
+- `/api/commands`：再生・停止・回転・更新・音量（ACK ありの `toggleVolume` を含む）
+- `/api/images`・`/api/videos`：一覧・サムネ取得（ACK：`*_ListResponse` / `thumbnailResponse`）
+- `/api/playlist`：追加/挿入/移動/更新/削除/ファイルクリア（ACK：`playlistUpdateResponse`）
+- `/api/uploads`・`/api/delete`：画像/動画のアップロード・削除（ACK：`upload*Response` / `delete*Response`）
+- `/api/version`：端末ソフトのバージョン問い合わせ（ACK：`versionsResponse`）
+- `/api/patchMigState`：パッチ/マイグレーション状態取得（ACK：`patchMigStateResponse`）
+- `/api/deviceSettings`：端末設定の取得/更新（ACK：`configResponse` / `configUpdated`）
+- `/api/ip`・`/api/mac`・`/api/status`：IP/MAC 登録・接続状態
+- `/api/device/power`：シャットダウン/再起動
+- `/api/device-info`：デバイス情報の登録/リアルタイム取得
+- `/api/random`：ユーティリティ（例：ランダム部屋名）
+- `/api/openai`：OpenAI 応答の配信（`io.emit`）
+
+**設計の要点**  
+
+- 相関：すべての往復で **`requestId` を一致確認**（誤解決防止）
+- タイムアウト：一覧/サムネ/バージョン等は **5s**、削除系は **1s** など用途別に設定
+- エラー方針：**400** 入力不足 / **404** 未接続 / **500** 内部異常（タイムアウトは 504 相当で扱うことを推奨）
+- 検証：`routes/*/validators.js` で **express-validator / Joi** により事前バリデーション
+
+!!! tip
+    メディア系はネットワーク負荷が大きくなりがちです。**`maxHttpBufferSize` やボディサイズ制限**の調整、再送/冪等設計を検討してください。
+
 > ## [**ソケット層（双方向通信）**](./socket.md)
 
 `socket/*` は端末（Jetson/Raspberry Pi）とサーバ間の **リアルタイム通信**を担います。  
@@ -31,7 +60,7 @@
 `services/*` は **HTTP ルート／コントローラ** と **Socket 層（端末）** の橋渡しを担います。  
 ACK の要否に応じて **単発送信（emitCommand）** と **ACK 往復（emitWithAck）** を使い分け、`requestId` による相関で安全に同期します。  
 
-### **主なコンポーネント**  
+**主なコンポーネント**  
 
 - **Command（emitCommand）**：ACK なしの単発イベント送信（到達性保証不要な UI 操作向け）
 - **DeviceSettingsService**：設定の取得/更新（`getConfig` / `updateConfig` → `configResponse` / `configUpdated`、既定タイムアウト ~1s）
@@ -39,7 +68,7 @@ ACK の要否に応じて **単発送信（emitCommand）** と **ACK 往復（e
 - **FileDownloadService**：外部 URL を `Buffer` で取得（`axios` の `arraybuffer` 利用）
 - **Socket Helper（emitWithAck）**：ACK 付きイベント送信の共通実装（`requestId` 照合・確実なリスナ解除・タイムアウト処理）
 
-### **共通設計の要点**  
+**共通設計の要点**  
 
 - 接続解決：`deviceSockets: Map<deviceId, socketId>` と `getIO()`（Socket.IO サーバ）を利用
 - 相関管理：ACK 往復では **`payload.requestId` ↔ `res.requestId`** を一致確認
