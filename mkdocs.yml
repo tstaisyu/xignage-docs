@@ -91,6 +91,14 @@ nav:
           - フック: packages/signage-admin-ui/hooks.md
           - セットアップ: packages/signage-admin-ui/setup.md
           - CI / GitHub Actions: ci/workflows/signage-admin-ui/ci.md
+      - xignage-edge-detection:
+          - Overview: developers/packages/xignage-edge-detection/index.md
+          - セットアップ: developers/packages/xignage-edge-detection/setup.md
+          - 設定: developers/packages/xignage-edge-detection/config.md
+          - API (Pipeline/Detectors/IO): developers/packages/xignage-edge-detection/api.md
+          - CLI: developers/packages/xignage-edge-detection/cli.md
+          - Runtime & Troubleshooting: developers/packages/xignage-edge-detection/05_runtime.md
+          - CI / GitHub Actions: ci/workflows/xignage-edge-detection/ci.md
 #      - jetson-ab-flash: packages/jetson-ab-flash/index.md
 #  - ADR: adr/index.md
   - CI / Automation:

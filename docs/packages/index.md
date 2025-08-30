@@ -10,6 +10,7 @@
 | **signage-server** | 端末上で動作する**バックエンド**。Express API、コンテンツ管理、プレイリスト、サムネイル生成、Socket 連携など | Node.js（Jetson / Raspberry Pi / Linux） | **Complete** | [`packages/signage-server`](./signage-server/index.md) |
 | **signage-aws-nodejs** | AWS 上で常駐する**クラウド側バックエンド**。Express + Socket.IO で端末制御／メディアアップロード／プレイリスト操作／設定更新／バージョン・パッチ照会などを提供 | Node.js 22（AWS / Linux, EC2・Lightsail・Container） | **Complete** | [`packages/signage-aws-nodejs`](./signage-aws-nodejs/index.md) |
 | **signage-admin-ui** | 端末ローカルで操作・管理する**フロント UI**（音量ミュート/スライダー、D&D アップロード、状態確認） | ブラウザ（Vite ビルドを Nginx 等で静的配信、**/admin** ベース） | **Complete** | [`packages/signage-admin-ui`](./signage-admin-ui/index.md) |
+| **xignage-edge-detection** | Jetson 上で動作する**人物検知パイプライン**（YOLOX）＋将来の視線推定（OpenFace, 現状はプレースホルダ）。カメラ入力→最新結果を **JSON にアトミック書き込み** | Python 3.9+（Jetson Orin / JetPack, CUDA/TensorRT 対応ホイール） | **Complete** | [`developers/packages/xignage-edge-detection`](./xignage-edge-detection/index.md) |
 
 ---
 
@@ -47,3 +48,12 @@
   - **UI/技術**：Tailwind（`clsx` + `tailwind-merge`）、Radix Slider、react-dropzone、react-hot-toast、SWR
   - **補足**：OpenAPI は `/api/v1/*` を定義 → 本番は **/api/admin ↔ /api/v1** をリバースプロキシで写像
 - **入口**：[`signage-admin-ui / index`](./signage-admin-ui/index.md)
+
+---
+
+> ## **xignage-edge-detection**
+
+- **目的**：エッジ側（Jetson）での**人物検知**と（将来的に）**視線推定**を低遅延に実行し、結果を JSON で外部に提供。
+- **特徴**：YOLOX ラッパで**単回ロード＆キャッシュ**／`JsonWriter` による**アトミック書き込み**／`default.yaml` で**設定管理**／CLI（`scripts/run_inference.py`）／公開 API（`run_camera_loop` / `run_inference_once`）。  
+  *注：OpenFace 部分は現在プレースホルダで、`gaze_vector=None`。*
+- **入口**：[`xignage-edge-detection / index`](./xignage-edge-detection/index.md)
