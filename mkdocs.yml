@@ -82,6 +82,7 @@ nav:
           - ルーティング: packages/signage-aws-nodejs/routes.md
           - ソケット(socket): packages/signage-aws-nodejs/socket.md
           - サービス(services): packages/signage-aws-nodejs/services.md
+          - CI / GitHub Actions: ci/workflows/signage-aws-nodejs/ci.md
 #      - signage-admin-ui: packages/signage-admin-ui/index.md
 #      - jetson-ab-flash: packages/jetson-ab-flash/index.md
 #  - ADR: adr/index.md

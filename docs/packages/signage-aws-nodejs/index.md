@@ -97,6 +97,19 @@ ACK の要否に応じて **単発送信（emitCommand）** と **ACK 往復（e
     「ACK 不要（非同期 UI）」なら **emitCommand**、  
     「整合性が重要（設定・同期）」なら **emitWithAck** を選択すると設計が安定します。
 
+> ## [CI / GitHub Actions](../../ci/workflows/signage-aws-nodejs/ci.md)
+
+このパッケージの CI は **fmt / lint / test** を回す基本ワークフローに加え、**依存ライセンス検査**、Release 公開時の **バッジ更新** を行います。Node は `22` を使用し、PR/Push をトリガに **失敗早期化**で品質を担保します。Release 時は `jq`＋`curl` で Gist の `release.json` を更新し、Shields.io の endpoint バッジに反映させます（`GH_PAT` は **gist スコープ**に限定）。
+
+**内訳**  
+
+- **AWS Node.js CI**：`fmt` → `lint` → `test`（`push`/`pull_request` 対象：`main`）
+- **License Check**：`npm run check:license`（依存の法的健全性を継続監視）
+- **Update Release Badge**：Release 公開時に **Gist のバッジ JSON を更新**（非プレリリースのみ）
+
+!!! tip
+    CI の再現性と速度を両立させるには、**`npm ci`＋キャッシュ**の併用が有効です。`GH_PAT` は **最小権限（gist）**で保管してください。
+
 <!--
 ## 目的
 
