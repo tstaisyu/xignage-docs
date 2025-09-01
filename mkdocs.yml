@@ -116,3 +116,6 @@ nav:
           - License Check: ci/workflows/signage-server/license-check.md
           - Release TAR (server): ci/workflows/signage-server/release-tar.md
           - Update Release Badge (server): ci/workflows/signage-server/update-release-badge.md
+  - Mobile Apps:
+      - Xignage（adalo）:
+          - Overview: apps/xignage-adalo/index.md
