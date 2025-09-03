@@ -111,12 +111,14 @@
 
 ## **Custom Actions（Adalo）**
 
-| Name                | Method | URL                                                     | Headers                         | Body（例）                                                                                          | 備考 |
+> BASE_URL: `https://api.xrobotics.jp`
+
+| Name                | Method | URL/Path                          | Headers                         | Body（例）                                                                                          | 備考 |
 |---------------------|:------:|---------------------------------------------------------|---------------------------------|------------------------------------------------------------------------------------------------------|------|
-| toggleVideoVolume   | POST   | <https://api.xrobotics.jp/api/commands/send>             | Content-Type: application/json | `{"deviceId":"<user.device>","command":"toggleLocalVideoVolume","payload":{}}`                      | コマンドバス |
-| Delete_image        | POST   | <https://api.xrobotics.jp/api/delete/image>              | Content-Type: application/json | `{"deviceId":"<user.device>","fileName":"<selected file>"}`                                          | 画像削除 |
-| setAutoPlaylist     | PATCH  | <https://api.xrobotics.jp/api/deviceSettings/><user.device> | Content-Type: application/json | `{"autoPlaylist": true}`                                                                             | 設定ON |
-| disableAutoPlaylist | PATCH  | <https://api.xrobotics.jp/api/deviceSettings/><user.device> | Content-Type: application/json | `{"autoPlaylist": false}`                                                                            | 設定OFF |
+| toggleVideoVolume   | POST   | `{BASE_URL}/api/commands/send`    | Content-Type: application/json | `{"deviceId":"<user.device>","command":"toggleLocalVideoVolume","payload":{}}`                      | コマンドバス |
+| Delete_image        | POST   | `{BASE_URL}/api/delete/image`     | Content-Type: application/json | `{"deviceId":"<user.device>","fileName":"<selected file>"}`                                          | 画像削除 |
+| setAutoPlaylist     | PATCH  | `{BASE_URL}/api/deviceSettings/<user.device>` | Content-Type: application/json | `{"autoPlaylist": true}`                                                                             | 設定ON |
+| disableAutoPlaylist | PATCH  | `{BASE_URL}/api/deviceSettings/<user.device>` | Content-Type: application/json | `{"autoPlaylist": false}`                                                                            | 設定OFF |
 
 ### プレースホルダ（要充填）
 
