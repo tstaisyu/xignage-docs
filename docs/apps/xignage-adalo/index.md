@@ -111,26 +111,52 @@
 
 ## **Custom Actions（Adalo）**
 
-### **`setAutoPlaylist` / `disableAutoPlaylist`**
+| Name                | Method | URL                                                     | Headers                         | Body（例）                                                                                          | 備考 |
+|---------------------|:------:|---------------------------------------------------------|---------------------------------|------------------------------------------------------------------------------------------------------|------|
+| toggleVideoVolume   | POST   | <https://api.xrobotics.jp/api/commands/send>             | Content-Type: application/json | `{"deviceId":"<user.device>","command":"toggleLocalVideoVolume","payload":{}}`                      | コマンドバス |
+| Delete_image        | POST   | <https://api.xrobotics.jp/api/delete/image>              | Content-Type: application/json | `{"deviceId":"<user.device>","fileName":"<selected file>"}`                                          | 画像削除 |
+| setAutoPlaylist     | PATCH  | <https://api.xrobotics.jp/api/deviceSettings/><user.device> | Content-Type: application/json | `{"autoPlaylist": true}`                                                                             | 設定ON |
+| disableAutoPlaylist | PATCH  | <https://api.xrobotics.jp/api/deviceSettings/><user.device> | Content-Type: application/json | `{"autoPlaylist": false}`                                                                            | 設定OFF |
 
-- Method：`PATCH`
-- URL：`https://api.xrobotics.jp/api/deviceSettings/{deviceId}`
-- Path 変数：`{deviceId}` = **Users > Device**（text）
-- Headers：なし（認証なし）
-- Body：`{"autoPlaylist": true}` / `{"autoPlaylist": false}`（暫定ハードコード）
-- 成功時：同一画面のボタン表示をトグル（true 送信後は「オフにする」表示、false 送信後は「オンにする」表示）
+### プレースホルダ（要充填）
 
-### **`Upload media`** — `POST <TBD>`（`multipart/form-data`、field: `file`）
-
-### **`Play`** — `POST <TBD>`（`{ fileId, loop }`）  
-
-### **`List media`** — `GET <TBD>`（画像/動画）  
-
-### **`Device link`** — `POST <TBD>`（`{ deviceId }`）  
-
-### **`Device status`** — `GET <TBD>`  
-
-> **次に決めるべきこと**：各 `<TBD>` の **フル URL** と **ヘッダ/ボディ** の仕様（Adalo 変数のバインド含む）
+| Name                       | Method | URL | Headers | Body | 備考 |
+|---------------------------|:------:|-----|--------|------|------|
+| Delete_movie              |  TBD   | TBD |        | TBD  |      |
+| Delete_all_contents       |  TBD   | TBD |        | TBD  |      |
+| Local videos              |  TBD   | TBD |        | TBD  |      |
+| volume_level              |  TBD   | TBD |        | TBD  |      |
+| Update_deviceinfo         |  TBD   | TBD |        | TBD  |      |
+| youtube_playlist_play     |  TBD   | TBD |        | TBD  |      |
+| kiosk_bt                  |  TBD   | TBD |        | TBD  |      |
+| end_call                  |  TBD   | TBD |        | TBD  |      |
+| randomNameAlpha           |  TBD   | TBD |        | TBD  |      |
+| remove_file_from_playlist |  TBD   | TBD |        | TBD  |      |
+| resume_loop               |  TBD   | TBD |        | TBD  |      |
+| pause_loop                |  TBD   | TBD |        | TBD  |      |
+| system_update             |  TBD   | TBD |        | TBD  |      |
+| kiosk_before_youtube      |  TBD   | TBD |        | TBD  |      |
+| play_video                |  TBD   | TBD |        | TBD  |      |
+| toggleVolume              |  TBD   | TBD |        | TBD  |      |
+| wifi_reconfig             |  TBD   | TBD |        | TBD  |      |
+| Add_to_playlist           |  TBD   | TBD |        | TBD  |      |
+| sort_playlist             |  TBD   | TBD |        | TBD  |      |
+| ai_assist                 |  TBD   | TBD |        | TBD  |      |
+| screen_saver              |  TBD   | TBD |        | TBD  |      |
+| openai_ask                |  TBD   | TBD |        | TBD  |      |
+| Get DeviceMAC             |  TBD   | TBD |        | TBD  |      |
+| Status_check              |  TBD   | TBD |        | TBD  |      |
+| upload_image              |  TBD   | TBD |        | TBD  |      |
+| Get DeviceInfo            |  TBD   | TBD |        | TBD  |      |
+| show_image                |  TBD   | TBD |        | TBD  |      |
+| mirror                    |  TBD   | TBD |        | TBD  |      |
+| Get Local-IP              |  TBD   | TBD |        | TBD  |      |
+| start_videocall           |  TBD   | TBD |        | TBD  |      |
+| shutdown                  |  TBD   | TBD |        | TBD  |      |
+| reboot                    |  TBD   | TBD |        | TBD  |      |
+| rotate_display            |  TBD   | TBD |        | TBD  |      |
+| device_version            |  TBD   | TBD |        | TBD  |      |
+| Get_PatchMigState         |  TBD   | TBD |        | TBD  |      |
 
 ## **今後の変更予定**
 
