@@ -88,21 +88,26 @@
 ### **外部コレクション（読み取り）**
 
 - **images**
-   Fields：`id:number`, `fileName:text`, `thumbnailUrl:text`
-   取得：`GET /api/images/list?deviceId={id}`（クエリでスコープ）
+  - Endpoint：**GET** `https://api.xrobotics.jp/api/images/list?deviceId=<user.device>`
+  - Fields：`id:number`, `fileName:text`, `thumbnailUrl:text`
+
 - **videos**
-  Fields：`id:number`, `fileName:text`, `thumbnailUrl:text`, `deviceId:text（返却されるが未使用）`
-  **TODO**：取得 API パス
+  - Endpoint：**GET** `https://api.xrobotics.jp/api/videos/list?deviceId=<user.device>`
+  - Fields：`id:number`, `fileName:text`, `thumbnailUrl:text`, `deviceId:text（返却されるが未使用）`
+
 - **device_info**
-  Fields：`key:text`, `value:text`
-  スコープ：**deviceId はレコードに持たず**、取得時クエリで絞り込み
+  - Endpoint：**GET** `https://api.xrobotics.jp/api/device-info?deviceId=<user.device>`
+  - Fields：`key:text`, `value:text`
+  - 備考：レコード自体は deviceId を持たず、**クエリでスコープ**します。
+
 - **playlists**
-  Fields：`uuid:text`, `contentId:text`, `type:text`, `duration:number`, `order:number`, `thumbnailUrl:text`
-  **deviceId を持たない**（API 側でスコープ）
-  **TODO**：取得/更新 API パス
+  - Endpoint：**GET** `https://api.xrobotics.jp/api/playlist?deviceId=<user.device>`
+  - Fields：`uuid:text`, `contentId:text`, `type:text`, `duration:number`, `order:number`, `thumbnailUrl:text`
+
 - **DeviceConfig**
-  Fields：`autoPlaylist:bool`（レコードに deviceId は持たない）
-  更新：`PATCH /api/deviceSettings/{deviceId}`（`{"autoPlaylist": true|false}`）
+  - 取得：**GET** `https://api.xrobotics.jp/api/deviceSettings/<user.device>`
+  - 更新：**PATCH** `https://api.xrobotics.jp/api/deviceSettings/<user.device>`  
+    Body：`{"autoPlaylist": true|false}`
 
 ## **Custom Actions（Adalo）**
 
