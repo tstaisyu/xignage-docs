@@ -113,52 +113,51 @@
 
 > BASE_URL: `https://api.xrobotics.jp`
 
+!!! note "バインド規約"
+    - `{deviceId}` は Adalo では **Logged In User > Device**（text）をバインド
+    - POST/PATCH は **Headers: Content-Type: application/json**
+
 | Name                | Method | URL/Path                          | Headers                         | Body（例）                                                                                          | 備考 |
 |---------------------|:------:|---------------------------------------------------------|---------------------------------|------------------------------------------------------------------------------------------------------|------|
 | toggleVideoVolume   | POST   | `{BASE_URL}/api/commands/send`    | Content-Type: application/json | `{"deviceId":"<user.device>","command":"toggleLocalVideoVolume","payload":{}}`                      | コマンドバス |
 | Delete_image        | POST   | `{BASE_URL}/api/delete/image`     | Content-Type: application/json | `{"deviceId":"<user.device>","fileName":"<selected file>"}`                                          | 画像削除 |
-| setAutoPlaylist     | PATCH  | `{BASE_URL}/api/deviceSettings/<user.device>` | Content-Type: application/json | `{"autoPlaylist": true}`                                                                             | 設定ON |
+| Delete_movie           | POST   | `{BASE_URL}/api/delete/video`                                       | Content-Type: application/json   | `{"deviceId":"<user.device>","fileName":"<selected file>"}`                                                          | 動画削除 |
+| Delete_all_contents    | POST   | `{BASE_URL}/api/delete/all`                                         | Content-Type: application/json   | `{"deviceId":"<user.device>"}`                                                                                       | 全消去 |
+| volume_level           | POST   | `{BASE_URL}/api/commands/send`                                      | Content-Type: application/json   | `{"deviceId":"<user.device>","command":"setVolume","payload":{"volume":"<volume level>%"}}`                          | 例：`"50%"` |
+| Update_deviceInfo      | POST   | `{BASE_URL}/api/device-info/update`                                 | Content-Type: application/json   | `{"deviceId":"<user.device>"}`                                                                                       | 端末情報更新 |
+| youtube_playlist_play  | POST   | `{BASE_URL}/api/commands/send`                                      | Content-Type: application/json   | `{"deviceId":"<user.device>","command":"playYoutube","payload":{"youtubeUrl":"<youtubeUrl>"}}`                       | YouTube 再生 |
+| kiosk_bt               | GET    | `{BASE_URL}/api/commands/send?deviceId=<user.device>&command=switchView&fileName=kiosk.html` | —                                | —                                                                                                                    | 表記確認：`kiost_bt` → `kiosk_bt`? |
+| end_call               | POST   | `{BASE_URL}/api/commands/kioskRestart`                              | Content-Type: application/json   | `{"deviceId":"<user.device>"}`                                                                                       | 通話終了/キオスク再起動 |
+| randomNameAlpha        | GET    | `{BASE_URL}/api/random/roomNameAlpha`                               | —                                | —                                                                                                                    | ランダム名取得 |
+| remove_file_from_playlist | DELETE | `{BASE_URL}/api/playlist/<selected uuid>?deviceId=<user.device>`  | —                                | —                                                                                                                    | プレイリストから削除 |
 | disableAutoPlaylist | PATCH  | `{BASE_URL}/api/deviceSettings/<user.device>` | Content-Type: application/json | `{"autoPlaylist": false}`                                                                            | 設定OFF |
-
-### プレースホルダ（要充填）
-
-| Name                       | Method | URL | Headers | Body | 備考 |
-|---------------------------|:------:|-----|--------|------|------|
-| Delete_movie              |  TBD   | TBD |        | TBD  |      |
-| Delete_all_contents       |  TBD   | TBD |        | TBD  |      |
-| Local videos              |  TBD   | TBD |        | TBD  |      |
-| volume_level              |  TBD   | TBD |        | TBD  |      |
-| Update_deviceinfo         |  TBD   | TBD |        | TBD  |      |
-| youtube_playlist_play     |  TBD   | TBD |        | TBD  |      |
-| kiosk_bt                  |  TBD   | TBD |        | TBD  |      |
-| end_call                  |  TBD   | TBD |        | TBD  |      |
-| randomNameAlpha           |  TBD   | TBD |        | TBD  |      |
-| remove_file_from_playlist |  TBD   | TBD |        | TBD  |      |
-| resume_loop               |  TBD   | TBD |        | TBD  |      |
-| pause_loop                |  TBD   | TBD |        | TBD  |      |
-| system_update             |  TBD   | TBD |        | TBD  |      |
-| kiosk_before_youtube      |  TBD   | TBD |        | TBD  |      |
-| play_video                |  TBD   | TBD |        | TBD  |      |
-| toggleVolume              |  TBD   | TBD |        | TBD  |      |
-| wifi_reconfig             |  TBD   | TBD |        | TBD  |      |
-| Add_to_playlist           |  TBD   | TBD |        | TBD  |      |
-| sort_playlist             |  TBD   | TBD |        | TBD  |      |
-| ai_assist                 |  TBD   | TBD |        | TBD  |      |
-| screen_saver              |  TBD   | TBD |        | TBD  |      |
-| openai_ask                |  TBD   | TBD |        | TBD  |      |
-| Get DeviceMAC             |  TBD   | TBD |        | TBD  |      |
-| Status_check              |  TBD   | TBD |        | TBD  |      |
-| upload_image              |  TBD   | TBD |        | TBD  |      |
-| Get DeviceInfo            |  TBD   | TBD |        | TBD  |      |
-| show_image                |  TBD   | TBD |        | TBD  |      |
-| mirror                    |  TBD   | TBD |        | TBD  |      |
-| Get Local-IP              |  TBD   | TBD |        | TBD  |      |
-| start_videocall           |  TBD   | TBD |        | TBD  |      |
-| shutdown                  |  TBD   | TBD |        | TBD  |      |
-| reboot                    |  TBD   | TBD |        | TBD  |      |
-| rotate_display            |  TBD   | TBD |        | TBD  |      |
-| device_version            |  TBD   | TBD |        | TBD  |      |
-| Get_PatchMigState         |  TBD   | TBD |        | TBD  |      |
+| resume_loop            | POST   | `{BASE_URL}/api/commands/start`                                     | Content-Type: application/json   | `{"deviceId":"<user.device>"}`                                                                                       | ループ再開 |
+| pause_loop             | POST   | `{BASE_URL}/api/commands/stop`                                      | Content-Type: application/json   | `{"deviceId":"<user.device>"}`                                                                                       | ループ停止 |
+| setAutoPlaylist     | PATCH  | `{BASE_URL}/api/deviceSettings/<user.device>` | Content-Type: application/json | `{"autoPlaylist": true}`                                                                             | 設定ON |
+| system_update          | POST   | `{BASE_URL}/api/commands/update`                                    | Content-Type: application/json   | `{"deviceId":"<user.device>"}`                                                                                       | システム更新 |
+| kiosk_before_youtube   | GET    | `{BASE_URL}/api/commands/send?deviceId=<user.device>&command=switchViewYT&fileName=kiosk.html` | —                                | —                                                                                                                    | YT 前面表示切替 |
+| play_video             | GET    | `{BASE_URL}/api/commands/send?deviceId=<user.device>&command=playVideo&fileName=<selected video>&isSingle=true` | — | —                                                                                                                    | 単発再生 |
+| toggleVolume           | POST   | `{BASE_URL}/api/commands/send`                                      | Content-Type: application/json   | `{"deviceId":"<user.device>","command":"toggleVolume","payload":{}}`                                                 | ミュート切替 |
+| wifi_reconfig          | POST   | `{BASE_URL}/api/commands/network/reset`                             | Content-Type: application/json   | `{"deviceId":"<user.device>"}`                                                                                       | Wi-Fi リセット |
+| Add_to_playlist          | POST   | `{BASE_URL}/api/playlist?deviceId=<user.device>`                                                          | Content-Type: application/json | `{"deviceId":"<user.device>","action":"add","contentId":"<selected file>","duration":"<duration value>"}`                | 追加 |
+| sort_playlist            | PATCH  | `{BASE_URL}/api/playlist/<uuid>?deviceId=<user.device>`                                                   | Content-Type: application/json | `{"action":"move","targetIndex":<order value>}`                                                                           | 並び替え |
+| ai_assist                | GET    | `{BASE_URL}/api/commands/send?deviceId=<user.device>&command=switchView&fileName=ai_assist.html`         | —                              | —                                                                                                                         | 画面切替 |
+| screen_saver             | GET    | `{BASE_URL}/api/commands/send?deviceId=<user.device>&command=switchView&fileName=screensaver.html?image=<user.screen_saver>` | —               | —                                                                                                                         | `image` はURLエンコード推奨 |
+| openai_ask               | POST   | `{BASE_URL}/api/openai/ask`                                                                               | Content-Type: application/json | `{"userInput":"<text>"}`                                                                                                  | 質問送信 |
+| Get DeviceMAC            | GET    | `{BASE_URL}/api/mac?deviceId=<user.device>`                                                               | —                              | —                                                                                                                         | MAC参照 |
+| Status_check             | GET    | `{BASE_URL}/api/status?deviceId=<user.device>`                                                            | —                              | —                                                                                                                         | ステータス |
+| upload_movie             | POST   | `{BASE_URL}/api/uploads/video`                                                                            | Content-Type: application/json | `{"deviceId":"<user.device>","fileUrl":"<selected file>"}`                                                                | サーバ側がURL取得 |
+| upload_image             | POST   | `{BASE_URL}/api/uploads/image`                                                                            | Content-Type: application/json | `{"deviceId":"<user.device>","fileUrl":"<selected file>"}`                                                                | 同上 |
+| Get DeviceInfo           | GET    | `{BASE_URL}/api/device-info?deviceId=<user.device>`                                                       | —                              | —                                                                                                                         | 端末情報 |
+| show_image               | GET    | `{BASE_URL}/api/commands/send?deviceId=<user.device>&command=showImage&fileName=<selected file>`         | —                              | —                                                                                                                         | 単画像表示 |
+| mirror                   | GET    | `{BASE_URL}/api/commands/send?deviceId=<user.device>&command=switchView&fileName=mirror.html`            | —                              | —                                                                                                                         | ミラー表示 |
+| Get Local-IP             | GET    | `{BASE_URL}/api/ip?deviceId=<user.device>`                                                                | —                              | —                                                                                                                         | ローカルIP |
+| start_videocall          | GET    | `{BASE_URL}/api/commands/send?deviceId=<user.device>&command=switchView&fileName=https://meet.jit.si/<user.device>-<randomRoomName>` | —           | —                                                                                                                         | URLはエンコード推奨 |
+| shutdown                 | POST   | `{BASE_URL}/api/device/power/shutdown`                                                                    | Content-Type: application/json | `{"deviceId":"<user.device>"}`                                                                                            | 電源OFF |
+| reboot                   | POST   | `{BASE_URL}/api/device/power/reboot`                                                                      | Content-Type: application/json | `{"deviceId":"<user.device>"}`                                                                                            | 再起動 |
+| rotate_display           | POST   | `{BASE_URL}/api/commands/rotate`                                                                          | Content-Type: application/json | `{"deviceId":"<user.device>"}`                                                                                            | 画面回転 |
+| device_version           | GET    | `{BASE_URL}/api/version/versions?deviceId=<user.device>`                                                  | —                              | —                                                                                                                         | バージョン群 |
+| Get_PatchMigState        | GET    | `{BASE_URL}/api/patchMigState?deviceId=<user.device>`                                                     | —                              | —                                                                                                                         | パッチ/マイグ状態 |
 
 ## **今後の変更予定**
 
