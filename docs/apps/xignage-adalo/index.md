@@ -92,22 +92,22 @@
   - Fields：`id:number`, `fileName:text`, `thumbnailUrl:text`
 
 - **videos**
-  - Endpoint：**GET** `https://api.xrobotics.jp/api/videos/list?deviceId=<user.device>`
-  - Fields：`id:number`, `fileName:text`, `thumbnailUrl:text`, `deviceId:text（返却されるが未使用）`
+  Endpoint：**GET** `https://api.xrobotics.jp/api/videos/list?deviceId=<user.device>`
+  Fields：`id:number`, `fileName:text`, `thumbnailUrl:text`, `deviceId:text（返却されるが未使用）`
 
 - **device_info**
-  - Endpoint：**GET** `https://api.xrobotics.jp/api/device-info?deviceId=<user.device>`
-  - Fields：`key:text`, `value:text`
-  - 備考：レコード自体は deviceId を持たず、**クエリでスコープ**します。
+  Endpoint：**GET** `https://api.xrobotics.jp/api/device-info?deviceId=<user.device>`
+  Fields：`key:text`, `value:text`
+  備考：レコード自体は deviceId を持たず、**クエリでスコープ**します。
 
 - **playlists**
-  - Endpoint：**GET** `https://api.xrobotics.jp/api/playlist?deviceId=<user.device>`
-  - Fields：`uuid:text`, `contentId:text`, `type:text`, `duration:number`, `order:number`, `thumbnailUrl:text`
+  Endpoint：**GET** `https://api.xrobotics.jp/api/playlist?deviceId=<user.device>`
+  Fields：`uuid:text`, `contentId:text`, `type:text`, `duration:number`, `order:number`, `thumbnailUrl:text`
 
 - **DeviceConfig**
-  - 取得：**GET** `https://api.xrobotics.jp/api/deviceSettings/<user.device>`
-  - 更新：**PATCH** `https://api.xrobotics.jp/api/deviceSettings/<user.device>`  
-    Body：`{"autoPlaylist": true|false}`
+  取得：**GET** `https://api.xrobotics.jp/api/deviceSettings/<user.device>`
+  更新：**PATCH** `https://api.xrobotics.jp/api/deviceSettings/<user.device>`  
+  Body：`{"autoPlaylist": true|false}`
 
 ## **Custom Actions（Adalo）**
 
