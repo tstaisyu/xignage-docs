@@ -29,6 +29,10 @@ plugins:
       timezone: Asia/Tokyo
       locale: ja
 
+extra_javascript:
+  - https://unpkg.com/mermaid@10.9.1/dist/mermaid.min.js
+  - javascripts/mermaid-init.js
+
 markdown_extensions:
   - admonition
   - toc:
@@ -36,12 +40,16 @@ markdown_extensions:
   - tables
   - attr_list
   - footnotes
-  - pymdownx.superfences
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
 
 nav:
   - Home: index.md
-#  - Architecture:
-#      - Overview: architecture/index.md
+  - Architecture:
+      - Overview: architecture/index.md
 #      - Software Stack: architecture/software_stack.md
   - Packages:
       - Overview: packages/index.md
