@@ -8,6 +8,9 @@ theme:
   language: ja
   features:
     - navigation.indexes
+extra:
+  copyright:
+    - text: "最終更新: {{ git_revision_date_localized }}"
 
 plugins:
   - search
@@ -20,6 +23,11 @@ plugins:
         - locale: en
           name: English
       reconfigure_material: true
+  - git-revision-date-localized:
+      type: date
+      fallback_to_build_date: true
+      timezone: Asia/Tokyo
+      locale: ja
 
 markdown_extensions:
   - admonition
