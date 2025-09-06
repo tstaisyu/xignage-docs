@@ -3,49 +3,24 @@
 **Xignage** は、Jetson/Raspberry Pi をサイネージ端末化し、クラウドから安全に制御・配信するための**フルスタック**です。  
 このページは **システム側の総合入口**として、全体像／主要リポジトリ／CI／モバイルアプリへの導線をまとめます。
 
-<!--
-可動型 Edge-AI サイネージの開発・運用ドキュメントです。  
-左のメニューから各セクションへ移動してください。
+> ## **全体像（System Overview）**
 
 - **System Container Diagram (PNG)**  
   ![System Container](architecture/system_container.png)
 
-- **System Container Diagram (PDF)**  
-  [Download PDF](architecture/system_container.pdf)
--->
-
----
-
-## 全体像（System Overview）
-
 ```mermaid
 flowchart LR
-  subgraph Cloud
-    AWS[signage-aws-nodejs\n(HTTP + Socket.IO)]
-  end
-
-  subgraph Device
-    JetsonSetup[signage-jetson\n(setup scripts)]
-    LocalSrv[signage-server\n(Express + Player)]
-    EdgeDet[xignage-edge-detection\n(YOLOX)]
-    AdminUI[signage-admin-ui\n(/admin)]
-  end
-
-  Mobile[Mobile Apps\n(Adalo)]
-
-  Mobile -- REST --> AWS
-  AWS -- Socket.IO + REST --> LocalSrv
-  LocalSrv <-- JSON (latest result) --> EdgeDet
-  LocalSrv <-- setup/runtime --> JetsonSetup
-  AdminUI <-- static served (/admin) --> LocalSrv
+  Cloud["Cloud API"] -- HTTPS/WSS --> Device[Device Server]
+  Mobile["Mobile Apps"] -- HTTPS --> Cloud
+  Admin["/admin UI"] --- Device
 ```
+
+データフロー要約と設計原則の詳細は → **[Architecture / Overview](architecture/index.md)** を参照。
 
 !!! note
     事業面のビジョン／ユースケースは後日追記予定です。まずは**システム運用**に必要な情報から整備します。
 
----
-
-## 何から始める？（Quick Start）
+> ## **何から始める？（Quick Start）**
 
 1. **端末セットアップ** → [signage-jetson](packages/signage-jetson/index.md)  
    Openbox+Chromium キオスク、ネットワーク/APフォールバック、更新基盤の導入。
@@ -58,9 +33,7 @@ flowchart LR
 5. **モバイル運用** → [Mobile Apps（Adalo）](apps/xignage-adalo/index.md)  
    スマホからのアップロード／操作。まずは招待制の Android / iOS で試験運用。
 
----
-
-## パッケージと役割（Overview）
+> ## **パッケージと役割（Overview）**
 
 - **signage-jetson**：端末の**初期化・運用基盤**（冪等スクリプト／分割フェーズ）  
   → [docs](packages/signage-jetson/index.md)
@@ -73,7 +46,7 @@ flowchart LR
 - **xignage-edge-detection**：**人物検知パイプライン**（YOLOX、将来 OpenFace 連携）  
   → [docs](packages/xignage-edge-detection/index.md)
 
-## Release Snapshot（対応バージョン）
+> ## **Release Snapshot（対応バージョン）**
 
 | リポジトリ | 最新リリース |
 |---|---|
@@ -85,9 +58,7 @@ flowchart LR
 
 より詳細な一覧は → [パッケージ一覧](packages/index.md)
 
----
-
-## CI / Automation（ハブ）
+> ## **CI / Automation（ハブ）**
 
 各リポの CI は **fmt/lint/test** を基本に、**ライセンス検査／Release 配布／バッジ更新**を自動化。  
 運用ポリシー・ワークフローのカタログは → [CI / Automation 概要](ci/index.md)
@@ -95,9 +66,7 @@ flowchart LR
 !!! tip
     Release バッジは **Gist の `release.json`** を更新して Shields.io で表示します（PAT は **gist 限定スコープ**）。
 
----
-
-## 運用チェックリスト（初期）
+> ## **運用チェックリスト（初期）**
 
 - 端末接続：`/api/status?deviceId=...` が **接続中** を返す  
 - メディア：`/api/uploads/image|video` → 一覧/サムネ API が整合  
@@ -106,25 +75,18 @@ flowchart LR
 - バージョン/パッチ：`/api/version/versions` / `api/patchMigState` が 5s タイムアウト内に応答  
 - 管理 UI：`/admin` が端末で表示・操作可能
 
----
-
-## 変更履歴 / リリース
+> ## **変更履歴 / リリース**
 
 - 各リポの Release は `vMAJOR.MINOR.PATCH`（プレリリースは既定で除外）  
 - 配布物：端末スクリプト（tar.gz）, サーバ（tar.gz）, ほか  
 - バッジ反映：Release 公開時に **Update Release Badge** が自動更新
 
----
-
-## プレースホルダ（後日差し替え）
+> ## **プレースホルダ（後日差し替え）**
 
 - **Vision / Business**：プロダクトの狙い・導入価値・KPI（*準備中*）
-- **Architecture**：論理/物理/デプロイ構成図、ネットワーク、セキュリティ方針（*準備中*）
 - **Operations**：監視・アラート・SLO / SLA（*準備中*）
 
----
-
-## ナビゲーション
+> ## **ナビゲーション**
 
 - **Packages** → [一覧](packages/index.md)
 - **CI / Automation** → [ハブ](ci/index.md)
