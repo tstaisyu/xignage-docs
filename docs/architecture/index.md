@@ -1,39 +1,176 @@
-# アーキテクチャ
+# Architecture（Overview）
 
-## North Star（道しるべ）
+本ページは、Xignage の**論理構成／配置／ネットワーク／セキュリティ／主要フロー／運用**を1枚に集約した概要です。詳細化が必要になったら各章を独立ページへ分割します。
 
-**目的**  
+> ## **1. Logical Architecture（論理構成）**
 
-- サイネージ端末を遠隔操作・安定配信できる仕組みを、現場で再現性高く運用する。
+```mermaid
+flowchart LR
+  classDef cloud fill:#eaf2ff,stroke:#4a90e2,color:#0b3d91
+  classDef device fill:#eaffea,stroke:#34a853,color:#0b5b14
+  classDef mobile fill:#fff6e5,stroke:#f5a623,color:#6b4e00
 
-**非目的**  
+  subgraph Cloud
+    AWS["signage-aws-nodejs\n(HTTP + Socket.IO)"]:::cloud
+  end
 
-- 動画編集・大型CMSの代替そのもの／クラウド常時接続を前提とした設計。
+  subgraph Device
+    JetsonSetup["signage-jetson\n(setup scripts)"]:::device
+    LocalSrv["signage-server\n(Express + Player)"]:::device
+    EdgeDet["xignage-edge-detection\n(YOLOX)"]:::device
+    AdminUI["signage-admin-ui\n(/admin)"]:::device
+  end
 
-**主要コンポーネント**  
+  Mobile["Mobile Apps\n(Adalo)"]:::mobile
 
-- **Adalo モバイルアプリ**（iOS/Android）  
-- **signage-aws-nodejs**：Adalo→REST受付／デバイスへWebSocket橋渡し  
-- **デバイス**  
-  - **signage-server**（再生制御／WS受信）  
-  - **signage-admin-ui**（LAN内のローカル管理UI）  
-  - **signage-jetson**（セットアップ/サービス群）  
-  - **jetson-ab-flash**（A/Bフラッシュ基盤、MenderによるOTA）  
-- **Edge AI on Jetson**（任意：カメラ推論＋GUI連携）
+  Mobile -- "REST" --> AWS
+  AWS -- "REST + Socket.IO" --> LocalSrv
+  LocalSrv <-- "JSON (latest result)" --> EdgeDet
+  LocalSrv <-- "setup/runtime" --> JetsonSetup
+  AdminUI <-- "static served" --> LocalSrv
+```
 
-**データフロー要約**  
-Adalo →（REST）→ signage-aws-nodejs →（WebSocket）→ デバイスの signage-server → 再生  
-ローカル管理は signage-admin-ui へ直接アクセス。更新は Mender（OTA）で段階配信・ロールバック。
+### **データフロー要約**
 
-**設計原則**  
+- **Adalo →（REST）→ signage-aws-nodejs →（WebSocket/Socket.IO）→ signage-server（Device）→ 再生**
+- ローカル管理は **signage-admin-ui** へ直接アクセス（/admin）
+- 端末の OS/アプリ更新は **Mender（OTA）** による段階配信・ロールバック
 
-- フィールド復旧容易性（APフォールバック／A/Bロールバック／再フラッシュ手順の標準化）  
-- 宣言的設定（環境変数・cloud-init・スクリプト化）  
-- オフライン耐性（最低限のローカル機能維持）  
-- セキュリティ最小公開（証明書・最小ポート・権限分離）
+### **要点**
 
-## システム構成図
+- **ACK相関**：`requestId` で往復の一致確認（誤解決防止）
+- **Upload** はクラウド→デバイスへ **Buffer直送**（サイズ上限で防御）
+- **Edge** は最新結果のみを **JSON にアトミック書き込み**
 
-- [📄 PDFで見る](system_container.pdf)
+> ## **2. Deployment / Topology（配置）**
 
-![システム構成図](system_container.png)
+```mermaid
+flowchart TB
+  subgraph Internet
+    User["Mobile (Adalo)"]
+  end
+
+  subgraph Cloud["AWS / Public"]
+    API["signage-aws-nodejs\n:443"]
+  end
+
+  subgraph StoreLAN["Device Network"]
+    Dev["Jetson / RasPi"]
+    LocalSrv["signage-server :80/:3000"]
+    Admin["/admin (SPA)"]
+    Cam["Camera/RTSP"]
+  end
+
+  User -- "HTTPS" --> API
+  API -- "HTTPS/WSS" --> LocalSrv
+  Dev --- LocalSrv
+  Cam -- "RTSP" --> Dev
+  Admin --- LocalSrv
+```
+
+### **前提**
+
+- クラウドは 443/TCP 終端（REST/Socket.IO）
+- 端末はアウトバウンド 443/TCP があれば動作（NAT想定）
+- Admin UI は端末ローカル配信（/admin）
+
+> ## **3. Network & Ports（一覧）**
+
+| スコープ          | プロトコル/ポート        | 方向        | 用途               | 備考                |
+| ------------- | ---------------- | --------- | ---------------- | ----------------- |
+| Cloud         | HTTPS :443       | Inbound   | REST / Socket.IO | ALB/NGINX 等で終端    |
+| Device→Cloud  | HTTPS :443       | Outbound  | 制御・ACK 往復        | NAT想定             |
+| Device Local  | HTTP :80 / :3000 | Local/LAN | signage-server   | どちらか運用ポートに統一可     |
+| Camera→Device | RTSP :554        | Local/LAN | Edge入力           | 任意（未使用構成も可）       |
+| Upload        | HTTP/WS          | 双方向       | 画像/動画転送          | **サイズ上限/拡張子制限**必須 |
+| Admin         | HTTP(S)          | Local/LAN | /admin           | CORS: `origin` 限定 |
+
+**推奨**：`Socket.IO maxHttpBufferSize` と `body size` を明示設定（大容量防御）
+
+> ## **4. Security & Trust（方針）**
+
+- **境界**：Cloud（公開）／Device（店舗LAN）／Mobile（公衆網）
+- **入力防御**：CORS（許可Origin限定）／レート制限／MIME/拡張子/サイズ検証
+- **Secrets**：Release/Gist 用 PAT は**最小スコープ**・定期ローテ
+- **認証**（将来）：`Authorization: Bearer <JWT>` を Cloud API に導入（段階移行）
+- **権限分離**：Upload/Control 系のエンドポイントを**明確に分離し**監査ログ出力
+
+> ## **5. Data Flows（主要フロー）**
+
+### **5.1 Media Upload（Adalo→AWS→Device）**
+
+```mermaid
+sequenceDiagram
+  participant M as Mobile(App)
+  participant C as Cloud(API)
+  participant D as Device(signage-server)
+
+  M->>C: POST /api/uploads/image { deviceId, fileUrl }
+  C->>C: fetchFileBuffer(fileUrl)
+  C->>D: emit(uploadImage {requestId, fileName, fileData})
+  D-->>C: uploadImageResponse {requestId, ok}
+  C-->>M: 200 { success, jetsonResult }
+```
+
+### **5.2 Playlist Update（ACK）**
+
+```mermaid
+sequenceDiagram
+  participant C as Cloud(API)
+  participant D as Device
+
+  C->>D: emit(updatePlaylist {requestId, action,...})
+  D-->>C: playlistUpdateResponse {requestId, updatedPlaylist}
+```
+
+### **5.3 DeviceSettings get/update（ACK）**
+
+```mermaid
+sequenceDiagram
+  participant C as Cloud(API)
+  participant D as Device
+
+  C->>D: getConfig {requestId}
+  D-->>C: configResponse {requestId, autoPlaylist}
+  C->>D: updateConfig {requestId, autoPlaylist}
+  D-->>C: configUpdated {requestId, autoPlaylist}
+```
+
+### **5.4 Volume Toggle（ACK）**
+
+```mermaid
+sequenceDiagram
+  participant C as Cloud(API)
+  participant D as Device
+
+  C->>D: toggleVolume {requestId}
+  D-->>C: volumeStatusChanged {requestId, muted}
+```
+
+> ## **6. 設計原則（Guiding Principles）**
+
+- **現場復旧容易性**：AP フォールバック／A/B ロールバック／再フラッシュ手順の標準化
+- **宣言的設定**：環境変数・cloud-init・スクリプト化で再現性を担保
+- **オフライン耐性**：接続断でも最低限のローカル機能を維持
+- **最小公開・分離**：公開ポート最小化／証明書管理／権限・コンポーネント分離
+
+> ## **7. Ops / SLO & Observability**
+
+### **目標例（初期）**
+
+- API 成功率 ≥ 99.9%（5xx/タイムアウト除く）
+- 重要 ACK レイテンシ p95 ≤ 2.0s（upload除く）
+- 端末オンライン率 ≥ 99.5%
+
+### **監視指標**
+
+- HTTP：リクエスト数/成功率/レイテンシ（p50/p95）
+- Socket：接続数/切断率/ACKタイムアウト数
+- Device：CPU/GPU/温度、JSON更新間隔（Edge検知）
+- Upload：サイズ分布/失敗率
+
+### **運用**
+
+- リリース：vMAJOR.MINOR.PATCH、プレリリース除外
+- ロールバック：前タグの Asset を即時差し替え
+- 監査：管理系エンドポイントは必ず構造化ログ
