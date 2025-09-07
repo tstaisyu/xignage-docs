@@ -5,9 +5,6 @@
 
 > ## **全体像（System Overview）**
 
-- **System Container Diagram (PNG)**  
-  ![System Container](architecture/system_container.png)
-
 ```mermaid
 flowchart LR
   Cloud["Cloud API"] -- HTTPS/WSS --> Device[Device Server]
