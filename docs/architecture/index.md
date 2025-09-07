@@ -10,12 +10,12 @@ flowchart LR
   classDef device fill:#eaffea,stroke:#34a853,color:#0b5b14
   classDef mobile fill:#fff6e5,stroke:#f5a623,color:#6b4e00
 
-  subgraph Cloud
+  subgraph Cloud["Cloud (AWS)"]
     AWS["signage-aws-nodejs\n(HTTP + Socket.IO)"]:::cloud
   end
 
-  subgraph Device
-    JetsonSetup["signage-jetson\n(setup scripts)"]:::device
+  subgraph Device["Device (Pi, Jetson)"]
+    JetsonSetup["signage-jetson\n(bash scripts)"]:::device
     LocalSrv["signage-server\n(Express + Player)"]:::device
     EdgeDet["xignage-edge-detection\n(YOLOX)"]:::device
     AdminUI["signage-admin-ui\n(/admin)"]:::device
@@ -23,11 +23,18 @@ flowchart LR
 
   Mobile["Mobile Apps\n(Adalo)"]:::mobile
 
+  %% Cloud <-> Device
   Mobile -- "REST" --> AWS
   AWS -- "REST + Socket.IO" --> LocalSrv
+  LocalSrv -- "Socket.IO (ACK)" --> AWS
+
+  %% Device internal flows
   LocalSrv <-- "JSON (latest result)" --> EdgeDet
   LocalSrv <-- "setup/runtime" --> JetsonSetup
   AdminUI <-- "static served" --> LocalSrv
+
+  %% LAN direct access from Mobile to Admin UI
+  Mobile -- "HTTP (LAN)" --> AdminUI
 ```
 
 ### **データフロー要約**
