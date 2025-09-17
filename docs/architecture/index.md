@@ -9,9 +9,12 @@ flowchart LR
   classDef cloud fill:#eaf2ff,stroke:#4a90e2,color:#0b3d91
   classDef device fill:#eaffea,stroke:#34a853,color:#0b5b14
   classDef mobile fill:#fff6e5,stroke:#f5a623,color:#6b4e00
+  classDef obs fill:#fff0f5,stroke:#d63384,color:#6b113a
 
   subgraph Cloud["Cloud (AWS)"]
     AWS["signage-aws-nodejs\n(HTTP + Socket.IO)"]:::cloud
+    MetricsDB["Timestream\n(+ Grafana)"]:::obs
+    Logs["CloudWatch Logs"]:::obs
   end
 
   subgraph Device["Device (Pi, Jetson)"]
@@ -19,6 +22,7 @@ flowchart LR
     LocalSrv["signage-server\n(Express + Player)"]:::device
     EdgeDet["xignage-edge-detection\n(YOLOX)"]:::device
     AdminUI["signage-admin-ui\n(/admin)"]:::device
+    Agent["Agents\n(Fluent Bit / metrics sender)"]:::device
   end
 
   Mobile["Mobile Apps\n(Adalo)"]:::mobile
@@ -35,6 +39,13 @@ flowchart LR
 
   %% LAN direct access from Mobile to Admin UI
   Mobile -- "HTTP (LAN)" --> AdminUI
+
+  %% Observability paths
+  Agent -- "metrics (HTTPS JSON)" --> AWS
+  AWS -- "WriteRecords" --> MetricsDB
+  AWS -- "structured logs" --> Logs
+  LocalSrv -- "app logs (JSON)" --> Agent
+  Agent -- "logs (HTTPS JSON)" --> AWS
 ```
 
 ### **データフロー要約**
@@ -91,6 +102,9 @@ flowchart TB
 | Camera→Device | RTSP :554        | Local/LAN | Edge入力           | 任意（未使用構成も可）       |
 | Upload        | HTTP/WS          | 双方向       | 画像/動画転送          | **サイズ上限/拡張子制限**必須 |
 | Admin         | HTTP(S)          | Local/LAN | /admin           | CORS: `origin` 限定 |
+| Device→Cloud | HTTPS :443 | Outbound | メトリクス送信（Device→/metrics/ingest） | API 側で Timestream へ WriteRecords |
+| Device→Cloud | HTTPS :443 | Outbound | ログ送信（Device→/logs/ingest） | API 側で CloudWatch Logs に転送 |
+| Cloud 内部 | AWS SDK | 内部 | Timestream WriteRecords / CloudWatch PutLogEvents | セキュアに IAM 権限で実行 |
 
 **推奨**：`Socket.IO maxHttpBufferSize` と `body size` を明示設定（大容量防御）
 
@@ -181,3 +195,32 @@ sequenceDiagram
 - リリース：vMAJOR.MINOR.PATCH、プレリリース除外
 - ロールバック：前タグの Asset を即時差し替え
 - 監査：管理系エンドポイントは必ず構造化ログ
+
+### **Metrics / Logs（収集・可視化の実装方針）**
+
+**Metrics（メトリクス）**  
+
+- **スタック**：**Amazon Timestream → Grafana**（可視化）
+- **送信経路**：
+  **Device → Cloud(API)**：端末のメトリクスを **HTTPS(JSON)** で **signage-aws-nodejs** の `/metrics/ingest`（仮）へ送信
+  **Cloud(API) → Timestream**：API 側で集約し **WriteRecords**（バルク・一定間隔）
+- **代表メトリクス**：
+  Cloud：`http_requests_total{route,method,status}`, `http_request_duration_seconds_bucket`, `socket_ack_latency_seconds`, `socket_ack_timeout_total`
+  Device：`json_freshness_seconds`（Edge結果の最終更新秒）, `device_online{deviceId}`, `cpu_temp_celsius`, `disk_free_bytes`, `upload_success_ratio`
+- **相関**：`requestId` をラベル/ディメンションに含めて ACK 往復を追跡
+
+**Logs（ログ）**  
+
+- **スタック**：**CloudWatch Logs**
+- **送信経路**：
+  **Cloud(API)**：アプリは **JSON 構造化ログ**を標準出力 → ランタイム/エージェント経由で CloudWatch Logs へ
+  **Device → Cloud(API)**：端末のアプリログは Fluent Bit などで **HTTPS(JSON)** 送信 → Cloud(API) が **PutLogEvents** で CloudWatch Logs へ転送  
+    ※ 端末に AWS 資格情報を置かないための設計（セキュリティ簡素化）
+- **ログ項目（例）**：`ts, level, msg, service, deviceId, requestId, route, status, latency_ms`
+
+**ダッシュボード（初期）**
+
+- Service Health：API 成功率 / p95 レイテンシ / ACK タイムアウト率
+- Device Fleet：オンライン台数 / `json_freshness_seconds` ヒートマップ
+- Content Flow：アップロード成功率・サイズ分布・playlist 操作数
+- Infra：CPU 温度 / Disk 空き / 端末→Cloud ログ送信件数
