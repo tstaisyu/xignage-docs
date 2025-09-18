@@ -40,12 +40,14 @@ flowchart LR
   %% LAN direct access from Mobile to Admin UI
   Mobile -- "HTTP (LAN)" --> AdminUI
 
-  %% Observability paths
-  Agent -- "metrics (HTTPS JSON)" --> AWS
-  AWS -- "WriteRecords" --> MetricsDB
-  AWS -- "structured logs" --> Logs
+  %% Observability (Device → AWS services directly)
   LocalSrv -- "app logs (JSON)" --> Agent
-  Agent -- "logs (HTTPS JSON)" --> AWS
+  Agent -- "PutLogEvents (HTTPS)" --> Logs
+  EdgeDet -- "freshness metric" --> Agent
+  Agent -- "WriteRecords (HTTPS)" --> MetricsDB
+
+  %% Cloud API logs (structured)
+  AWS -- "structured logs" --> Logs
 ```
 
 ### **データフロー要約**
@@ -102,9 +104,9 @@ flowchart TB
 | Camera→Device | RTSP :554        | Local/LAN | Edge入力           | 任意（未使用構成も可）       |
 | Upload        | HTTP/WS          | 双方向       | 画像/動画転送          | **サイズ上限/拡張子制限**必須 |
 | Admin         | HTTP(S)          | Local/LAN | /admin           | CORS: `origin` 限定 |
-| Device→Cloud | HTTPS :443 | Outbound | メトリクス送信（Device→/metrics/ingest） | API 側で Timestream へ WriteRecords |
-| Device→Cloud | HTTPS :443 | Outbound | ログ送信（Device→/logs/ingest） | API 側で CloudWatch Logs に転送 |
-| Cloud 内部 | AWS SDK | 内部 | Timestream WriteRecords / CloudWatch PutLogEvents | セキュアに IAM 権限で実行 |
+| Device→AWS      | HTTPS :443       | Outbound  | **CloudWatch Logs** へ PutLogEvents（Fluent Bit / aws-for-fluent-bit） | 端末に IAM 資格情報（安全管理が前提） |
+| Device→AWS      | HTTPS :443       | Outbound  | **Timestream** へ WriteRecords（メトリクス）   | 時刻同期必須（NTP）                   |
+| Cloud(API)→AWS  | AWS SDK          | 内部      | （必要に応じて）API 自身の構造化ログを CloudWatch へ | IAM 権限で実行                        |
 
 **推奨**：`Socket.IO maxHttpBufferSize` と `body size` を明示設定（大容量防御）
 
@@ -200,23 +202,18 @@ sequenceDiagram
 
 **Metrics（メトリクス）**  
 
-- **スタック**：**Amazon Timestream → Grafana**（可視化）
-- **送信経路**：
-  **Device → Cloud(API)**：端末のメトリクスを **HTTPS(JSON)** で **signage-aws-nodejs** の `/metrics/ingest`（仮）へ送信
-  **Cloud(API) → Timestream**：API 側で集約し **WriteRecords**（バルク・一定間隔）
-- **代表メトリクス**：
-  Cloud：`http_requests_total{route,method,status}`, `http_request_duration_seconds_bucket`, `socket_ack_latency_seconds`, `socket_ack_timeout_total`
-  Device：`json_freshness_seconds`（Edge結果の最終更新秒）, `device_online{deviceId}`, `cpu_temp_celsius`, `disk_free_bytes`, `upload_success_ratio`
-- **相関**：`requestId` をラベル/ディメンションに含めて ACK 往復を追跡
+**スタック**：**Amazon Timestream → Grafana**（可視化）
+**送信経路**：**Device → Timestream（WriteRecords, HTTPS）** へ **直接送信**（Agent 経由）
+**代表メトリクス**：Cloud（API）/ Device の項目は従来どおり
+**相関**：`requestId` をディメンションに含めて ACK 往復を追跡
 
 **Logs（ログ）**  
 
 - **スタック**：**CloudWatch Logs**
 - **送信経路**：
-  **Cloud(API)**：アプリは **JSON 構造化ログ**を標準出力 → ランタイム/エージェント経由で CloudWatch Logs へ
-  **Device → Cloud(API)**：端末のアプリログは Fluent Bit などで **HTTPS(JSON)** 送信 → Cloud(API) が **PutLogEvents** で CloudWatch Logs へ転送  
-    ※ 端末に AWS 資格情報を置かないための設計（セキュリティ簡素化）
-- **ログ項目（例）**：`ts, level, msg, service, deviceId, requestId, route, status, latency_ms`
+  **Device → CloudWatch Logs**：Agent（Fluent Bit / aws-for-fluent-bit）が **PutLogEvents(HTTPS)** で直接送信
+  **Cloud(API)**：アプリの構造化ログをランタイム経由で **CloudWatch Logs** へ（必要に応じて）
+- **形式**：構造化 JSON（`ts, level, msg, service, deviceId, requestId, route, status, latency_ms`）
 
 **ダッシュボード（初期）**
 
