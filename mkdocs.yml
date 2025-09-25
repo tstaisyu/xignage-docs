@@ -51,6 +51,9 @@ nav:
   - Architecture:
       - Overview: architecture/index.md
 #      - Software Stack: architecture/software_stack.md
+  - Hardware:
+      - Overview: hardware/index.md
+      - System Composition: hardware/system_composition.md
   - Packages:
       - Overview: packages/index.md
       - signage-server: 
