@@ -29,6 +29,7 @@ flowchart LR
    YOLOX による人物検知。最新結果を JSON に**アトミック書き込み**。
 5. **モバイル運用** → [Mobile Apps（Adalo）](apps/xignage-adalo/index.md)  
    スマホからのアップロード／操作。まずは招待制の Android / iOS で試験運用。
+6. **ハード要件の確認** → [Hardware / System Composition](hardware/system_composition.md)
 
 > ## **パッケージと役割（Overview）**
 
@@ -42,6 +43,18 @@ flowchart LR
   → [docs](packages/signage-admin-ui/index.md)
 - **xignage-edge-detection**：**人物検知パイプライン**（YOLOX、将来 OpenFace 連携）  
   → [docs](packages/xignage-edge-detection/index.md)
+
+> ## **ハードウェア（Hardware）**
+
+システムを支える **筐体・電気設計・製造** の情報を集約します。  
+Rev 管理・BOM・CAD への導線をまとめ、ソフト要件（電源・熱・固定）との整合を確認できます。
+
+- **Overview**：章の入口（構成・導線）  
+  → [hardware / Overview](hardware/index.md)
+- **System Composition**：採用ボード（Jetson/RasPi）、電源要件、I/O占有、センサ配置、外形寸法の要点  
+  → [hardware / System Composition](hardware/system_composition.md)
+
+以降、Electrical（電源/配線/BOM）、Mechanical（フレーム/CAD/組立）、Manufacturing（DFM/DFA/公差/ねじ）、Revisions（Rev A/B）を順次拡張予定。
 
 > ## **Release Snapshot（対応バージョン）**
 
