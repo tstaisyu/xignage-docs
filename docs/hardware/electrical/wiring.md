@@ -15,16 +15,54 @@
 ### **概略図（RasPi 4B 構成）**
 
 ```mermaid
+flowchart LR
+  %% Boxes
+  subgraph RPI["Raspberry Pi 4B"]
+    RPI_PWR["Power (USB-C)"]
+    RPI_USB["USB"]
+    RPI_HDMI["micro HDMI"]
+  end
+
+  subgraph MON["18.5 inch Monitor"]
+    MON_PWR["Power (USB-C)"]
+    MON_T["Touch (USB-C)"]
+    MON_V["Video (HDMI)"]
+  end
+
+  MBAT["Mobile Battery\n(12V/5V)"]
+  UPS["UPS / SuperCap"]
+  RPI_USB_EXT["USB A Ext.\n(M/F)"]
+  DONGLE["USB Dongle"]
+
+  %% Power
+  MBAT -->|12V| UPS
+  UPS -->|5V USB-C| RPI_PWR
+  MBAT -->|USB-C 5V| MON_PWR
+
+  %% Signals
+  MON_T -->|to USB-A| RPI_USB
+  MON_V -->|HDMI| RPI_HDMI
+  RPI_USB_EXT -->|Ext.| RPI_USB
+  RPI_USB_EXT -->|USB Dongle| DONGLE
+```
+
+1) **電源系（Power）**
+
+```mermaid
 flowchart TB
-  MBAT["Mobile Battery\n(12V/5V)"] -->|USB-C (5V)| MON["18.5\" Monitor\n(Power)"]
-  MON ---|"USB-C ↔ USB-A"| RPI_USB["RasPi 4B USB (Touch)"]
-  MON --->|"HDMI"| RPI_HDMI["RasPi 4B micro HDMI (Video)"]
+  MBAT["Mobile Battery\n(12V/5V)"] -->|12V| UPS["UPS / SuperCap"]
+  UPS -->|5V USB-C| RPI_PWR["RasPi 4B\nPower (USB-C)"]
+  MBAT -->|USB-C 5V| MON_PWR["18.5 inch Monitor\nPower (USB-C)"]
+```
 
-  MBAT -->|"12V"| UPS["UPS / SuperCap"]
-  UPS -->|"5V (USB-C)"| RPI_PWR["RasPi 4B Power"]
+2) **信号系（Signals）**
 
-  RPI_USB_EXT["USB A Ext.\n(オス/メス)"] --- RPI_USB
-  RPI_USB_EXT --- DONGLE["USB ドングル"]
+```mermaid
+flowchart TB
+  MON_T["18.5 inch Monitor\nTouch (USB-C)"] -->|USB-C to USB-A| RPI_USB["RasPi 4B USB"]
+  MON_V["18.5 inch Monitor\nVideo (HDMI)"] -->|HDMI| RPI_HDMI["RasPi 4B micro HDMI"]
+  RPI_USB_EXT["USB A Ext.\n(M/F)"] -->|Ext.| RPI_USB
+  RPI_USB_EXT -->|USB Dongle| DONGLE["USB Dongle"]
 ```
 
 ## **GPIO 配線（RasPi 4B）**
