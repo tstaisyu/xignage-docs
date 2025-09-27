@@ -26,9 +26,10 @@ CADやBOMの細かな履歴は Onshape / CSV / PDF 側で管理し、ここで�
 
 > **Mechanical/Electrical の Rev 表記**は、機構＝**Mech A/B…**、電気＝**Elec A/B…** のように簡素なレターで管理（詳細は各ページへ）。
 
-## Change log（要点のみ）
+## **Change log（要点のみ）**
 
-### Device Rev A（2025-09-27）
+### **Device Rev A（2025-09-27）**
+
 - 機構: FrontShell/RearCover/BattBox **t1.0** 初版。外形 **440×260×52mm**、質量 **2.4kg（電池除く）**。
 - 電気: DC 19–24V in、5Vレール供給構成の暫定。BOM Rev A で公開。
 - ファーム: signage-aws-nodejs **v1.0.0**, device local server **v1.0.0**（互換性あり）。

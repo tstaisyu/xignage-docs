@@ -46,7 +46,7 @@ flowchart LR
   RPI_USB_EXT -->|USB Dongle| DONGLE
 ```
 
-1) **電源系（Power）**
+### 1) **電源系（Power）**
 
 ```mermaid
 flowchart TB
@@ -55,7 +55,7 @@ flowchart TB
   MBAT -->|USB-C 5V| MON_PWR["18.5 inch Monitor\nPower (USB-C)"]
 ```
 
-2) **信号系（Signals）**
+### 2) **信号系（Signals）**
 
 ```mermaid
 flowchart TB

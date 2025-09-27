@@ -200,14 +200,14 @@ sequenceDiagram
 
 ### **Metrics / Logs（収集・可視化の実装方針）**
 
-**Metrics（メトリクス）**  
+#### 1) **Metrics（メトリクス）**  
 
 **スタック**：**Amazon Timestream → Grafana**（可視化）
 **送信経路**：**Device → Timestream（WriteRecords, HTTPS）** へ **直接送信**（Agent 経由）
 **代表メトリクス**：Cloud（API）/ Device の項目は従来どおり
 **相関**：`requestId` をディメンションに含めて ACK 往復を追跡
 
-**Logs（ログ）**  
+#### 2) **Logs（ログ）**  
 
 - **スタック**：**CloudWatch Logs**
 - **送信経路**：
@@ -215,7 +215,7 @@ sequenceDiagram
   **Cloud(API)**：アプリの構造化ログをランタイム経由で **CloudWatch Logs** へ（必要に応じて）
 - **形式**：構造化 JSON（`ts, level, msg, service, deviceId, requestId, route, status, latency_ms`）
 
-**ダッシュボード（初期）**
+#### 3) **ダッシュボード（初期）**
 
 - Service Health：API 成功率 / p95 レイテンシ / ACK タイムアウト率
 - Device Fleet：オンライン台数 / `json_freshness_seconds` ヒートマップ
