@@ -59,6 +59,7 @@ nav:
           - BOM (Rev A): hardware/electrical/bom_rev_a.md
       - Mechanical:
           - Frame Overview: hardware/mechanical/frame_overview.md
+      - Revisions (Baseline): hardware/revisions.md
   - Packages:
       - Overview: packages/index.md
       - signage-server: 
