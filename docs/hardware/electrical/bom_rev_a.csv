@@ -1,0 +1,39 @@
+﻿,,,,,原価上限,原価下限,,
+,原価計算=>,,,,0,0,,
+,参考) Xignage-Lite,,◯,,52430,49330,,
+,参考) Xignage-Pro,,,◯,92720,89720,,
+,,,,,,,,
+カテゴリ,商品名,選択,,,単価(上限),単価(上限),単位,販売ページ
+,,,,,,,,
+ボード,JetsonOrinNano DevKit (SUPER),FALSE,FALSE,TRUE,43890,43890,1,https://ryoyo-direct.jp/shopping/jetson-orinnano/jetson-orinnanosuper
+,Raspberry Pi model 4 B,FALSE,TRUE,FALSE,9700,9700,1,https://www.amazon.co.jp/dp/B09TTNF8BT
+,,,,,,,,
+ボードケース,Raspberry Pi 4 model B ケース,FALSE,FALSE,FALSE,3000,1500,1,
+,JetsonOrinNanoDevKitケース,FALSE,FALSE,FALSE,5500,5500,1,https://www.amazon.co.jp/dp/B0CVZVL47K
+,,,,,,,,
+ディスプレイ,タッチパネルディスプレイ,FALSE,TRUE,TRUE,30000,27000,1,https://www.amazon.co.jp/dp/B0CJJDR6Y9?th=1
+,,,,,,,,
+SSD/SD,SSD MZ-V8V500B,FALSE,FALSE,TRUE,9000,9000,1,https://www.sofmap.com/product_detail.aspx?sku=21987828&gid=&utm_source=aff&utm_medium=kkc&eVar3=LSSPR
+,microSDカード 128GB,FALSE,TRUE,FALSE,2000,2000,1,https://www.amazon.co.jp/dp/B0B2DD66GS
+,,,,,,,, 
+付加回路,スーパーキャパシタUPS,FALSE,TRUE,TRUE,4100,4100,1,https://www.amazon.co.jp/dp/B0DS1C4JNR
+,電源ボタン,,,,,,,
+,ドングル,,,,850,850,1,https://www.yodobashi.com/product/100000001005757592/
+,,,,,,,,
+コネクタ・ケーブル,USB typeCコネクタ,FALSE,TRUE,TRUE,650,650,2,https://www.amazon.co.jp/dp/B0BYDLKFBV
+,HDMIコネクタ,FALSE,TRUE,TRUE,700,700,1,https://www.amazon.co.jp/dp/B0CR32BMCK
+,HDMI-DPケーブル,FALSE,FALSE,TRUE,1300,1300,1,https://www.amazon.co.jp/dp/B015OW3M1W
+,microHDMI-HDMIケーブル 1m,FALSE,TRUE,FALSE,1600,1600,1,https://www.amazon.co.jp/dp/B00HQY7XIU
+,12v-USB typeAトリガーケーブル,FALSE,TRUE,TRUE,1680,1680,1,https://www.sengoku.co.jp/mod/sgk_cart/detail.php?code=EEHD-5WWE#
+,USB typeA-typeCケーブル,FALSE,TRUE,FALSE,600,500,1,https://www.amazon.co.jp/dp/B01E33FF22?
+,USB typeC-typeCケーブル,FALSE,TRUE,TRUE,1400,1400,1,https://www.amazon.co.jp/dp/B0DK78VHTX
+,ドングル用USB typeA(メス)-typeA,FALSE,FALSE,FALSE,,,,
+,,,,,,,,
+バッテリー,CIOモバイルバッテリー20000mAh 65W,FALSE,FALSE,FALSE,9000,9000,1,https://www.amazon.co.jp/dp/B0CHVW87D5
+,CIOモバイルバッテリー10000mAh 30W,FALSE,FALSE,FALSE,4550,4550,1,https://www.amazon.co.jp/dp/B08YRJLNHD
+,,,,,,,,
+,,,,,,,,
+外装(プロト),アルミ枠,FALSE,FALSE,FALSE,,,,
+,背面パネル(2mm/ブラック),FALSE,FALSE,FALSE,,,,
+,フロントアクリル(1mm/透明),FALSE,FALSE,FALSE,,,,
+,側面アルミ板(4面),FALSE,FALSE,FALSE,,,,
