@@ -8,9 +8,9 @@ theme:
   language: ja
   features:
     - navigation.indexes
-extra:
-  copyright:
-    - text: "最終更新: {{ git_revision_date_localized }}"
+#extra:
+#  copyright:
+#    - text: "最終更新: {{ git_revision_date_localized }}"
 
 plugins:
   - search
@@ -32,6 +32,7 @@ plugins:
 extra_javascript:
   - https://unpkg.com/mermaid@10.9.1/dist/mermaid.min.js
   - javascripts/mermaid-init.js
+  - javascripts/last-updated-top.js
 
 markdown_extensions:
   - admonition
