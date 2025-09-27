@@ -55,6 +55,8 @@ nav:
   - Hardware:
       - Overview: hardware/index.md
       - System Composition: hardware/system_composition.md
+      - Electrical:
+          - BOM (Rev A): hardware/electrical/bom_rev_a.md
       - Mechanical:
           - Frame Overview: hardware/mechanical/frame_overview.md
   - Packages:
