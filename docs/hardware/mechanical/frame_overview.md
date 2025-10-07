@@ -1,6 +1,29 @@
-# Frame Overview（Rev v1.0.0）
+# Frame Overview
 
-## **図面（PDF＋サムネ）**
+> 本フレームは **Intercomあり / なし** の2構成があります。  
+
+## **Intercomあり - Rev v1.1.0**
+
+- **Body (Front Shell, t1.0 / Intercom)**
+  
+  [![FrontShell_v1.1.0_icm-on (thumb)](./drawings/FrontShell_v1.1.0_icm-on.png)](./drawings/FrontShell_v1.1.0_icm-on.pdf)
+
+- **Rear Cover (Panel, t1.0 / Intercom)**
+  
+  [![RearCover-Panel_v1.1.0_icm-on (thumb)](./drawings/RearCover-Panel_v1.1.0_icm-on.png)](./drawings/RearCover-Panel_v1.1.0_icm-on.pdf)
+
+- **Battery Box (Top Open, t1.0 / Intercom)**
+  
+  [![BattBox-TopOpen_v1.1.0_icm-on (thumb)](./drawings/BattBox-TopOpen_v1.1.0_icm-on.png)](./drawings/BattBox-TopOpen_v1.1.0_icm-on.pdf)
+
+### **外形・重量**
+
+- 寸法（W × D × H）: **463 × 260 × 54 mm**
+- 重量: **2.7 kg**（バッテリー含まず）
+
+---
+
+## **Intercomなし - Rev v1.0.1**
 
 - **Body (Front Shell, t1.0)**
   
@@ -14,15 +37,15 @@
   
   [![BattBox-TopOpen_t1.0 (thumb)](./drawings/BattBox-TopOpen_t1.0.png)](./drawings/BattBox-TopOpen_t1.0_v1.0.1.pdf)
 
-## **外形・重量**
+### **外形・重量**
 
-- 寸法（W × D × H）: **440 × 260 × 52 mm**
+- 寸法（W × D × H）: **440 × 260 × 53 mm**
 - 重量: **2.4 kg**（バッテリー含まず）
 
 ## **取付・座標系**
 
-- 原点: 底面中央  
-- 軸: +X=前 / +Y=右 / +Z=上  
+- 原点: 前面開口部中央  
+- 軸: +X=右 / +Y=上 / +Z=前  
 - 取り付け穴・ねじ規格: _後で追記_
 
 ## **TODO**
