@@ -16,7 +16,7 @@
   
   [![BattBox-TopOpen_v1.1.0_icm-on (thumb)](./drawings/BattBox-TopOpen_v1.1.0_icm-on.png)](./drawings/BattBox-TopOpen_v1.1.0_icm-on.pdf)
 
-### **外形・重量**
+### **外形・重量（Intercomあり）**
 
 - 寸法（W × D × H）: **463 × 260 × 54 mm**
 - 重量: **2.7 kg**（バッテリー含まず）
@@ -37,7 +37,7 @@
   
   [![BattBox-TopOpen_t1.0 (thumb)](./drawings/BattBox-TopOpen_t1.0.png)](./drawings/BattBox-TopOpen_t1.0_v1.0.1.pdf)
 
-### **外形・重量**
+### **外形・重量（Intercomなし）**
 
 - 寸法（W × D × H）: **440 × 260 × 53 mm**
 - 重量: **2.4 kg**（バッテリー含まず）
