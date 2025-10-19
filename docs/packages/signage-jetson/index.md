@@ -37,10 +37,12 @@ git clone https://github.com/<your-org-or-user>/signage-jetson.git initial
 cd initial
 ```  
 
-#### 4-2. **一括セットアップの実行**  
+#### 4-2. **一括セットアップの実行（`setup_all.sh`）**  
 
 `setup_all.sh` は `scripts/setup/` の `nnn_*.sh` を **番号順**に実行します。**000 のみ** 次の 5 引数（`DEVICE_ID`, `BOARD_TYPE`, `GH_TOKEN`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`）を受け取り、それ以外のスクリプトは **引数なし**で実行されます。  
 （`000_*.sh` は `if [ $# -lt 5 ]; then ... exit 1` で引数数を検証）
+
+- 事前検証：5 つの必須引数（下記）を**起動直後に検証**（未設定で即エラー）
 
 ```bash
 sudo bash setup_all.sh \

@@ -75,6 +75,7 @@ pkg-config
 <!-- markdownlint-disable-next-line MD046 -->
 ```text
 flask==2.3.3
+paho-mqtt==1.6.1
 ```
 
 ## **pip（Jetson）**
