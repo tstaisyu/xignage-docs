@@ -95,6 +95,7 @@ sudo bash setup_all.sh \
 > [**setup(100-199) - アプリ導入・サービス常駐化**](units/setup-100-199.md)
 
 Node.js の指定バージョン導入（見つからない場合は 20.x へフォールバック）、`signage-server` / `signage-admin-ui` を GitHub Releases から取得・SHA256 検証・タイムスタンプ展開（`releases/<TIMESTAMP>`）・`current` 切替、（Raspberry Pi 以外での）`xignage-edge-detection` 導入、`xignage-metrics` の配置・依存導入・systemd 常駐化、さらに AWS IoT 証明書の安全配置と `metrics.env` 更新・サービス再起動による反映までを **冪等（再実行可）**なスクリプト群として提供します。ボード種別に応じて不要処理は安全にスキップします。
+加えて、インターホン機能として **STEP 106** で呼び鈴ボタンの常駐サービス（`call-button.service`）を導入し、**STEP 111** でイベント送信用の証明書配置と `events.env` 生成・必要時のサービス再読み込みを行います。
 
 > [**setup(200-599) - ネットワーク／AP／ブート最適化**](units/setup-200-599.md)
 
