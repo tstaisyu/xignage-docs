@@ -126,7 +126,7 @@ nav:
           - Runtime & Troubleshooting: packages/xignage-edge-detection/runtime.md
           - CI / GitHub Actions: ci/workflows/xignage-edge-detection/ci.md
       - xignage-infra-aws:
-          - Overview: developers/packages/xignage-infra-aws/index.md
+          - Overview: packages/xignage-infra-aws/index.md
 #      - jetson-ab-flash: packages/jetson-ab-flash/index.md
 #  - ADR: adr/index.md
   - CI / Automation:
