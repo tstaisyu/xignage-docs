@@ -114,7 +114,7 @@ npx cdk destroy
 
 ## **Lambda: events-logger（IoTイベント → Adalo送信・再試行投入）**
 
-### **役割**
+> **役割**
 
 1. 入力バリデーション（`deviceId` または `adalo.email|userId` 必須）
 2. 鮮度判定（`MAX_AGE_SEC` 超過は破棄＝`StaleDrop`）
@@ -145,7 +145,7 @@ npx cdk destroy
 }
 ```
 
-### **実装ポイント**
+> **実装ポイント**
 
 - Adalo コレクション解決は API 制約回避のため「全件取得 → ローカルフィルタ」で実施
 - 送信結果は `[adalo:resp]` で `ok/ng`、HTTP ステータス、レスポンス JSON を記録
@@ -153,7 +153,7 @@ npx cdk destroy
 
 ## **Lambda: push-retry-consumer（SQS 再試行）**
 
-### **役割**
+> **役割**
 
 - `xignage-push-retry` からメッセージを受け取り、指数バックオフ＋Jitter で再送
 - 期限管理（`expiresAt` 超過は破棄して `ExpireDrop` を記録）
@@ -176,7 +176,7 @@ npx cdk destroy
 }
 ```
 
-### **実装ポイント**
+> **実装ポイント**
 
 - Backoff は 5s, 10s, 20s… 最大 900s（SQS `DelaySeconds` 上限）＋小さな Jitter
 - バッチ内の部分失敗は `batchItemFailures` で返却（再配信を促す）
