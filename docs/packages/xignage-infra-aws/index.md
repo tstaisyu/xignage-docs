@@ -2,27 +2,41 @@
 
 ## **概要**
 
-**xignage-infra-aws** は、サイネージ端末からの IoT イベントを **AWS IoT ルール → Lambda** に中継し、必要に応じて **Adalo（推奨）／OneSignal（任意）** にプッシュ通知する最小構成の CDK パッケージです。
+**xignage-infra-aws** は、サイネージ端末からの IoT イベントを **AWS IoT ルール → Lambda** に中継し、**Adalo へのプッシュ通知**を行う最小構成の CDK パッケージです。  
 
-> **生成物（本ページのコードから確定しているもの）**  
+- **SQS 再試行キュー**（即時送信失敗やファンアウト超過分のバッファ）
+- **再試行コンシューマ Lambda**（指数バックオフ＋Jitter、期限切れ破棄）
+- **DynamoDB デデュープテーブル**（`event_id` で重複排除）
+- **CloudWatch MetricFilter/Alarm**（成功/失敗・期限切れ・DLQ・遅延検知）
 
-- Lambda 関数：`xignage-events-logger`（Node.js 20 / 128MB / 10s / 1週間ログ保持）
-- AWS Secrets Manager のシークレット参照（読み取り付与）  
-  - `xignage/onesignal` → `ONESIGNAL_SECRET_NAME`  
-  - `xignage/adalo` → `ADALO_SECRET_NAME`
-- AWS IoT Topic Rule：`SELECT * FROM 'xignage/v1/devices/+/events/#'`  
-  → Lambda Invoke（`lambda:InvokeFunction` を IoT に許可）
-- 出力（CloudFormation Output）：`EventsLoggerLambdaName`
+> **生成物**  
 
-!!! note "目的外（現時点）"
-    ネットワーク／VPC、API Gateway、DynamoDB 等の追加リソースは本スタックには含みません。必要になった段階で別途コンストラクトを追加してください。
+- Lambda 関数
+  `xignage-events-logger`（Node.js 20 / 256MB / 15s / ARM64 / ログ保管2週間 / DLQあり / 再試行2）
+  `xignage-push-retry-consumer`（Node.js 20 / 256MB / 15s / ARM64 / ログ保管2週間 / 再試行2 / 予約同時実行=3）
+- SQS
+  `xignage-push-retry`（可視性 45s / 保存 4日 / KMS マネージド暗号化）
+  `xignage-push-retry-dlq`
+- DynamoDB
+  `xignage-events-dedupe`（PK: `id`, TTL: `ttl`, PAY_PER_REQUEST, RETAIN）
+- Secrets Manager 参照
+  `xignage/adalo`（読み取り付与 & `ADALO_SECRET_NAME` を環境変数へ）
+- IoT Topic Rule
+  `SELECT * FROM 'xignage/v1/devices/+/events/#'` → `xignage-events-logger` Invoke
+- CloudWatch
+  DLQ アラーム：`xignage-events-logger-dlq-not-empty`
+  再試行DLQアラーム：`xignage-push-retry-dlq-not-empty`
+  再試行キュー遅延アラーム：`xignage-push-retry-oldest-age-ge-120s`
+  メトリクス（MetricFilter）：`AdaloSuccess` / `AdaloFailure` / `PushRetryEnqueued` / `StaleDrop` / `ExpireDrop`
+- SNS
+  `xignage-ops-alerts`（必要に応じて `ALERT_EMAIL` へ Email サブスクリプション）
 
 ## **リポジトリ構成（抜粋）**
 
 - `bin/xignage-infra-aws.ts` … CDK App エントリ（スタック起動）
-- `lib/xignage-infra-aws-stack.ts` … 主要スタック定義（Lambda / Secrets / IoT ルール / 権限 / 出力）
-- `lambda/events-logger/index.js` … IoT イベントを受けて Adalo/OneSignal に通知
-- `test/*.ts` … Jest（将来の拡張用）
+- `lib/xignage-infra-aws-stack.ts` … 主要スタック定義（IoT / Lambda / SQS / DDB / Secrets / CloudWatch / SNS）
+- `lambda/events-logger/index.js` … IoT イベント処理（Adalo 送信、デデュープ、解決・再試行キュー投入）
+- `lambda/push-retry-consumer/index.js` … 再試行コンシューマ（指数バックオフ・期限判定）
 - `cdk.json`, `tsconfig.json`, `package.json` … 実行/ビルド設定
 
 ## **クイックスタート**
@@ -67,82 +81,106 @@ npx cdk destroy
 ### **bin/xignage-infra-aws.ts**
 
 - `new XignageInfraAwsStack(app, 'XignageInfraAwsStack', { ... })`
-- 既定では**環境非依存**（`env`未指定）。必要に応じて以下のいずれかを有効化できます：
-
-```ts
-// CDK の現在の CLI 設定に従う
-// env: { account: process.env.CDK_DEFAULT_ACCOUNT, region: process.env.CDK_DEFAULT_REGION },
-
-// アカウント/リージョンを固定
-// env: { account: '123456789012', region: 'us-east-1' },
-```
+- 既定では**環境非依存**（`env`未指定）。固定化が必要なら `env` を明示設定。
 
 ### **lib/xignage-infra-aws-stack.ts**
 
-- **Lambda: `xignage-events-logger`**
-  ランタイム：Node.js 20（`lambda.Runtime.NODEJS_20_X`）
-  メモリ：128 MB
-  タイムアウト：10 秒
-  コード配置：`lambda/events-logger`
-  ログ保持：1 週間（`logs.RetentionDays.ONE_WEEK`）
-- **Secrets Manager（参照のみ）**
-  `xignage/onesignal` → Lambda に `grantRead` & 環境変数 `ONESIGNAL_SECRET_NAME` を設定
-  `xignage/adalo` → Lambda に `grantRead` & 環境変数 `ADALO_SECRET_NAME` を設定
-- **IoT Topic Rule**
-  SQL：`SELECT * FROM 'xignage/v1/devices/+/events/#'`
-  アクション：Lambda Invoke（`functionArn: eventsLogger.functionArn`）
-  `ruleDisabled: false`
-- **IoT → Lambda Invoke 権限**
-  `lambda:CfnPermission` で `principal: iot.amazonaws.com`
-  `sourceArn` に **当該 Topic Rule の ARN** を指定（ルール起因に限定）
-- **出力**
-  `CfnOutput('EventsLoggerLambdaName')`：関数名をスタック出力
+- **SQS（再試行系）**  
+  `xignage-push-retry`：可視性45s、保存4日、KMSマネージド暗号化、DLQ=`xignage-push-retry-dlq`（MaxReceive=5）  
+  アラーム：`xignage-push-retry-dlq-not-empty`、`xignage-push-retry-oldest-age-ge-120s`
 
-## **Lambda: events-logger（通知ハンドラ）**
+- **DynamoDB（デデュープ）**  
+  `xignage-events-dedupe`：PK=`id`、TTL=`ttl`、課金=従量、削除ポリシー=RETAIN
+
+- **Lambda**  
+  `xignage-events-logger`：Node.js 20 / 256MB / 15s / ARM64 / ログ2週間 / DLQ / 再試行2  
+  `xignage-push-retry-consumer`：SQS イベントソース（バッチ5）／予約同時実行3
+
+- **Secrets Manager（参照）**  
+  `xignage/adalo` を両 Lambda に付与、`ADALO_SECRET_NAME` を環境変数設定
+
+- **IoT Topic Rule**  
+  SQL：`SELECT * FROM 'xignage/v1/devices/+/events/#'` → `xignage-events-logger` Invoke（`CfnPermission` で IoT 限定）
+
+- **CloudWatch Metrics（MetricFilter）**  
+  `AdaloSuccess`（成功時1）/ `AdaloFailure`（失敗時1）  
+  `PushRetryEnqueued`（再試行投入時1）  
+  `StaleDrop`（鮮度落ちで破棄時1）  
+  `ExpireDrop`（再試行側で期限切れ破棄時1）
+
+- **SNS（通知）**  
+  `xignage-ops-alerts` トピック（`ALERT_EMAIL` があれば Email 購読を自動追加）  
+  上記アラームの通知先として連携
+
+## **Lambda: events-logger（IoTイベント → Adalo送信・再試行投入）**
 
 ### **役割**
 
-- IoT ルール経由で渡ってきたイベントを受け取り、**Adalo**（推奨）または **OneSignal**（任意）に通知を転送します。
+1. 入力バリデーション（`deviceId` または `adalo.email|userId` 必須）
+2. 鮮度判定（`MAX_AGE_SEC` 超過は破棄＝`StaleDrop`）
+3. 重複排除（`event_id` があれば DynamoDB 条件付き Put でクレーム）
+4. 宛先解決（`deviceId` のみの場合、Adalo Collections から Users の Email を解決）
+5. Adalo 送信（成功/失敗ログ、失敗・超過分は SQS へ再試行投入）
 
-### **Secrets と環境変数**
+### **環境変数（主要）**
 
-- Secrets Manager（**名前固定**）
-  `xignage/adalo` → `{ "appId": "...", "apiKey": "..." }`
-  `xignage/onesignal` → `{ "appId": "...", "restApiKey": "..." }`
-- Lambda 環境変数（**スタック側で設定済み**）
-  `ADALO_SECRET_NAME = "xignage/adalo"`
-  `ONESIGNAL_SECRET_NAME = "xignage/onesignal"`
-
-!!! note "シークレットの軽量キャッシュ"
-    プロセス内オブジェクトで Secrets の取得結果を保持し、**コールドスタート後の 2 回目以降**の呼び出しでは Secrets API 呼び出しを省略します。
+- ログ・挙動：`LOG_LEVEL`（既定 `info`）、`HTTP_TIMEOUT_MS`（既定 `3000`）、`MAX_AGE_SEC`（既定 `30`）
+- 宛先解決（Adalo Collections）：`ADALO_DEVICES_COLLECTION_ID`、`ADALO_USERS_COLLECTION_ID`、`ADALO_DEVICE_ID_FIELD`（既定 `deviceId`）、`ADALO_DEVICES_REL_FIELD`（例 `User`）、`ADALO_USERS_EMAIL_FIELD`（既定 `email`）
+- Secrets：`ADALO_SECRET_NAME`（`xignage/adalo`：`{ appId, apiKey }`）
+- 冪等化・再試行：`DEDUPE_TABLE`（例 `xignage-events-dedupe`）、`DEDUPE_TTL_SECONDS`（例 `45`）、`PUSH_MAX_FANOUT`（既定 `50`）、`PUSH_RETRY_QUEUE_URL`（`xignage-push-retry`）
 
 ### **入力イベント（契約の目安）**
 
 ```json
 {
+  "event_id": "optional-unique-id",
+  "ts": 1730340000,
+  "deviceId": "XIG-XXXX-YYYY",
+  "title": "Xignage",
+  "body": "Event received",
   "adalo": {
     "email": "user@example.com",
-    "userId": "123",
-    "title": "Xignage",
-    "body": "Event received"
-  },
-  "push": {
-    "title": "Optional via OneSignal",
-    "message": "Hello",
-    "playerId": "xxxxx",
-    "externalId": "user-123"
+    "userId": "123"
   }
 }
 ```
 
-- **Adalo 通知（推奨ルート）**
-  `adalo.email` **または** `adalo.userId` のいずれか必須（どちらも無い場合は送信しない）
-  タイトル/本文が無い場合は既定値を使用
-- **OneSignal 通知（必要な場合のみ）**
-  `push.playerId` **または** `push.externalId` が存在する場合のみ送信
+### **実装ポイント**
 
-!!! tip "失敗時の挙動（グレースフルデグレード）"
-    シークレット未設定や **audience 不足** の場合は、Lambda は 200 で復帰しつつ **ログに理由を出力**します（致命的エラーで停止しない）。
+- Adalo コレクション解決は API 制約回避のため「全件取得 → ローカルフィルタ」で実施
+- 送信結果は `[adalo:resp]` で `ok/ng`、HTTP ステータス、レスポンス JSON を記録
+- 失敗（429/5xx など）やファンアウト超過分は `PushRetryEnqueued` を計測しつつ SQS へ投入
+
+## **Lambda: push-retry-consumer（SQS 再試行）**
+
+### **役割**
+
+- `xignage-push-retry` からメッセージを受け取り、指数バックオフ＋Jitter で再送
+- 期限管理（`expiresAt` 超過は破棄して `ExpireDrop` を記録）
+- 4xx（429 以外）は恒久エラーとして破棄、429 は `Retry-After` を考慮
+
+### **メッセージ形式（例）**
+
+```json
+{
+  "type": "adalo_push_retry",
+  "at": "2025-10-31T12:00:00.000Z",
+  "item": {
+    "email": "user@example.com",
+    "title": "Xignage",
+    "body": "Event received",
+    "deviceId": "XIG-XXXX-YYYY",
+    "ts": 1730340000,
+    "expiresAt": 1730340030
+  }
+}
+```
+
+### **実装ポイント**
+
+- Backoff は 5s, 10s, 20s… 最大 900s（SQS `DelaySeconds` 上限）＋小さな Jitter
+- バッチ内の部分失敗は `batchItemFailures` で返却（再配信を促す）
+- 大量メールはチャンク分割し段階的に再投入
 
 ## **IoT ルール**
 
@@ -155,13 +193,9 @@ npx cdk destroy
 
 ## **パラメータ & 環境**
 
-- **CDK の環境（env）**
-  既定：未指定（環境非依存テンプレートを生成）
-  固定が必要なら `bin/` 側で `env` を明示設定
-- **Secrets**
-  名前は **`xignage/onesignal`**, **`xignage/adalo`**（変更したい場合はスタック/コードの両方を更新）
-- **Lambda 環境変数**
-  `ONESIGNAL_SECRET_NAME`, `ADALO_SECRET_NAME`（スタックで自動付与）
+- CDK の環境（env）：既定は未指定（環境非依存テンプレート）。必要に応じて `bin/` で明示
+- Secrets：`xignage/adalo`（両 Lambda に `grantRead` 済／環境変数 `ADALO_SECRET_NAME` を付与）
+- SNS 通知先：`ALERT_EMAIL` を与えると `xignage-ops-alerts` に Email 購読を自動追加
 
 ## **運用（Operations）**
 
@@ -174,6 +208,7 @@ npx cdk deploy
 ```
 
 - 反映後、CloudFormation Output の EventsLoggerLambdaName で関数名を確認できます。
+- アラームは `xignage-ops-alerts` に通知されます（Email 購読を設定した場合）。
 
 ### **ロールバック/削除**
 
@@ -188,29 +223,20 @@ npx cdk destroy
 
 ## **可観測性（Observability）**
 
-- **ログ**
-  CloudWatch Logs：保持期間 **1 週間**
-  Adalo/OneSignal の API レスポンス（HTTP ステータス・JSON）を **構造化で記録**
-- **推奨**
-  送信成功/失敗件数のメトリクス化、アラート（SNS/ChatOps）連携
+- ログ：両 Lambda とも保管 2 週間。代表ログは `[iot-event]`、`[adalo:resp]`、`[push-retry] enqueued`、`[stale] drop`、`[retry-consumer][expire] drop`
+- メトリクス（MetricFilter）：`Xignage/Push/AdaloSuccess`、`AdaloFailure`、`PushRetryEnqueued`、`StaleDrop`、`ExpireDrop`
+- アラーム：`xignage-events-logger-dlq-not-empty`、`xignage-push-retry-dlq-not-empty`、`xignage-push-retry-oldest-age-ge-120s`
 
 ## **トラブルシューティング**
 
-- **`AccessDenied`（Secrets 読取）**  
-  Lambda に `grantRead` があるか、対象アカウント/リージョンのシークレット名が一致しているか確認。
-- **`AccessDenied`（IoT → Lambda Invoke）**  
-  `lambda:CfnPermission` の `sourceArn` が **該当 Topic Rule の ARN** になっているか確認。
-- **通知が届かない**  
-  入力イベントの **audience** が不足（Adalo: `email` or `userId`、OneSignal: `playerId` or `externalId`）
-  シークレット未設定（ログに `[adalo] secret missing` などが出力）
-- **Lambda が起動しない**  
-  端末の Publish トピックが `xignage/v1/devices/+/events/#` に一致しているか確認。
+- `AccessDenied（Secrets 読取）`：両 Lambda に `grantRead(xignage/adalo)` が付与され、`ADALO_SECRET_NAME` が一致しているか
+- `AccessDenied（IoT → Lambda Invoke）`：`CfnPermission` の `sourceArn` が該当 Topic Rule の ARN か
+- Adalo へ届かない：`adalo.email|userId` 不足／`deviceId` からの解決 0 件／429・5xx は再試行へ、429 以外の 4xx は恒久エラー
+- 再試行が詰まる：遅延アラームや DLQ の増加を確認（キュー権限やネットワークを点検）
+- 重複通知：`event_id` の付与と `DEDUPE_TTL_SECONDS` の妥当性を確認
 
 ## **FAQ**
 
-- **環境（dev/stg/prod）をどう分ける？**  
-  `bin/` 側で `env` を明示、もしくは `context`/タグでリージョン・アカウントを切り替えます。
-- **OneSignal を無効化したい**  
-  端末イベントから `push` セクションを送らない／Lambda コードの該当ブロックを除去。スタックから `xignage/onesignal` 参照も削除可能です。
-- **Secrets 名を変えたい**  
-  スタック（`fromSecretNameV2` / `addEnvironment`）と Lambda コード（環境変数参照）を同時に更新します。
+- 環境（dev/stg/prod）の分離：`bin/` で `env` を明示、または `context`/タグ運用で切替
+- メール宛先の自動解決を無効化：イベントに `adalo.email` または `adalo.userId` を直接含める
+- 再試行の上限・間隔：キュー可視性、コンシューマのバッチサイズ、指数バックオフ関数、`MAX_AGE_SEC` を調整
