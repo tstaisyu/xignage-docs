@@ -39,8 +39,8 @@ cd initial
 
 #### 4-2. **一括セットアップの実行（`setup_all.sh`）**  
 
-`setup_all.sh` は `scripts/setup/` の `nnn_*.sh` を **番号順**に実行します。**000 のみ** 次の 5 引数（`DEVICE_ID`, `BOARD_TYPE`, `GH_TOKEN`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`）を受け取り、それ以外のスクリプトは **引数なし**で実行されます。  
-（`000_*.sh` は `if [ $# -lt 5 ]; then ... exit 1` で引数数を検証）
+`setup_all.sh` は `scripts/setup/` の `nnn_*.sh` を **番号順**に実行します。**000 のみ** 次の **5 必須引数**（`DEVICE_ID`, `BOARD_TYPE`, `GH_TOKEN`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`）と、**6つ目の任意引数** **`[ASSUME_ROLE_ARN]`** を受け取ります。
+（`000_*.sh` は `if [ $# -lt 5 ]; then ... exit 1` で必須引数数を検証。`ASSUME_ROLE_ARN` は **引数 > 環境変数 > sample > 既定値** の優先度で解決されます）
 
 - 事前検証：5 つの必須引数（下記）を**起動直後に検証**（未設定で即エラー）
 
@@ -50,15 +50,25 @@ sudo bash setup_all.sh \
   <BOARD_TYPE> \
   <GH_TOKEN> \
   <AWS_ACCESS_KEY_ID> \
-  <AWS_SECRET_ACCESS_KEY>
+  <AWS_SECRET_ACCESS_KEY> \
+  [ASSUME_ROLE_ARN]
 
-# 例
+# 例（任意引数なし：自動解決）
 sudo bash setup_all.sh \
   XIG-JON-000 \
   jetsonorinnano \
   ghp_xxxxxxxxxxxxxxxxxxxxx \
   AKIAxxxxxxxxxxxxxxxx \
   wJalrXUtnFEMI/K7MDENG/bPxRfiCYxxxxxxxx
+
+# 例（任意引数あり：明示指定）
+sudo bash setup_all.sh \
+  XIG-JON-000 \
+  jetsonorinnano \
+  ghp_xxxxxxxxxxxxxxxxxxxxx \
+  AKIAxxxxxxxxxxxxxxxx \
+  wJalrXUtnFEMI/K7MDENG/bPxRfiCYxxxxxxxx \
+  arn:aws:iam::123456789012:role/iot-provisioner-role
 ```  
 
 !!! note "注意"
@@ -68,13 +78,14 @@ sudo bash setup_all.sh \
 
 #### 4-3. **引数の意味**  
 
-| 引数                      | 例                               | 説明                            |
-| ----------------------- | ------------------------------- | ----------------------------- |
-| `DEVICE_ID`             | `XIG-JON-000`                   | 端末識別子（監視・ログ・ホスト名整合に使用）        |
-| `BOARD_TYPE`            | `jetsonorinnano`／`raspberrypi4` | ボード種別（Jetson / Pi の分岐・最適化）    |
-| `GH_TOKEN`              | `ghp_xxx...`                    | GitHub PAT（Releases 取得・検証に使用） |
-| `AWS_ACCESS_KEY_ID`     | `AKIA...`                       | AWS アクセスキー ID                 |
-| `AWS_SECRET_ACCESS_KEY` | `wJalrXUtnF...`                 | AWS シークレットアクセスキー（機密）          |
+| 引数                      | 例                                                     | 説明                                                                                                               |
+| ----------------------- | ----------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `DEVICE_ID`             | `XIG-JON-000`                                         | 端末識別子（監視・ログ・ホスト名整合に使用）                                                                                           |
+| `BOARD_TYPE`            | `jetsonorinnano`／`raspberrypi4`                       | ボード種別（Jetson / Pi の分岐・最適化）                                                                                       |
+| `GH_TOKEN`              | `ghp_xxx...`                                          | GitHub PAT（Releases 取得・検証に使用）                                                                                    |
+| `AWS_ACCESS_KEY_ID`     | `AKIA...`                                             | AWS アクセスキー ID                                                                                                    |
+| `AWS_SECRET_ACCESS_KEY` | `wJalrXUtnF...`                                       | AWS シークレットアクセスキー（機密）                                                                                             |
+| `ASSUME_ROLE_ARN`（任意）   | `arn:aws:iam::123456789012:role/iot-provisioner-role` | **任意引数**。未指定時は **引数 > 環境変数 > `signage.env.sample` > 既定値** の順で解決し、`/etc/signage/signage.env` に出力（STEP 000 / 111）。 |
 
 #### 4-4. **依存パッケージ（ `deps` ）**  
 
@@ -95,7 +106,7 @@ sudo bash setup_all.sh \
 > [**setup(100-199) - アプリ導入・サービス常駐化**](units/setup-100-199.md)
 
 Node.js の指定バージョン導入（見つからない場合は 20.x へフォールバック）、`signage-server` / `signage-admin-ui` を GitHub Releases から取得・SHA256 検証・タイムスタンプ展開（`releases/<TIMESTAMP>`）・`current` 切替、（Raspberry Pi 以外での）`xignage-edge-detection` 導入、`xignage-metrics` の配置・依存導入・systemd 常駐化、さらに AWS IoT 証明書の安全配置と `metrics.env` 更新・サービス再起動による反映までを **冪等（再実行可）**なスクリプト群として提供します。ボード種別に応じて不要処理は安全にスキップします。
-加えて、インターホン機能として **STEP 106** で呼び鈴ボタンの常駐サービス（`call-button.service`）を導入し、**STEP 111** でイベント送信用の証明書配置と `events.env` 生成・必要時のサービス再読み込みを行います。
+加えて、インターホン機能として **STEP 106** で呼び鈴ボタンの常駐サービス（`call-button.service`）を導入し、**STEP 111/112** でイベント送信用の証明書配置と `events.env` 生成・必要時のサービス再読み込みを行います。
 
 > [**setup(200-599) - ネットワーク／AP／ブート最適化**](units/setup-200-599.md)
 
@@ -108,6 +119,15 @@ Node.js の指定バージョン導入（見つからない場合は 20.x へフ
 > [**setup(900-999) - ブート見た目／キオスク化／電源・権限**](units/setup-900-999.md)
 
 Jetson の `extlinux.conf`／Raspberry Pi の `config.txt`・`cmdline.txt` を調整して起動ログ/スプラッシュを抑制し、`tty1` 自動ログイン → Openbox + Chromium の **キオスク起動**（Jetson は Xorg の回転・解像度、Pi は KMS オーバレイ）を設定、GDM を停止します。音声は **HDMI を既定 sink** に固定。Pi 向けに **ブートローダ電源設定（halt で電源断／GPIO wake）** と **GPIO18 の電源断制御**を提供。運用用に **sudoers ドロップイン**（電源・更新・Wi-Fi リセット）を最小権限で追加し、適用済みパッチ識別の **パッチマーカー** も生成します。すべて **冪等（再実行可）**で、ボード判定により不要処理は安全にスキップします（自動ログインのセキュリティに注意）。
+
+---
+
+## **IO（ボタン／ToF／イベント）**
+
+> [**IO コンポーネント仕様 — `components/io.md`**](components/io.md)
+
+物理ボタンの**デバウンス**と**LED制御**、ToF の **mm 正規化**を含む距離読取、AWS IoT への **MQTT/TLS 送信**、および常駐アプリ（**50Hz ループ／スナップショット** `io_state.json`／**イベントログ JSONL**）の仕様を集約。
+実装は **BCM 番号を優先**（後方互換で BOARD 変数も受理）。
 
 ---
 
@@ -127,9 +147,9 @@ Jetson の `extlinux.conf`／Raspberry Pi の `config.txt`・`cmdline.txt` を�
 
 ### **インフラ（AWS IoT 証明書）**
 
-> [**AWS IoT 証明書作成 — `create_iot.sh`**](infra/aws-iot-certs.md)
+> [**AWS IoT デバイス単位のプロビジョニング — `create_device_thing.sh` + `get_iot_creds.sh`**](infra/aws-iot-certs.md)
 
-開発機で Thing/Policy/証明書を生成し、セットアップ前に端末へ配布する手順と注意点をまとめています。
+開発機で **Thing/証明書/ポリシー付与**をデバイス単位で行い、`/tmp/aws-iot-certs` に出力 → 端末側の **112_write_events_iot_env.sh** が安全配置します。
 
 ---
 
