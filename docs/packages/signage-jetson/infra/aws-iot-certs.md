@@ -1,133 +1,171 @@
-# AWS IoT 証明書作成ツール — `scripts/infra/create_iot.sh`
+# AWS IoT デバイス単位のプロビジョニング — `scripts/infra/create_device_thing.sh` + `get_iot_creds.sh`
 
-開発機で **AWS IoT の Thing / Policy / 証明書一式**を作成し、生成した **`cert.pem` / `public.key` / `private.key` / `AmazonRootCA1.pem`** を **セットアップ前に端末へコピー**するためのスクリプトです。
+開発機で **デバイスごとの Thing 作成／証明書発行／ポリシー付与**を行い、生成した  
+**`cert.pem` / `private.key` / `AmazonRootCA1.pem`** を **セットアップ前に端末へコピー**するための新フローです。  
+**旧 `create_iot.sh` は非推奨（ドキュメント削除対象）**とし、本ページの2スクリプトへ移行します。
 
-!!! tip "権限エラーになる場合"
-    出力先が `/etc/aws-iot/certs` 固定のため、**root 権限で実行**してください。
-    あるいはスクリプト内の `CERT_DIR` を一時的に `./out/certs` など**ユーザー書込可能なパス**に変更して実行→後で端末へコピーする運用も可。
+!!! tip "出力先と権限"
+    本フローでは出力先が **`/tmp/aws-iot-certs`**（ユーザー書き込み可）です。  
+    生成された鍵類には自動で **0600** が設定されます。
+
+---
 
 ## **前提**
 
-- AWS 資格情報（`aws configure` でセット済み、もしくは環境変数）
+- AWS 資格情報
+  - 直接実行（既存プロファイル/環境変数）**または**
+  - `get_iot_creds.sh` による **AssumeRole**（一時クレデンシャル）
 - 必要 IAM 権限
-  `sts:GetCallerIdentity`
-  `iot:CreateThing`, `iot:CreatePolicy`, `iot:CreateKeysAndCertificate`
-  `iot:AttachPolicy`, `iot:AttachThingPrincipal`
-  `iot:DescribeEndpoint`
+  - `sts:AssumeRole`（AssumeRole を使う場合）
+  - `sts:GetCallerIdentity`
+  - `iot:CreateThing`, `iot:CreateKeysAndCertificate`
+  - `iot:AttachPolicy`, `iot:AttachThingPrincipal`
+  - `iot:DescribeEndpoint`
+- 依存コマンド：`aws`, `jq`, `curl`
 
-## **固定値（スクリプト内）**
+---
 
-- `THING_NAME="xignage-metrics"`
-- `POLICY_NAME="${THING_NAME}-policy"`
-- `REGION="ap-northeast-1"`
-- `CERT_DIR="/etc/aws-iot/certs"`
+## **スクリプト概要**
 
-> ※ 運用に合わせて Thing 名の命名規則（例：シリアル/UUID）を設ける場合は、実行前に上記を編集してください。
+### `scripts/infra/get_iot_creds.sh`（任意）
+
+- 役割：`ASSUME_ROLE_ARN` を使って **一時クレデンシャルを export** します。
+- 既定リージョン：`ap-northeast-1`
+- MFA 対応：`ASSUME_MFA_SERIAL` と `ASSUME_MFA_CODE` を与えると MFA で Assume
+
+**使い方：**
+
+```bash
+# 例）AssumeRole +（必要なら MFA）
+export ASSUME_ROLE_ARN=arn:aws:iam::123456789012:role/iot-provisioner-role
+# export ASSUME_MFA_SERIAL=arn:aws:iam::123456789012:mfa/you
+# export ASSUME_MFA_CODE=123456
+
+source scripts/infra/get_iot_creds.sh
+aws sts get-caller-identity   # 有効性チェック
+```
+
+> `ASSUME_ROLE_ARN` が未設定、または `-` の場合は **何もしません**（外部で設定済みの資格情報を使用）。
+
+---
+
+### `scripts/infra/create_device_thing.sh`
+
+- 役割：**デバイス単位**で Thing を作成し、**鍵/証明書の発行・ポリシー付与・Thing へのアタッチ**を行います。
+- 出力：`/tmp/aws-iot-certs/{cert.pem, private.key, AmazonRootCA1.pem}`
+- 既定ポリシー名：`xignage-device-events-publish-v1`（第2引数で上書き可）
+
+> **使い方**
+
+```bash
+# DEVICE_ID は必須、POLICY_NAME は任意
+scripts/infra/create_device_thing.sh <DEVICE_ID> [POLICY_NAME]
+
+# 例
+scripts/infra/create_device_thing.sh XIG-R4B-VAH
+scripts/infra/create_device_thing.sh XIG-R4B-VAH my-device-policy-v2
+```
+
+> **出力例**
+
+```csharp
+[create] Thing: XIG-R4B-VAH
+[create] Keys & certificate (active)
+[attach] Policy: xignage-device-events-publish-v1
+[attach] Cert to Thing
+[save] Writing certs to /tmp/aws-iot-certs
+[info] Endpoint: xxxxxxxx-ats.iot.ap-northeast-1.amazonaws.com
+[ok] Done. Files in: /tmp/aws-iot-certs
+```
 
 ## **処理の流れ**
 
-1) **前提コマンド確認**
-   - `aws` が無ければ **AWS CLI v2** を自動導入（`aarch64`/`x86_64` をアーキ判定）
-   - `jq` が無ければエラー終了（導入案内を表示）
+1) **（任意）AssumeRole 実行**  
+   `get_iot_creds.sh` を `source` して一時クレデンシャルを export（`ASSUME_ROLE_ARN` 指定時）。
 
-2) **アカウント情報取得**
-   - `aws sts get-caller-identity` で **Account ID** を取得
-   - リージョンは **`ap-northeast-1`** を使用
+2) **Thing の作成**  
+   `aws iot create-thing --thing-name "<DEVICE_ID>"`  
+   既存の場合はスキップ（警告表示のみ）。
 
-3) **Thing 作成**
-   - `aws iot create-thing --thing-name "$THING_NAME"`（存在時はスキップ）
+3) **鍵/証明書の発行（有効化）**  
+   `aws iot create-keys-and-certificate --set-as-active`  
+   返却 JSON から **certificateArn / certificatePem / privateKey** を取得。
 
-4) **ポリシー作成**
-   - 次の内容で `policy.json` を動的生成
+4) **ポリシー付与 & Thing へアタッチ**  
+   - `aws iot attach-policy --policy-name "<POLICY>" --target "<CERT_ARN>"`
+   - `aws iot attach-thing-principal --thing-name "<DEVICE_ID>" --principal "<CERT_ARN>"`
 
-   ```bash
-   {
-       "Version": "2012-10-17",
-       "Statement": [
-           { "Effect": "Allow", "Action": ["iot:Connect"], "Resource": "*" },
-           {
-           "Effect": "Allow",
-           "Action": ["iot:Publish","iot:Subscribe","iot:Receive"],
-           "Resource": "arn:aws:iot:REGION:ACCOUNT_ID:topic/xignage/metrics/*"
-           }
-       ]
-   }
-   ```
+5) **ルート CA の取得**  
+   `AmazonRootCA1.pem` を amazontrust.com からダウンロード（`curl` 再試行つき）。
 
-   - `aws iot create-policy --policy-name "$POLICY_NAME"`（**既存でもOK**：stderr 抑止・`|| true`）
+6) **証明書/鍵の保存**  
+   `/tmp/aws-iot-certs/` に `cert.pem`, `private.key`, `AmazonRootCA1.pem` を保存（**0600**）。
 
-5) **証明書・鍵の発行**
-   - `aws iot create-keys-and-certificate --set-as-active`
-   - `cert.pem` / `public.key` / `private.key` を **`$CERT_DIR`** に保存
-   - 返却 JSON から **証明書 ARN** を取得
+7) **データエンドポイントの取得**  
+   `aws iot describe-endpoint --endpoint-type iot:Data-ATS` の結果を表示。
 
-6) **関連付け**
-   - `attach-policy`（Policy → Certificate）
-   - `attach-thing-principal`（Thing ↔ Certificate）
-
-7) **データエンドポイント取得**
-   - `aws iot describe-endpoint --endpoint-type iot:Data-ATS` を実行し、**ATS エンドポイント**を取得
-
-8) **ルート CA 取得 / 後片付け**
-   - `AmazonRootCA1.pem` をダウンロードして保存
-   - 一時ファイル（`cert.json`, `policy.json`）を削除
-   - 完了メッセージを出力
-
-!!! warning "セキュリティ（鍵の取り扱い）"
-    `private.key` は **厳格なパーミッション（600）** を設定し、**必要最小限の権限**で保管してください。  
-    端末へ配布後は、開発機側の秘密鍵を**消去**する運用を推奨します。
-    ```bash
-    sudo chown root:root /etc/aws-iot/certs/private.key /etc/aws-iot/certs/cert.pem
-    sudo chmod 600        /etc/aws-iot/certs/private.key
-    ```
+---
 
 ## **端末へのコピー例**
 
-A) 直接 scp（権限付き）
+A) **scp で一時転送 → 112 で安全配置（推奨）**
 
 ```bash
-# 端末側：事前に作成
-ssh ubuntu@DEVICE 'sudo mkdir -p /etc/aws-iot/certs && sudo chown root:root /etc/aws-iot/certs'
+# 開発機 → 端末へ一時コピー
+scp /tmp/aws-iot-certs/* ubuntu@DEVICE:/tmp/
 
-# 開発機 → 端末へコピー
-sudo scp /etc/aws-iot/certs/* ubuntu@DEVICE:/tmp/
-
-# 端末側へ配置・権限設定
-ssh ubuntu@DEVICE 'sudo mv /tmp/* /etc/aws-iot/certs/ && sudo chmod 600 /etc/aws-iot/certs/private.key'
+# 端末側で安全配置（証明書は 112 が所定パスへ設置・権限設定）
+ssh ubuntu@DEVICE 'sudo CREATE_THING=0 bash scripts/setup/112_write_events_iot_env.sh'
 ```
 
-B) 権限を保ったまま tar ストリームで転送
+B) **tar ストリームで転送**
 
 ```bash
-sudo tar -C /etc/aws-iot/certs -czf - . \
-  | ssh ubuntu@DEVICE 'sudo tar -C /etc/aws-iot/certs -xzf - && sudo chmod 600 /etc/aws-iot/certs/private.key'
+tar -C /tmp/aws-iot-certs -czf - . \
+  | ssh ubuntu@DEVICE 'sudo tar -C /tmp -xzf - && sudo CREATE_THING=0 bash scripts/setup/112_write_events_iot_env.sh'
 ```
+
+> `112_write_events_iot_env.sh` は `/tmp/aws-iot-certs`（優先）/ `/tmp/events-certs`（フォールバック）を検出し、
+`/etc/signage/events-certs/<DEVICE_ID>/` に **差分更新 + 厳格な権限**で配置します。
+
+---
 
 ## **運用ノート / 注意点**
 
-- **再実行で証明書が増える**  
-  本スクリプトは**毎回新規の証明書**を発行します。不要になった証明書は  
-  `update-certificate --new-status INACTIVE` → `delete-certificate` で**整理**してください。
-- **Topic の最小権限**  
-  現行ポリシーは `xignage/metrics/*` のみを許可。要件に応じて **Topic 名** を見直し、**過剰許可を避ける**。
-- **複数端末スケール**  
-  量産時は **Thing 名を端末ごとに一意**にし、共通ポリシーをアタッチする設計が一般的。命名規則を事前に決める。
-- **出力先パス**  
-  既定は `/etc/aws-iot/certs`。sudo 実行が前提。ユーザー領域に一時作成→端末へ転送→**端末側で権限設定**の流れでも可。
-- **資格情報/IAM**  
-  実行環境の AWS 資格情報と **IoT 管理権限**（Create/Attach/Describe 系）が必要。
+- **デバイスごとに一意な Thing 名**  
+  `DEVICE_ID` を Thing 名として使用（例：`XIG-<SITE>-<SEQ>`）。命名規則を固定化してください。
+- **証明書のライフサイクル**  
+  再発行で証明書は増えます。不要なものは `INACTIVE` → `delete-certificate` で整理を。
+- **最小権限ポリシー**  
+  送信先 Topic に応じてポリシーを見直し、過剰許可を避けてください。
+- **権限/所有者**  
+  端末側では `/etc/signage/events-certs/<DEVICE_ID>/` に配置し、  
+  ディレクトリ `0700`、`cert.pem`/`private.key` `0600`、`AmazonRootCA1.pem` `0644`、所有者 `ubuntu:ubuntu`。
+- **リージョン**  
+  既定は `ap-northeast-1`。必要に応じて環境変数やプロファイルで変更。
+
+---
 
 ## **トラブルシュート**
 
 - `Unable to locate credentials`（資格情報なし）  
-  → `aws configure` で設定、または環境変数（`AWS_ACCESS_KEY_ID` 等）を確認。
+  → `aws configure` または `get_iot_creds.sh` で一時クレデンシャルを取得。
 - `AccessDeniedException`（権限不足）  
-  → 実行ユーザー/ロールの **IoT 権限**（CreateThing/Attach*/CreateKeysAndCertificate 等）を付与。
+  → 実行ロール/ユーザーに IoT 管理権限（Create/Attach/Describe など）を付与。
 - `jq: command not found`  
   → `sudo apt-get install -y jq`
-- `/etc/aws-iot/certs` で **Permission denied**  
-  → `sudo` で実行、または一時的に出力先をユーザー領域へ変更してから移送。
-- 証明書が多すぎる/どれが現用か不明  
-  → `aws iot list-certificates` で確認。不要なものは INACTIVE → 削除。
+- ルート CA 取得失敗  
+  → ネットワーク/Proxy を確認。`curl` のリトライ回数やタイムアウトを調整。
+- 既存の Thing/証明書が混在  
+  → `aws iot describe-thing` / `list-certificates` / `list-thing-principals` で現況確認し、整理。
 - エンドポイント不一致/接続不可  
-  → `aws iot describe-endpoint --endpoint-type iot:Data-ATS` の値を **端末の設定に反映**しているか確認。
+  → `describe-endpoint --endpoint-type iot:Data-ATS` の値を **端末 `events.env`** に反映できているか確認。
+
+---
+
+## **旧フローからの変更点（まとめ）**
+
+- **単一スクリプト → 2段構え**：AssumeRole（任意）＋**デバイス単位の発行/紐付け**に分離  
+- **出力先**：`/etc/aws-iot/certs`（root 想定）→ **`/tmp/aws-iot-certs`**（ユーザー実行可）  
+- **端末側配置**：`112_write_events_iot_env.sh` が **優先 `/tmp/aws-iot-certs`** を検出して厳格権限で配置  
+- **旧 `create_iot.sh`**：**非推奨**（ドキュメント削除）。スクリプトは当面残置する場合でも「Deprecated」注記を付与
