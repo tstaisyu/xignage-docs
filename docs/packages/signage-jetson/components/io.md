@@ -56,7 +56,7 @@
 | `STATE_PATH` | `/run/signage/io_state.json` | スナップショット出力パス |
 | `EVENTS_PATH` | `/var/log/signage/io_events.jsonl` | イベントログ出力パス |
 | `TOF_ENABLE` | `1` | `0/false` で無効化 |
-| `TOF_MODEL` | `auto` | `auto|vl53l0x|vl53l1x|none` |
+| `TOF_MODEL` | `auto` | `auto/vl53l0x/vl53l1x/none` |
 | `TOF_ADDR` / `TOF_BUS` | `0x29` / `1` | I²C アドレス/バス |
 | `TOF_THRESHOLD_MM` | `1200` | 在席しきい値（mm） |
 | `TOF_DISTANCE_MODE` | `2` | 0/1/2 = SHORT/MEDIUM/LONG |
@@ -147,7 +147,7 @@
 
 | 引数 | 既定 | 説明 |
 |---|---:|---|
-| `model` | `"auto"` | `"auto"|"vl53l1x"|"vl53l0x"|"none"` |
+| `model` | `"auto"` | `"auto"/"vl53l1x"/"vl53l0x"/"none"` |
 | `addr` | `0x29` | I²C アドレス |
 | `bus` | `1` | 予備。今後の拡張用 |
 | `log(level,msg)` | なし | ログ関数（例：`info`/`warn`/`error`） |
@@ -242,13 +242,13 @@
 
 - **必須**：特になし（クライアント側で不足分を自動補完）
 - **自動付与（未指定時に埋める）**  
-  | フィールド | 説明 |
-  |---|---|
-  | `event` | イベント種別（引数 `kind` を反映） |
-  | `deviceId` | `EVENTS_THING_NAME` |
-  | `title` / `body` | 既定文言（ENV `ADALO_NOTIFY_TITLE` / `ADALO_NOTIFY_BODY` で上書き可） |
-  | `event_id` | **UUID v4**（冪等性/重複排除向け） |
-  | `ts` | 端末時刻の **epoch 秒（int）** |
+| フィールド | 説明 |
+|---|---|
+| `event` | イベント種別（引数 `kind` を反映） |
+| `deviceId` | `EVENTS_THING_NAME` |
+| `title` / `body` | 既定文言（ENV `ADALO_NOTIFY_TITLE` / `ADALO_NOTIFY_BODY` で上書き可） |
+| `event_id` | **UUID v4**（冪等性/重複排除向け） |
+| `ts` | 端末時刻の **epoch 秒（int）** |
 
 - **任意（Adalo 連携のインライン設定）**  
   `ADALO_ENABLE_INLINE_ADALO=1` かつ `ADALO_NOTIFY_EMAIL` が設定され、かつペイロードに `adalo` が無い場合、  
@@ -279,7 +279,7 @@
 3. **送信**：イベント種別ごとのトピックへ JSON を QoS1 で publish。完了通知を待機。  
 4. **終了**：ループ停止 → 切断。必要に応じて上位で再接続/再試行を実装。
 
-### **運用上の注意**
+### **運用時の注意**
 
 - **時刻同期**：`ts` の信頼性確保のため、端末の NTP 同期を推奨。  
 - **タイトル/本文の既定**：端末側 ENV で上書き可能。運用ポリシーに合わせて管理。  
