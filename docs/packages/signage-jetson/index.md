@@ -122,6 +122,15 @@ Jetson の `extlinux.conf`／Raspberry Pi の `config.txt`・`cmdline.txt` を�
 
 ---
 
+## **Raspberry Pi ベースイメージ**
+
+Raspberry Pi 向けの **OSベースイメージ（SDカードイメージ）** と  
+対応する `signage-jetson` タグ・S3 パスの一覧は以下にまとめています。
+
+- [Raspberry Pi ベースイメージ管理](infra/raspi-images.md)
+
+---
+
 ## **IO（ボタン／ToF／イベント）**
 
 > [**IO コンポーネント仕様 — `components/io.md`**](components/io.md)
