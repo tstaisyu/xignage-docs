@@ -1,6 +1,6 @@
-# Runtime（Server / Middleware / Utils）
+# Runtime（Server / Middleware）
 
-本ページは **サーバ起動・配線（server.js）／共通ミドルウェア／ユーティリティ**を 1 つに集約した実行時ガイドです。  
+本ページは **サーバ起動・配線（server.js）／共通ミドルウェア**をまとめた実行時ガイドです。  
 Routes／Socket／Services と連携し、HTTP と WebSocket を束ねます。
 
 ## **概要**
@@ -8,11 +8,13 @@ Routes／Socket／Services と連携し、HTTP と WebSocket を束ねます。
 - **Express**: JSON 受け取り・API ルーティング  
 - **HTTP Server**: Express をラップして Socket.IO をぶら下げる  
 - **Socket.IO**: `initSocket(server)` 一度だけ初期化 → `getIO()` で参照  
+- **静的配信**: `ADMIN_UI_DIST_DIR` があれば `/admin` に React UI を配信  
 - **エラーハンドラ**: `next(err)` で集約し、`err.status || 500` を返す
 
 ## **起動フロー（server.js）**
 
 1) `.env` 読込（`dotenv`）  
+   `dotenv` は標準の `.env` と `/etc/signage/secret.env` を順に読み込みます。
 
 2) `app = express()` → `express.json()` / `bodyParser.json()`  
 
@@ -26,15 +28,17 @@ Routes／Socket／Services と連携し、HTTP と WebSocket を束ねます。
 
 7) `if (require.main === module)` → `server.listen(PORT)`（既定 3000）
 
-**環境変数**  
+## **環境変数（主要）**
 
-- `PORT` … HTTP リッスンポート（既定 `3000`）  
-- （参考）OpenAI 利用時：`OPENAI_API_KEY` / `OPENAI_MODEL` / `OPENAI_MAX_TOKENS`
-
-**エラー方針**  
-
-- ルート/サービス層で `err.status` を付けて `next(err)`  
-- タイムアウトは **504 相当**で扱うのを推奨（実装が 500 の箇所は置き換え候補）
+- **HTTP/配信**: `PORT`（既定 3000）, `ADMIN_UI_DIST_DIR`
+- **OpenAI**: `OPENAI_API_KEY`, `OPENAI_MODEL`, `OPENAI_MAX_TOKENS`
+- **内部 API**: `INTERNAL_API_TOKEN`
+- **コンテンツ DB**: `CONTENT_DB_SECRET_ARN`
+- **S3**: `CONTENT_BUCKET_NAME`
+- **AWS リージョン**: `AWS_REGION` / `AWS_DEFAULT_REGION`
+- **認可**: `MASTER_USER_EXTERNAL_IDS`
+- **端末ネットワーク**: `WIFI_PRIORITY_INTERFACES`
+- **Doorbell/通話**: `DAILY_API_KEY`, `CALL_UI_BASE_URL`, `DOORBELL_MAX_CALL_DURATION_SEC`
 
 ## **Middleware**
 
@@ -42,38 +46,24 @@ Routes／Socket／Services と連携し、HTTP と WebSocket を束ねます。
 
 `express-validator` の検証結果をチェックし、**400** を返す共通ミドルウェア。
 
-```js
-module.exports = (req, res, next) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
-  next();
-};
-```
+### **humanAuth（`middlewares/humanAuth.js`）**
 
-**適用例**  
+- `requireHumanUser`：`userExternalId` を必須化  
+- `requireCustomerIdForAdminUi`：`customerId` を必須化  
+- `assertUserCanAccessDevice` / `assertUserCanAccessCustomer`：DB 参照でアクセス確認  
+- `requireMasterUser`：`MASTER_USER_EXTERNAL_IDS` による管理者判定
 
-```js
-router.get('/', validators.validateList, validationResult, controller.list);
-```
+### **internalAuth（`middlewares/internalAuth.js`）**
 
-## **utils**
+- `INTERNAL_API_TOKEN` と `x-internal-token` ヘッダを一致確認  
+  （`/api/content/media/thumbnail` 等の内部用）
 
-### **extractFileNameFromUrl（`utils/fileUtils.js`）**
+## **エラー方針**
 
-URL からファイル名のみを安全に抽出（失敗時は `'unknown'`）。
+- ルート/サービス層で `err.status` を付けて `next(err)`  
+- タイムアウトは **504 相当**で扱うのを推奨（実装上 500 の箇所は今後の改善点）
 
-```js
-function extractFileNameFromUrl(fileUrl) {
-  try {
-    return new URL(fileUrl).pathname.split('/').pop() || 'unknown';
-  } catch {
-    return 'unknown';
-  }
-}
-```
+## **補足**
 
-**使用箇所例**  
-
-- `/api/uploads/image|video` … 外部 URL から Buffer 取得後、`<timestamp>-<original>`
+- `/admin` は **静的 UI の配信用**で、React Router のため `/admin/*` を `index.html` にフォールバックします。  
+- サーバは **HTTP + Socket.IO を同一プロセス**で扱います。
