@@ -1,35 +1,70 @@
 # セットアップ（開発/ビルド/配信）
 
-## **概要**
+## 概要
 
 - Vite（React + TS）構成。**ベースパスは `/admin`**。
-- Dev では **バックエンドを `http://localhost:3000`** と想定し、`/api` & `/socket.io` をプロキシ。
+- Dev では **`/api` → `http://localhost:3000`** にプロキシ（`vite.config.ts`）。
+- 本番配信は **`/admin/` ベースの SPA** を静的配信する。
 
-## **使い方（開発）**
+## 開発
 
 ```bash
-# 1) Corepack / pnpm セットアップ（必要に応じて）
 corepack enable
-
-# 2) 依存導入（CI と揃えるなら）
-pnpm install --frozen-lockfile
-
-# 3) 開発サーバ（既定 http://localhost:5173）
+pnpm install
 pnpm dev
 ```
 
-## **前提・環境変数（Vite）**
+- 既定: `http://localhost:5173/admin/`
+- API は Vite プロキシ経由で `http://localhost:3000` に転送
 
-- **キーは `VITE_` 接頭辞が必須**
-- LAN 検知用に `VITE_DEVICE_ID`を使用（`useLanDetect.ts`）
+## テスト
 
-```dotenv
-# .env.development / .env.production の例
-VITE_DEVICE_ID=device-1234
-VITE_API_BASE_URL=http://localhost:8080
+```bash
+pnpm test
 ```
 
-## **Vite 設定（vite.config.ts 抜粋）**
+- Vitest 実行（`vitest run`）
+- 設定は `vite.config.ts` の `test` セクション参照
+
+## ビルド / 配信
+
+```bash
+pnpm build
+pnpm preview
+```
+
+- `dist/` に成果物を生成
+- `pnpm preview` は `dist/` をローカルで配信
+
+### signage-server へコピーする場合
+
+```bash
+pnpm build:server
+```
+
+- `dist/` を `../signage-server/public/admin/` に同期
+- 参照: `signage-admin-ui/package.json`
+
+## 環境変数（Vite）
+
+| 変数名 | 用途 | 参照 |
+| --- | --- | --- |
+| `VITE_SIGNAGE_API_BASE_URL` | API ベース URL（空なら同一オリジン） | `signage-admin-ui/src/page/*.tsx`, `signage-admin-ui/src/hook/useUpload.ts` |
+| `VITE_ADMIN_MASTER_PASSWORD` | 管理者 UI のログインパスワード | `signage-admin-ui/src/context/AdminAuthContext.tsx` |
+| `VITE_DEVICE_ID` | LAN 検知用（現行 UI 未使用） | `signage-admin-ui/src/hook/useLanDetect.ts` |
+
+```dotenv
+# .env.development の例
+VITE_SIGNAGE_API_BASE_URL=http://localhost:3000
+VITE_ADMIN_MASTER_PASSWORD=your-admin-password
+```
+
+!!! note "MediaList のデフォルト API"
+    `MediaList` のみ `VITE_SIGNAGE_API_BASE_URL` が未設定の場合に
+    `https://api.xrobotics.jp` をデフォルトとしている。  
+    参照: `signage-admin-ui/src/page/MediaList.tsx`
+
+## Vite 設定（抜粋）
 
 ```ts
 export default defineConfig({
@@ -44,55 +79,5 @@ export default defineConfig({
 });
 ```
 
-- **Dev 時**：フロントは 5173、API と Socket.IO は **3000** にプロキシ
-- **本番配信**：`/admin/` ベースに静的配信（`base` と Router `basename` が一致）
-
-## **ビルド**
-
-```bash
-pnpm build     # → dist/ に成果物生成
-pnpm preview   # ローカルで dist を配信して最終確認
-```
-
-## **Nginx 配信例**
-
-```nginx
-server {
-  listen 3000;
-  server_name _;
-  root /opt/signage-admin-ui;   # dist を配置
-  index index.html;
-
-  # SPA のためリロード対応
-  location /admin/ {
-    try_files $uri /admin/index.html;
-  }
-
-  # API はバックエンドへプロキシ（例）
-  location /api/admin/ {
-    proxy_pass http://127.0.0.1:8080/;
-  }
-
-  # Socket.IO（例：/admin 名前空間を同一ホストに転送）
-  location /socket.io/ {
-    proxy_http_version 1.1;
-    proxy_set_header Upgrade $http_upgrade;
-    proxy_set_header Connection "upgrade";
-    proxy_pass http://127.0.0.1:8080;
-  }
-}
-```
-
-## **index.html（要点）**
-
-- ルート要素：`<div id="root"></div>`
-- エントリ：`<script type="module" src="/src/main.tsx"></script>`
-- ビルド後は Vite が適切に書き換え
-
-## **生成/変更されるもの**
-
-- `dist/`：静的配信物（HTML/JS/CSS/アセット）
-- 本番サーバへは `dist/` のみ配置（通常はアプリケーション側で書き換え不要）
-
-!!! warning "ベースパスの不一致"
-    `basename="/admin"` に対し、Nginx 側の `try_files` が `/index.html`（ルート）になっていると 404 が発生します。
+- Dev 時: `/api` をローカル API に転送
+- 本番: `/admin/` で静的配信（`base` と Router `basename` の整合が必要）

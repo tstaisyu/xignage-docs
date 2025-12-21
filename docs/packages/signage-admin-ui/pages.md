@@ -1,67 +1,74 @@
 # ページ / ルーティング
 
-- ルータは `BrowserRouter basename="/admin"`（`src/main.tsx`）
-- ルート構成：
-  `/admin/` → `Dashboard`
-  `/admin/upload` → `Upload`
-  レイアウトは `Layout` で共通化（ボトムナビ）
+- ルータは `BrowserRouter basename="/admin"`（`signage-admin-ui/src/main.tsx`）
+- 画面は `Layout` 配下で共通 UI（ヘッダー/ユーザー情報/下部ナビ）を共有
 
-## **Layout（`src/page/Layout.tsx`）**
+## ルート一覧
 
-- 画面全体のレイアウト。`<Outlet />` にページを描画
-- 下部に **固定ボトムナビ**（`/` と `/upload`）
+| ルート | 画面 | 概要 |
+| --- | --- | --- |
+| `/admin/` | Dashboard | 主要画面へのショートカット
+| `/admin/upload` | Upload | メディアアップロード（簡易）
+| `/admin/media` | MediaList | メディア一覧・編集・削除
+| `/admin/playlists` | PlaylistsList | プレイリスト一覧・割当
+| `/admin/playlists/new` | PlaylistCreate | プレイリスト作成
+| `/admin/playlists/:playlistId` | PlaylistDetail | プレイリスト詳細・並び替え
+| `/admin/playlists/:playlistId/add` | PlaylistAddItem | プレイリストへメディア追加
+| `/admin/login` | AdminLogin | 管理者用ログイン
+| `/admin/system/customers` | SystemCustomers | 管理者用: 顧客管理
+| `/admin/system/devices` | SystemDevices | 管理者用: デバイス管理
+| `/admin/system/device-users` | SystemDeviceUsers | 管理者用: デバイス-ユーザー紐付け
 
-> 処理の流れ
+## Layout（`signage-admin-ui/src/page/Layout.tsx`）
 
-1) 画面を `flex` 列で構成、`main` に `<Outlet />` を配置  
+- `UserContext` を参照し、**ユーザー/デバイス情報を解決**
+- `embedded=1` クエリで **下部ナビを非表示**
+- `UserContextBar` でユーザー/顧客/デバイス選択と同期状態を表示
+- 同期ボタンは `POST /api/commands/sync-content` を発行し、
+  `GET /api/devices/:deviceId/sync-status` を **最大 3 分**ポーリング
 
-2) 画面下部に `<nav>`（固定・ボーダー・背景）  
+### SetupScreen
 
-3) `NavItem` は `NavLink` を利用し、`isActive` で `dock-active` を付与
+- `userExternalId` 未指定時に表示
+- `userExternalId` と `deviceId` を入力し、`/media` に遷移
 
-!!! note
-    - `.dock`, `.dock-label`, `.dock-active` は**プロジェクトの CSS 前提**（フレームワーク/DaisyUI等）。テーマ側定義が必要
+## Dashboard（`signage-admin-ui/src/page/Dashboard.tsx`）
 
-## **Dashboard（`src/page/Dashboard.tsx`）**
+- 現行は **ショートカットのみ**（メディア/プレイリスト）
 
-- **音量制御 UI**。ミュート切替ボタン + スライダー
-- Socket.IO で `/admin` 名前空間に接続
+## Upload（`signage-admin-ui/src/page/Upload.tsx`）
 
-### **前提・引数**
+- `UploadDropzone` + `useUpload` によるアップロード
+- 進捗と件数を表示（簡易ページ）
 
-- サーバ側イベント：
-  **受信**：`volumeStatusChanged` → `{ muted?: boolean; volume?: string }`  
-  **送信**：`toggleVolume`（ミュート切替）、`setVolume`（`{ volume: "NN%" }`）
-- UI：
-  `data-cy="volume-slider"`（E2E 用属性）
+## MediaList（`signage-admin-ui/src/page/MediaList.tsx`）
 
-> 処理の流れ
+- メディア一覧の取得・削除・タイトル編集
+- メディアタイプのフィルタ（画像/動画/その他）
+- ページサイズ/ソート切替
+- `useUpload` でアップロード → 追加したメディアを先頭に反映
 
-1) `io('/admin')` でソケット接続を作成  
+## PlaylistsList（`signage-admin-ui/src/page/PlaylistsList.tsx`）
 
-2) `useEffect` で `volumeStatusChanged` を購読し、`muted`/`value` を更新  
+- プレイリストの一覧・作成・編集・削除
+- **デバイス割当**: `POST /api/devices/:deviceId/sync-complete`
+- **割当確認**: `GET /api/devices/:deviceId/playlist-assignment`
+- **同期状態の更新**: `GET /api/devices/:deviceId/sync-status`
 
-3) ミュートボタンで `toggleVolume` を送信、ローカル状態も反転  
+## PlaylistDetail（`signage-admin-ui/src/page/PlaylistDetail.tsx`）
 
-4) スライダー変更で `setVolume { volume: "NN%" }` を送信
+- プレイリストアイテムの取得/並び替え（`PUT /items`）
+- 画像アイテムのみ再生時間の上書き可能
+- アイテム削除（`DELETE /items/:playlistItemId`）
 
-!!! note "アイコン"
-    `<VolumeX />` / `<Volume2 />` は **lucide-react** 想定。依存に追加してください。
+## PlaylistAddItem（`signage-admin-ui/src/page/PlaylistDetail.tsx`）
 
-## **Upload（`src/page/Upload.tsx`）**
+- メディア一覧から選択してアイテム追加
+- 画像の場合、未入力時は `durationSec=10` を指定
 
-- `UploadDropzone` を使って D&D アップロード
-- `useUpload` の `startUpload` を `onDrop` に渡す
+## 管理者画面（System / Login）
 
-> 処理の流れ
-
-1) `const { startUpload } = useUpload()` を取得  
-
-2) `<UploadDropzone onDrop={startUpload} />` を配置  
-
-3) アップロード成功時にトースト表示、SWR `mutate` で再取得  
-
-4) 一覧表示（`MediaGrid`）はコメントアウトされており、後日有効化可能
-
-!!! note
-    - サーバ側は `POST /api/admin/upload` を受け付ける必要があります（後述 API 参照）
+- `AdminLogin` は **ローカルのパスワード認証のみ**（`VITE_ADMIN_MASTER_PASSWORD`）
+- System 系 API は **バックエンドで master ユーザー判定**が必要
+  - `MASTER_USER_EXTERNAL_IDS` に含まれる `userExternalId` のみ許可
+  - 参照: `signage-aws-nodejs/middlewares/humanAuth.js`, `signage-aws-nodejs/routes/admin/adminRoutes.js`

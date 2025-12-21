@@ -1,109 +1,64 @@
 # signage-admin-ui（Overview）
 
-**What**：デバイス上で動作するフロント UI（React + Vite + TypeScript）  
+**What**：クラウド正本型のサイネージ管理 UI（React + Vite + TypeScript）  
 **Where**：`/admin` をベースパスとする SPA（`BrowserRouter basename="/admin"`）  
-**Why**：ローカル操作（音量制御）、メディアのアップロード、状態確認などをブラウザから行うため
+**Why**：クラウド側のメディア/プレイリストを正本として管理し、デバイスへ同期させるため
 
-!!! note "技術スタック"
-    - React / TypeScript / Vite
-    - Tailwind（および tailwind-merge / clsx）
-    - Socket.IO クライアント（`io('/admin')`）
-    - React Router
-    - SWR（一覧の再検証）
-    - react-dropzone（D&D アップロード）
-    - react-hot-toast（通知）
-    - Radix Slider（`@radix-ui/react-slider` 前提の UI ラッパ）
+## 目的と前提
 
-## **フォルダ構成（抜粋：提供ソース基準）**
+- **クラウド正本**：メディア/プレイリストはクラウドの API で管理し、デバイスへ同期する。
+- **利用経路**：Adalo の WebView からの埋め込み利用、またはブラウザからの直接アクセス。
+- **必要パラメータ**：`userExternalId` と `customerId` をクエリで受け取り、API 側の権限判定に使用。
+
+## 利用シナリオ
+
+- **Adalo WebView**
+  - `userExternalId`（Adalo Users.id）/ `userName` / `customerId` / `deviceId` をクエリで付与して起動。
+  - `embedded=1` を付与すると下部ナビが非表示になり、埋め込み前提の UI になる。
+- **ブラウザから直接アクセス**
+  - 初回はセットアップ画面（`SetupScreen`）で `userExternalId` と `deviceId` を入力。
+  - その後は `localStorage` に保存されたデバイス ID を再利用。
+
+## 主要な機能の流れ（UI 側）
+
+1) **ユーザー/デバイス解決**：`/api/user/devices` でユーザーに紐づくデバイスと顧客を取得。  
+2) **ライブラリ管理**：`/api/content/media` 系 API でメディア一覧/削除/タイトル更新。  
+3) **プレイリスト管理**：`/api/content/playlists` と `/items` 系 API で作成/編集/並び替え。  
+4) **割当と同期**：`/api/devices/:deviceId/*` と `/api/commands/sync-content` を使って割当と同期を実施。
+
+## 技術スタック（現行）
+
+- React / TypeScript / Vite
+- React Router / SWR
+- Tailwind CSS
+- react-dropzone（D&D アップロード）
+- react-hot-toast（通知）
+- lucide-react（アイコン）
+
+## 構成（主要ファイル）
 
 ```text
 src/
-├── main.tsx               # ルーティング定義（/admin）
-├── App.tsx                # Vite のテンプレ（未使用）
-├── page/
-│   ├── Dashboard.tsx      # 音量制御（Socket.IO）
-│   ├── Layout.tsx         # レイアウト + ボトムナビ
-│   └── Upload.tsx         # メディアのアップロード
-├── components/
-│   ├── MediaGrid.tsx      # アップロード済みファイルの簡易一覧
-│   └── UploadDropzone.tsx # D&D アップロード UI（react-dropzone）
-│   └── ui/slider.tsx      # 汎用スライダー（Radix Slider 前提）
-├── hook/
-│   ├── useJwt.ts          # クエリ文字列 / localStorage から JWT を取得
-│   ├── useLanDetect.ts    # .local へのヘルスチェック（/ping）
-│   └── useUpload.ts       # /api/admin/upload へのアップロード
-├── lib/utils.ts           # cn() ユーティリティ（clsx + tailwind-merge）
-└── api/types.ts           # OpenAPI 由来の型（/ping, /v1/upload, /v1/play）
+├── main.tsx              # ルーティング定義（/admin）
+├── page/                 # 画面（Dashboard/Media/Playlists/System など）
+├── context/              # UserContext / AdminAuthContext
+├── hook/                 # useUpload / useJwt / useLanDetect
+├── components/           # UserContextBar / UploadDropzone / RequireAdmin
+└── api/types.ts          # OpenAPI 型（自動生成）
 ```
 
-## **アプリ画面（UI ルート）と主要機能**
+## 移行メモ（旧用途の整理）
 
-> ### **Dashboard - (音量制御)**  
+- `openapi/spec.yaml` は **ローカル/LAN 向けの旧 API 定義**が残存している。現行 UI では参照していない。  
+  参照: `signage-admin-ui/openapi/spec.yaml`
+- `useLanDetect` / `useJwt` は **現行 UI から未使用**。将来整理対象。  
+  参照: `signage-admin-ui/src/hook/useLanDetect.ts`, `signage-admin-ui/src/hook/useJwt.ts`
 
-- `io('/admin')` で接続
-- `volumeStatusChanged` で `{ muted, volume }` を反映
-- `toggleVolume` を送信してミュート切替
-- スライダー変更時に `setVolume { volume: "NN%" }` を送信
-- UI：`data-cy="volume-slider"`（E2E 用）
+## ドキュメント一覧
 
-> ### **Upload - (メディアアップロード)**
-
-- `UploadDropzone` の `onDrop` → `useUpload().startUpload`
-- `POST /api/admin/upload` に `multipart/form-data` で送信
-- 成功時に `toast.success`、SWR `mutate` でリスト再取得
-
-## **ドキュメント一覧**
-
-- [**Setup**](setup.md) — 開発環境/ビルド/配信の手順、Vite 設定、Nginx 例。  
-- [**Pages & Routing**](pages.md) — ルーティング構成と各画面の役割（Dashboard / Upload / Layout）。  
-- [**Components**](components.md) — `MediaGrid` / `UploadDropzone` / `ui/slider` の Props と振る舞い。  
-- [**Hooks**](hooks.md) — `useJwt` / `useLanDetect` / `useUpload` の API と注意点。  
-- [**API Contract**](api.md) — OpenAPI（`openapi/spec.yaml`）の要点と `/api/admin` ↔ `/api/v1` の対応。  
-- [**CI / GitHub Actions**](../../ci/workflows/signage-admin-ui/ci.md) — 単体/E2E、ビルド、リリース tar.gz、ライセンススキャン、バッジ更新。  
-
-## **関連**
-
-- **index.html**：`<div id="root"></div>` + `type="module" src="/src/main.tsx"`
-- **Vite 設定（vite.config.ts）**：
-  `base: '/admin/'`（ルート配信時も `/admin/` 前提）
-  `server.proxy`：`/api`・`/socket.io` → `http://localhost:3000`
-  `resolve.alias`：`'@' -> src`
-- **OpenAPI**：`openapi/spec.yaml`（サーバベース `/api`、パスは `/v1/*`）
-
-## **実装と整合のための注意**
-
-- **Socket.IO の名前空間/パス**（`io('/admin')`）はサーバ側設定と一致させる。
-- **API パス変換**：`/api/admin/*` ↔ `/v1/*` はリバースプロキシ（Nginx など）で吸収。
-
-<!--
-
-## 目的
-
-## 概要
-
-## ファイル構成
-
-## セットアップと要件
-
-## 設定（Environment Variables）
-
-## 使い方（Quickstart）
-
-## インターフェース
-
-### 入力
-
-### 出力
-
-## 運用（Runbook）
-
-## 依存関係
-
-## バージョン互換性
-
-## セキュリティ
-
-## 既知の課題
-
-## 変更履歴（参照）
--->
+- [**Setup**](setup.md) — 開発/ビルド/配信手順、環境変数
+- [**Pages & Routing**](pages.md) — 画面・ルート・画面間フロー
+- [**API Contract**](api.md) — UI が呼ぶ API と必須パラメータ
+- [**Components**](components.md) — 主要コンポーネントの役割
+- [**Hooks**](hooks.md) — 主要フックの役割
+- [**CI / GitHub Actions**](../../ci/workflows/signage-admin-ui/ci.md)

@@ -1,63 +1,51 @@
 # コンポーネント
 
-## **MediaGrid（`src/components/MediaGrid.tsx`）**
+## UserContextBar（`signage-admin-ui/src/components/UserContextBar.tsx`）
 
-- ローカル状態の `File[]` を簡易グリッド表示（3列）
+- ユーザー/顧客/デバイス情報と同期状態を表示
+- デバイス/顧客の **セレクタ** を提供
+- 「同期」ボタン押下で `onSyncClick` を実行
 
-> **Props**
+### Props（抜粋）
 
 ```ts
-type Props = { files: File[] };
+{
+  userName: string;
+  customerId: string;
+  deviceId: string | null;
+  availableDevices?: { deviceId: string; label?: string }[];
+  customers?: { customerId: string; name: string }[];
+  onDeviceChange?: (deviceId: string) => void;
+  onCustomerChange?: (customerId: string) => void;
+  currentPlaylistTitle?: string | null;
+  syncState?: 'none' | 'synced' | 'not_synced';
+  syncLoading?: boolean;
+  onSyncClick?: () => void;
+}
 ```
 
-> **実施内容**
+## RequireAdmin（`signage-admin-ui/src/components/RequireAdmin.tsx`）
 
-- `aspect-video` の矩形に `f.name` を表示（プレビューなしのプレースホルダ）
+- 管理者ログイン状態をチェック
+- 未認証の場合 `/login` にリダイレクト
 
-## **UploadDropzone（`src/components/UploadDropzone.tsx`）**
+## UploadDropzone（`signage-admin-ui/src/components/UploadDropzone.tsx`）
 
-- `react-dropzone` を用いた D&D アップロード入力
-
-> **Props**
+- `react-dropzone` を使った D&D アップロード
 
 ```ts
 type UploadDropzoneProps = {
   onDrop: (accepted: File[], rejected: FileRejection[], event: DropEvent) => void;
-  maxSize?: number; // 既定：100MB
+  maxSize?: number; // 既定: 100MB
 };
 ```
 
-!!! note "型の出典"
-    `FileRejection` / `DropEvent` は **react-dropzone** の型です。
+## MediaGrid（`signage-admin-ui/src/components/MediaGrid.tsx`）
 
-> **実施内容**
+- `File[]` の簡易表示用グリッド
+- 現行 UI では未使用（`Upload.tsx` でコメントアウト）
 
-1) `useDropzone({ onDrop, maxSize })` を生成
+## ui/slider（`signage-admin-ui/src/components/ui/slider.tsx`）
 
-2) ルート要素に `getRootProps()` / `getInputProps()` をスプレッド
-
-3) `isDragActive` で文言を切替
-
-!!! tip "バリデーション"
-    拡張子の制限が必要なら `accept` を `useDropzone` に付与してください。
-
-## **ui/slider（src/components/ui/slider.tsx）**
-
-- Radix Slider（`@radix-ui/react-slider`）前提のスライダー薄ラッパ
-- `value` / `defaultValue` からハンドル数を推定し、`Thumb` を複数描画
-
-> **主要 Props（抜粋）**
-
-```ts
-function Slider({
-  className, defaultValue, value, min = 0, max = 100, ...props
-}: React.ComponentProps<typeof SliderPrimitive.Root>) { ... }
-```
-
-> **実施内容**
-
-- `data-slot` 属性（`slider-*`）を付与し、テーマ側で装飾しやすくしている
-- `cn()`（`src/lib/utils.ts`）でクラス結合
-
-!!! note "依存"
-    `@radix-ui/react-slider` と `clsx` / `tailwind-merge` が必要です。
+- Radix Slider の薄いラッパ
+- 現行画面からは未使用
