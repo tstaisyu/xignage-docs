@@ -127,6 +127,12 @@ nav:
           - CI / GitHub Actions: ci/workflows/xignage-edge-detection/ci.md
       - xignage-infra-aws:
           - Overview: packages/xignage-infra-aws/index.md
+          - Stacks: packages/xignage-infra-aws/stacks.md
+          - Deploy: packages/xignage-infra-aws/deploy.md
+          - Config: packages/xignage-infra-aws/config.md
+          - Relay EC2: packages/xignage-infra-aws/relay-ec2.md
+          - Observability: packages/xignage-infra-aws/observability.md
+          - IoT: packages/xignage-infra-aws/iot.md
 #      - jetson-ab-flash: packages/jetson-ab-flash/index.md
 #  - ADR: adr/index.md
   - CI / Automation:
