@@ -1,19 +1,19 @@
 # ローカルソケット（local-socket）
 
 端末内の **Socket.IO サーバ（ioLocal）** の接続ハンドリングと、  
-ローカルUI用 **/admin ネームスペース**、および（任意）**クラウド側イベント（ioCloud）** からの音量系イベントの**相互ブリッジ**を行う。
+ローカルUI用 **/admin ネームスペース** からの音量系イベントの**相互ブリッジ**を行う。
 
 ## **概要**
 
 - `ioLocal` の **既定ネームスペース（/）** と **`/admin`** に対し、接続/切断ログと一部イベント受け口を用意。
-- `setVolume` / `toggleVolume` を **forward()** で `/`・`/admin`・`ioCloud`（あれば）へ**多方向配信**。
-- `ioCloud` が与えられている場合、クラウド→ローカルの `setVolume` / `toggleVolume` を受け取り、同様に forward。
+- `setVolume` / `toggleVolume` を **forward()** で `/`・`/admin` に多方向配信。
+- `ioCloud` 受け口は関数引数として残っているが、`server.js` からは注入されない。
 
 ## **ネームスペース構成**
 
 - `/`（既定）… ローカルクライアント（プレイヤ等）
-- `/admin` … ローカル管理UI
-- `ioCloud` … クラウド側イベントの受け口（オプション；cloud-socket 側から注入されることを想定）
+- `/admin` … ローカル UI
+- `ioCloud` … クラウド側イベントの受け口（オプション。現行 `server.js` では未注入）
 
 ## **公開関数**
 
@@ -35,8 +35,8 @@
 |---|---|---|---|---|
 | `/admin` | `setVolume` | `{ volume, ... }` | `/`・`/admin`・`ioCloud?` | ローカルUIからの音量変更を全方面へ中継 |
 | `/admin` | `toggleVolume` | 任意 | `/`・`/admin`・`ioCloud?` | ミュート切替等のトグルを中継 |
-| `ioCloud?` | `setVolume` | `{ volume, ... }` | `/`・`/admin`・`ioCloud?` | クラウド指示の音量変更をローカルへ中継 |
-| `ioCloud?` | `toggleVolume` | 任意 | `/`・`/admin`・`ioCloud?` | クラウド指示のトグルをローカルへ中継 |
+| `ioCloud?` | `setVolume` | `{ volume, ... }` | `/`・`/admin`・`ioCloud?` | クラウド指示の音量変更をローカルへ中継（未注入） |
+| `ioCloud?` | `toggleVolume` | 任意 | `/`・`/admin`・`ioCloud?` | クラウド指示のトグルをローカルへ中継（未注入） |
 
 > `forward(event, payload)` は **3方面**へ emit：`ioLocal.emit(event, payload)` / `adminNS.emit(event, payload)` / `ioCloud?.emit(event, payload)`
 

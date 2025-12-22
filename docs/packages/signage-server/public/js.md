@@ -26,36 +26,34 @@
 - `setVolume({ volume })` → `setVolume(volume)`（0–1 または `"75%"`）
 - `showImage(imageFileName)` → **単発表示**（動画停止・画像表示）
 - `playVideo(payload)`  
-  文字列なら単体動画ループ（`playSingleVideo(name)`）
+  文字列なら単体動画ループ（`playSingleVideo(name)`）  
   オブジェクト `{ fileName, isSingle }` で `isSingle`=true のとき単体動画ループ
 - `switchView(tv)`  
-  文字列トリム → `https://meet.jit.si/` 始まりなら **外部 Jitsi** へ（各種 `#config...` パラメータ付与）  
-  それ以外は **ローカル遷移**：`'kiosk'` → `'/kiosk'`（拡張子なしに留意）
+  文字列トリム → `https://meet.jit.si/` 始まりなら **外部 Jitsi** へ  
+  それ以外は **ローカル遷移**：`'kiosk'` → `'/kiosk'`（拡張子なし）
 - `playYoutubeLocal({ youtubeUrl })` → `/youtube.html?youtubeUrl=...` へ遷移
+- `doorbell:startCall` → `sessionStorage.doorbellCall` を保存し `/videocall.html` へ遷移
 - **プレイリスト制御**：`startPlaylist`（`isSingleMode=false; player.start()`）、`stopPlaylist`（`player.stop()`）
 - 割り込み：`interruptPlay({ fileName, isVideo, duration })` → `player.interrupt(...)`、`endInterrupt` → `player.resume()`
 
 ### **関数/API**
 
 - `fetchPlaylistFromLocal()` → `GET /localPlaylist` → `{records}` を `[ {file,type,duration,order} ]` へ正規化
-- `showImage(imageFileName, duration=10)` → 画像のプリロード後に表示（※注記あり）
+- `showImage(imageFileName, duration=10)` → 画像のプリロード後に表示
 - `playSingleVideo(videoFileName)` → 単体ループ、`player.stop()` 後に video 再生
 - `toggleVolume(payload)` / `setVolume(vol)` → video 要素の音量・mute を制御
 
 ### **処理の流れ（初期化 IIFE）**
 
 1) `/api/config` 取得 → `autoPlaylist` 判定  
-
 2) `/localPlaylist` 取得 → `player.setPlaylist()` → `autoPlaylist` なら `player.start()`  
-
 3) Socket 接続・各イベント購読  
-
 4) `socket.emit('clientReady')`
 
 !!! note
-    - **プレイリスト API パス**：本コードは `/localPlaylist` を参照。サーバ側マウントが `/api/local-playlist` 等の場合は合わせること。  
-    - **`showImage` の `this`**：関数内で `this.isStopped/this.nextItem()` を参照していますが、`PlaylistPlayer` の `this` とは無関係（`this` は暗黙に `window`）。**実際は無効**です（プレイリスト復帰は `PlaylistPlayer.showImage()` に委譲すべき）。  
-    - **ビュー切替の重複**：`switchView` の処理は `switchViewHandler.js` と**重複**。将来は一元化を推奨。
+    - **`/youtube.html`**：遷移先 HTML が `public/` に存在しないため、現行の静的配信では 404 になります。
+    - **`showImage` の `this`**：関数内で `this.isStopped/this.nextItem()` を参照していますが、`PlaylistPlayer` の `this` とは無関係（`this` は暗黙に `window`）。  
+      TODO: 既存の動作意図（プレイリスト復帰の要否）を確認（根拠: `signage-server/public/js/main.js`）。
 
 ---
 
@@ -67,12 +65,12 @@
 ### **公開クラス / 関数**
 
 - **`class PlaylistPlayer(imgEl, videoEl, blackEl)`**
-  プロパティ：`playlist`, `currentIndex`, `isInterrupted`, `isStopped`, `timeoutId`
-  **video `ended`** 時：自動で `nextItem()`
-- `setPlaylist(newPlaylist)`：差分判定（`arraysAreEqual`）で未変更なら現状維持。変更時は **同一アイテムが残れば位置維持**、無ければ最尤位置へ。
-- `start({ resetIndex=true }={})`：開始。空なら何もしない。`resetIndex` 指定可。
+  - プロパティ：`playlist`, `currentIndex`, `isInterrupted`, `isStopped`, `timeoutId`
+  - video `ended` 時：自動で `nextItem()`
+- `setPlaylist(newPlaylist)`：差分判定で未変更なら現状維持。変更時は **同一アイテムが残れば位置維持**
+- `start({ resetIndex=true }={})`：開始。空なら何もしない。
 - `stop()`：停止して **黒フェード解除**＋メディア非表示。
-- `playNextItem()`：`fadeBlack(1)`→`hideMedia()`→`item` 再生→`hold`→`fadeBlack(0)`
+- `playNextItem()`：`fadeBlack(1)`→`hideMedia()`→`item` 再生→`fadeBlack(0)`
 - `nextItem()`：インデックス更新（末尾で 0 へループ）→ `playNextItem()`
 - `hideMedia()` / `hideAll()`：メディア停止/非表示・黒を戻す
 - `playVideo(fileName)`：`/videos/<file>` を非ループで再生
@@ -80,58 +78,14 @@
 - `interrupt(fileName, isVideo=false, duration=5)`：割り込み表示（停止→画像/動画）
 - `resume()`：割り込み解除→`playNextItem()`
 
-### **内部ユーティリティ**
-
-- `arraysAreEqual(oldList, newList)`：`file/type/duration` の等価判定  
-- `fadeBlack(targetOpacity, duration)`：黒オーバーレイのフェード  
-- `sleep(ms)`
-
-!!! note
-    - **フェード定数**：`FADE_MS=500`, `HOLD_MS=500` 固定。  
-    - **停止/割り込み時ガード**：`playNextItem()` 冒頭で `isStopped/isInterrupted` を都度チェック。  
-    - **音量制御**は `main.js` が担当。
-
 ---
 
 > ## **switchViewHandler.js**
 
-**ローカル UI ページ（/ や /admin）** で `switchView` を受け取り、  
-**Jitsi 外部 URL** ならそのまま遷移（各種 `#config...` パラメータ付与）、それ以外は **ローカル遷移**（`'kiosk'`→`'/kiosk'`）。
+**ローカル UI ページ** で `switchView` を受け取り、  
+**Jitsi 外部 URL** ならそのまま遷移、そうでなければ **ローカル遷移**（`'kiosk'`→`'/kiosk'`）します。
 
 ### **公開関数**
 
 - `setupSwitchView(socket)`：`socket.on('switchView', handler)` を登録。  
   受信値を `trim()` → `https://meet.jit.si/` 始まりなら外部へ、そうでなければ `/' + targetView`
-- **エクスポート**：ブラウザでは `window.setupSwitchView`、Node では `module.exports`
-
-!!! note
-    - `main.js` にも同等処理があり**二重実装**。できれば本関数に統一（`main.js` 側は呼ぶだけ）にすると保守性が上がる。
-
----
-
-> ## **youtube.js**
-
-YouTube IFrame Player とローカル Socket.IO の間で **音量トグル/設定**をハンドリング。  
-プレイヤ準備前に来た `setVolume` は **キュー**し、`onPlayerReady` で適用します。
-
-### **依存**
-
-- グローバル `player`：YouTube IFrame API（`youtube.html` の `onYouTubeIframeAPIReady()` で `new YT.Player('playerFrame', …)` されたもの）
-- Socket.IO：`socket`（`setupYoutubeVolume(socket)` に注入）
-
-### **公開関数 / イベント**
-
-- `setupYoutubeVolume(socket)`：  
-  `toggleVolume(payload)`：`player.isMuted()` を見て `mute()/unMute()`・`setVolume(100)`、その後 **100ms 後**に `volumeStatusChanged { requestId, muted }` を emit  
-  `setVolume({ volume })`：`applyVolume()`（`"75%"` または 0–1 の数値想定）。プレイヤ未準備なら **`queuedVolume` に保留**
-- `onPlayerReady()`：`queuedVolume` があれば `applyVolume()` してクリア
-- `applyVolume(volIn)`：`"75%"`→75、数値→0–1→0–100 に換算し `unMute()/setVolume(v)`
-
-### **エクスポート**
-
-- ブラウザ：`window.setupYoutubeVolume`, `window.onPlayerReady`
-- Node：`module.exports = { setupYoutubeVolume, onPlayerReady }`
-
-!!! note
-    - `youtube.html` 側にも `onPlayerReady(event)` が定義されていますが、本ファイルが **後から** `window.onPlayerReady` を上書きします（問題はありませんが、役割統一を推奨）。  
-    - `toggleVolume` の **同期応答**は `payload.requestId` に依存（未指定だと応答できません）。

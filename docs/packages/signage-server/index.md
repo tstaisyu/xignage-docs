@@ -5,7 +5,7 @@
 Node プロセスの**起動〜稼働の骨格**。起動時回転の適用 → HTTP/Socket.IO 立ち上げ → Cloud/Local ソケット初期化 → IP/MAC/端末情報の登録までを担います。
 
 - [**Express App 構成・配信・API マウント**](./runtime/express-app.md)  
-  （`/admin` SPA、`/images`・`/videos` 静的配信、`/api/*` ルート、例外 `/localPlaylist`・`/forceKiosk`・`/health`）
+  （`public/`・`build/` 静的配信、`/images`・`/videos` 配信、`/api/*` ルート、例外 `/localPlaylist`・`/forceKiosk`・`/health`）
 - [**Chromium Manager（キオスク再読込）**](./runtime/chromium-manager.md)  
   （`killall chrome` を X 環境で実行。`GET /forceKiosk` からトリガ）
 
@@ -23,14 +23,14 @@ Express ベースの **HTTP レイヤ**。**ルーティング（routes）** を
 
 - **System / Platform**：端末情報・OS/時刻/NTP・GPU統計・回転・電源/再起動・更新トリガ・ローカル設定  
 - **Network / Registration**：IP/MAC 検出と登録・端末情報のクラウド登録・Wi-Fi設定クリア/再起動  
-- **Media / Content**：プレイリスト管理・画像/動画サムネイル生成・アップロード
+- **Content / Doorbell**：クラウド正本型の同期（プレイリスト/メディア）、ドアベル通知の IoT 送信
 
 > ## [**コンポーネント（Components）**](./components/index.md)
 
 リアルタイム連携（Socket.IO）の**ブリッジ群**。  
 
-- **Cloud Socket**：端末→クラウドの Socket.IO クライアント。接続時 `registerDevice`、5秒ごとに DNS 監視とローカルIP再登録、各種イベントを端末へ橋渡し  
-- **Local Socket**：端末内 Socket.IO（`/` と `/admin`）のブリッジ。`setVolume`/`toggleVolume` 等をローカル↔クラウドに中継
+- **Cloud Socket**：端末→クラウドの Socket.IO クライアント。接続時 `registerDevice`、クラウド指示を端末へ橋渡し（ビュー切替/同期/音量/電源など）  
+- **Local Socket**：端末内 Socket.IO（`/` と `/admin`）のブリッジ。`setVolume`/`toggleVolume` 等をローカル内に中継
 
 > ## [**ユーティリティ（utils/）**](./utils.md)
 
@@ -40,11 +40,11 @@ Node 実行時に用いる補助関数群。Jetson/Raspberry Pi の計測（`teg
 
 Chromium（キオスク）で表示される **フロントページ群** と、それらに読み込まれる **JSモジュール**の入口。  
 ローカル Socket.IO と連携し、初期化後は **`clientReady`** を送出して保留イベント（`showImage` / `playVideo` など）を受け取ります。  
-アセットは `/images/*`・`/videos/*`（サムネは `…/thumbnails/`）を参照。
+アセットは `/images/*`・`/videos/*` を参照。
 
 > ## [**設定（Config）**](./config.md)
 
-`config/index.js` は **.env の読込（dotenv）** と **主要パス／起動ポート等の定義**を担い、**読み込み時に必要ディレクトリを自動作成**します（`images/`, `images/thumbnails/`, `videos/`, `videos/thumbnails/`, `uploads/`）。
+`config/index.js` は **.env の読込（dotenv）** と **主要パス／起動ポート等の定義**を担い、**読み込み時に必要ディレクトリを自動作成**します（`images/`, `videos/`）。
 
 <!--
 ## 目的

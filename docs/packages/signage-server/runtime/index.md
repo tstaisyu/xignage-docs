@@ -25,9 +25,10 @@
    `server.listen(config.SERVER_PORT, '0.0.0.0', async () => { ... })`
 
 7) **登録処理（待受開始後）**  
-   `registerLocalIp(config.DEVICE_ID, config.AWS_ENDPOINT)`  
-   `registerMacAddress(config.DEVICE_ID, config.AWS_ENDPOINT)`  
-   `registerDeviceInfo(config.DEVICE_ID)`
+   `registerLocalIp(config.DEVICE_ID)`  
+   `registerMacAddress(config.DEVICE_ID)`  
+   `registerDeviceInfo(config.DEVICE_ID)`  
+   `startNetworkReporter(config.DEVICE_ID)`
 
 ## **ログ/監視**
 

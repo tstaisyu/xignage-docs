@@ -12,13 +12,13 @@
 
 | URL パス | 実体 | 備考 |
 |---|---|---|
-| `/admin` | `config.ADMIN_UI_DIR` | SPA。`/admin/*` は `index.html` へフォールバック |
 | `/` | `public/`（リポ内） | `express.static(path.join(__dirname, 'public'))` |
-| `/` | `config.BUILD_DIR` | ビルド成果物 |
 | `/videos` | `config.VIDEOS_DIR` | コンテンツ動画 |
 | `/images` | `config.IMAGES_DIR` | コンテンツ画像 |
 
-> `/admin` は `extensions: ['html']`、本番時 `maxAge: '1h'` でキャッシュ。
+!!! note
+    - **`/admin` SPA 配信は現行実装に存在しません**（管理 UI は別パッケージ運用）。
+    - 現行の静的配信は `public/` のみです（`build/` 配備は廃止）。
 
 ## **API マウント**
 
@@ -26,29 +26,26 @@
 
 | Base | ルーター | 概要 |
 |---|---|---|
-| `/api/kiosk` | `kioskRoutes` | キオスク関連 |
-| `/api/test` | `testRoutes` | テスト用 |
+| `/api/kiosk` | `kioskRoutes` | キオスク HTML 配信 |
+| `/api/test` | `testRoutes` | テスト用エンドポイント |
 | `/api/ai-assist` | `aiAssistRoutes` | AI テキスト |
-| `/api/videos` | `videoRoutes` | 動画一覧/再生 |
 | `/api/views` | `viewRoutes` | ビュー切替 |
-| `/api/config` | `configRoutes` | ローカル設定 取得 |
-| `/api/admin/upload` | `adminUploadRoutes` | アップロード（multer） |
-| `/api/admin/list` | `adminListRoutes` | 画像/動画リスト |
+| `/api/config` | `configRoutes` | ローカル設定取得 |
+| `/api/doorbell` | `doorbellRoutes` | ドアベル関連 |
 
 ### **例外（非 `/api`）**
 
 | Path | 役割 |
 |---|---|
 | `/localPlaylist` | ローカルプレイリスト取得（`main.js` が利用） |
-| `/forceKiosk` | Chromium 再起動トリガ（`chromiumManager.forceKiosk()`を呼び出し） |
+| `/forceKiosk` | Chromium 再起動トリガ（`chromiumManager.forceKiosk()`） |
 | `/ping` | 疎通確認（200） |
 | `/health` | ヘルス（`{ status: 'ok' }`） |
 
 ## **エラーハンドリング**
 
-- **最後尾**で `errorHandler` を `app.use(errorHandler)`  
-  現実装は **常に 500** の JSON（詳細: [`api/index.md` のエラーハンドラ節](../api/index.md)）
+- **最後尾**で `errorHandler` を `app.use(errorHandler)`
 
 !!! note
-    - **`/localPlaylist` は非 `/api`**：フロント（`main.js`）の fetch 先に合わせた構成。API 整理時は合わせて変更。  
+    - **`/localPlaylist` は非 `/api`**：フロント（`main.js`）の fetch 先に合わせた構成。  
     - **/forceKiosk** は**危険操作**（UI 側の誤操作対策や認証を検討）。

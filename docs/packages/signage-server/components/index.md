@@ -7,22 +7,22 @@
 
 | コンポーネント | 役割 / 概要 | 主な入出力 | ドキュメント |
 |---|---|---|---|
-| **Cloud Socket** | 端末→クラウドの **Socket.IO クライアント**。接続時に `registerDevice`、5秒ごとに **DNSオンライン監視** & **ローカルIP再登録**。各種イベントを受信して端末内へ橋渡し | 受信（cloud→device）：Device / Config / System / Media / Playlist / View / Misc の各イベント。送信：`registerDevice` / 各種応答 | [`cloud-socket.md`](./cloud-socket.md) |
-| **Local Socket** | 端末内の **Socket.IO サーバ（ioLocal）**。`/` と `/admin` NS を運用し、**setVolume / toggleVolume** 等を **ローカル↔クラウド**にブリッジ | 受信：`/admin` or `ioCloud` のイベント。送出：`/`・`/admin`・`ioCloud?` に forward | [`local-socket.md`](./local-socket.md) |
+| **Cloud Socket** | 端末→クラウドの **Socket.IO クライアント**。接続時に `registerDevice`、DNS のオンライン監視、クラウド指示を端末内へ橋渡し | 受信（cloud→device）：Device / Config / System / Playlist / View / Misc の各イベント。送信：`registerDevice` / 各種応答 | [`cloud-socket.md`](./cloud-socket.md) |
+| **Local Socket** | 端末内の **Socket.IO サーバ（ioLocal）**。`/` と `/admin` NS を運用し、**setVolume / toggleVolume** 等をローカル内にブリッジ | 受信：`/admin` のイベント。送出：`/`・`/admin` に forward | [`local-socket.md`](./local-socket.md) |
 
 > ## [**クラウドソケット（cloud-socket）**](./cloud-socket.md)
 
 - **接続**：`SERVER_URL`（`/socket.io`、`websocket` 固定）  
 - **接続時**：`registerDevice(DEVICE_ID)`、`safeRegisterLocalIp(DEVICE_ID)`  
-- **定期（5s）**：`dns.resolve('google.com')` でオンライン監視＋ローカルIP再登録  
-- **イベント群**：Device / Config / System / Media / Playlist / View / Misc  
+- **定期（5s）**：`dns.resolve('google.com')` でオンライン監視  
+- **イベント群**：Device / Config / System / Playlist / View / Misc  
 - **クリーンアップ**：`cleanup()` で interval 停止＆ソケット close
 
 > ## [**ローカルソケット（local-socket）**](./local-socket.md)
 
-- **ネームスペース**：`/`（既定）・`/admin`（管理UI）  
-- **ブリッジ**：`setVolume` / `toggleVolume` を **forward()** で `/`・`/admin`・`ioCloud?` に多方向配信  
-- **クラウド連携**：`ioCloud` があれば同名イベントを受け取りローカルへ中継
+- **ネームスペース**：`/`（既定）・`/admin`（ローカル UI）  
+- **ブリッジ**：`setVolume` / `toggleVolume` を **forward()** で `/`・`/admin` に多方向配信  
+- **クラウド連携**：`ioCloud` 注入時のみ（現行 `server.js` では未注入）
 
 !!! note "運用上の注意"
     - **ループ防止**：Cloud と Local で同名イベントを相互転送する場合は、起点フラグやイベント名の分離を検討してください。  

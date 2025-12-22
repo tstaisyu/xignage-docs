@@ -32,12 +32,10 @@
 
 ---
 
-> ## [**Media / Content**](./media.md)
+> ## [**Content / Doorbell**](./media.md)
 
-プレイリスト管理、サムネイル生成（画像/動画）、アップロードを扱う **コンテンツ層サービス**のまとまりです。
+クラウド正本型の同期とドアベル通知（IoT publish）を扱う **コンテンツ層サービス**のまとまりです。
 
 - 主な機能
-  - プレイリストのロード/保存/並び替え/サムネイルURL付与（`playlistManager.js`）
-  - 画像サムネイル生成（`imageService.js`：240×240・白背景・EXIF回転考慮）
-  - 動画サムネイル生成（`videoService.js`：ffmpegで1秒目フレームを240×240にパディング）
-  - Multer受領ファイルの保存とカテゴリ解決（`uploadService.js`）
+  - クラウド正本型の同期（`cloudContentSync.js`：プレイリスト取得 → メディア同期 → sync-complete）
+  - ドアベル通知の IoT publish（`iotDoorbellPublisher.js`）

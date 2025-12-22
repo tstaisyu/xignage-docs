@@ -7,10 +7,9 @@
 
 | Export 名 | 型 | 既定値 / 由来 | 上書き可能な環境変数 | 説明 |
 |---|---|---|---|---|
-| `SERVER_URL` | string | `'https://api.xrobotics.jp'` | `SERVER_URL` | バックエンド／管理 API のベース URL。 |
-| `SERVER_PORT` | string | `'3000'`（`PORT` → `SERVER_PORT` → 既定 の優先） | `PORT`, `SERVER_PORT` | 本 HTTP サーバの待受ポート。`PORT` が優先されます。 |
+| `SERVER_URL` | string | `'https://api.xrobotics.jp'` | `SERVER_URL` | クラウド API のベース URL。 |
+| `SERVER_PORT` | string | `'3000'`（`PORT` → `SERVER_PORT` → 既定 の優先） | `PORT`, `SERVER_PORT` | HTTP サーバの待受ポート。 |
 | `DEVICE_ID` | string | `'jetson001'` | `DEVICE_ID` | 端末一意識別子。 |
-| `ADMIN_UI_DIR` | string | `'/var/www/admin-ui'` | `ADMIN_UI_DIR` | 管理 UI の配備ディレクトリ。 |
 | `DEFAULT_ROTATION` | string | `'right'` | `DEFAULT_ROTATION` | 既定の画面回転（例：`right`）。 |
 | `PATCH_FILE` | string | `'/opt/signage-core/patches_applied.txt'` | `PATCH_FILE` | 適用済みパッチの記録ファイル。 |
 | `MIGR_DIR` | string | `'/opt/signage-core/signage-jetson/current/migrations'` | `MIGR_DIR` | マイグレーション *.sh の配置先。 |
@@ -18,11 +17,8 @@
 | `HOME_DIR` | string | `os.homedir()` | — | 実行ユーザのホームディレクトリ。 |
 | `CONTENTS_DIR` | string | `${HOME_DIR}/contents` | — | コンテンツのベースディレクトリ。 |
 | `IMAGES_DIR` | string | `${CONTENTS_DIR}/images` | — | 画像ディレクトリ。 |
-| `THUMBNAIL_DIR_IMAGES` | string | `${IMAGES_DIR}/thumbnails` | — | 画像サムネイルの格納先。 |
 | `VIDEOS_DIR` | string | `${CONTENTS_DIR}/videos` | — | 動画ディレクトリ。 |
-| `THUMBNAIL_DIR_VIDEOS` | string | `${VIDEOS_DIR}/thumbnails` | — | 動画サムネイルの格納先。 |
 | `BUILD_DIR` | string | `path.join(__dirname, '../build')` | — | ビルド成果物の配置先（コード相対）。 |
-| `UPLOAD_DIR` | string | `path.join(__dirname, '../uploads')` | — | アップロード一時／保存先（コード相対）。 |
 
 ## **読み込み時の副作用（ディレクトリ自動作成）**
 
@@ -31,13 +27,10 @@
 | 自動作成されるディレクトリ | 由来 |
 |---|---|
 | `IMAGES_DIR` | `${CONTENTS_DIR}/images` |
-| `THUMBNAIL_DIR_IMAGES` | `${IMAGES_DIR}/thumbnails` |
 | `VIDEOS_DIR` | `${CONTENTS_DIR}/videos` |
-| `THUMBNAIL_DIR_VIDEOS` | `${VIDEOS_DIR}/thumbnails` |
-| `UPLOAD_DIR` | `path.join(__dirname, '../uploads')` |
 
 !!! note "相対パスの基準"
-`BUILD_DIR` と `UPLOAD_DIR` は **`config/index.js` からの相対**です（`__dirname` 起点）。  
+`BUILD_DIR` は **`config/index.js` からの相対**です（`__dirname` 起点）。  
 一方、`CONTENTS_DIR` 以下は **ユーザホーム配下**に作成されます。
 
 ## **環境変数の優先順位・読み込み**
