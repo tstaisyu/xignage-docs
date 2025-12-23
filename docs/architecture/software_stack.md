@@ -5,13 +5,13 @@
 ## 1. レイヤー構成
 
 <!-- markdownlint-disable MD013 -->
-| レイヤー | コンポーネント | 主な役割 | 使用技術 |
-|----------|---------------|----------|----------|
-| Edge デバイス | signage-jetson | OS セットアップ／OTA／ネットワーク管理スクリプト | Bash・systemd |
-|            | signage-server | 常駐 Node.js サーバ（WebSocket クライアント、メディア制御 API） | Node.js 22, Socket.IO |
-|            | signage-admin-ui | ローカル管理 UI | React 19, React Router 7 |
-| クラウド    | signage-aws-nodejs | REST API & WebSocket ブリッジ | Node.js 22, AWS API Gateway/Lambda（構成図リンク） |
-| ユーザーアプリ | Adalo アプリ | iOS/Android UI（REST 利用） | Adalo |
+|レイヤー|コンポーネント|主な役割|使用技術|
+|---|---|---|---|
+|Edge デバイス|signage-jetson|OS セットアップ／OTA／ネットワーク管理スクリプト|Bash・systemd|
+||signage-server|常駐 Node.js サーバ（WebSocket クライアント、メディア制御 API）|Node.js 22, Socket.IO|
+||signage-admin-ui|ローカル管理 UI|React 19, React Router 7|
+|クラウド|signage-aws-nodejs|REST API & WebSocket ブリッジ|Node.js 22, AWS API Gateway/Lambda（構成図リンク）|
+|ユーザーアプリ|Adalo アプリ|iOS/Android UI（REST 利用）|Adalo|
 
 ## 2. コンポーネント詳細
 

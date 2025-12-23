@@ -6,7 +6,7 @@
 ## **エクスポート値一覧**
 
 | Export 名 | 型 | 既定値 / 由来 | 上書き可能な環境変数 | 説明 |
-|---|---|---|---|---|
+| --- | --- | --- | --- | --- |
 | `SERVER_URL` | string | `'https://api.xrobotics.jp'` | `SERVER_URL` | クラウド API のベース URL。 |
 | `SERVER_PORT` | string | `'3000'`（`PORT` → `SERVER_PORT` → 既定 の優先） | `PORT`, `SERVER_PORT` | HTTP サーバの待受ポート。 |
 | `DEVICE_ID` | string | `'jetson001'` | `DEVICE_ID` | 端末一意識別子。 |
@@ -25,7 +25,7 @@
 `ensureDirectories()` が **モジュール読込時** に実行され、以下のパスを作成します（存在しない場合）。
 
 | 自動作成されるディレクトリ | 由来 |
-|---|---|
+| --- | --- |
 | `IMAGES_DIR` | `${CONTENTS_DIR}/images` |
 | `VIDEOS_DIR` | `${CONTENTS_DIR}/videos` |
 

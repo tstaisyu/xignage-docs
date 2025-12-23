@@ -12,7 +12,7 @@
 ## **必要な環境変数（/etc/signage/iot.env）**
 
 | ENV | 用途 |
-|---|---|
+| --- | --- |
 | `IOT_ENDPOINT` | IoT データエンドポイント |
 | `IOT_THING_NAME` | Thing 名（`--device` を上書き） |
 | `IOT_CERT_PATH` | デバイス証明書 `cert.pem` |

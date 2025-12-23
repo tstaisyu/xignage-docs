@@ -6,7 +6,7 @@
 ## **早見表**
 
 | ファイル | 役割（要約） | 主な関数 |
-|---|---|---|
+| --- | --- | --- |
 | `cloudContentSync.js` | クラウド正本の **プレイリスト/メディア同期** | `syncOnceFromCloud({ apiBaseUrl, deviceId })` |
 | `iotDoorbellPublisher.js` | ドアベル押下の **IoT publish** | `publishDoorbellTest({ deviceId })` |
 
@@ -49,7 +49,7 @@
     - **保存先**：`images/`・`videos/` ディレクトリは `config/index.js` で自動作成されます。  
     - **旧ファイル救済**：`contentId` の空白/アンダースコア差異を自動補正（`rescueLegacyFileIfNeeded`）。
 
-### **関連ルート**
+### cloudContentSync.js の関連ルート
 
 - `POST /api/test/cloud-sync`（`routes/testRoutes.js`）
 - `syncContentFromCloud`（`sockets/cloudSocket/playlistCommands.js`）
@@ -70,10 +70,10 @@
 ### **必要環境変数**
 
 | Key | Required | Default | Note |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `AWS_IOT_ENDPOINT` | yes | — | `xxxxx-ats.iot.<region>.amazonaws.com` |
 | `AWS_REGION` | no | `ap-northeast-1` | IoT Data Plane のリージョン |
 
-### **関連ルート**
+### iotDoorbellPublisher.js の関連ルート
 
 - `POST /api/doorbell/test`（`routes/doorbellRoutes.js`）

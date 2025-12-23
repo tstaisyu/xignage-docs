@@ -27,7 +27,7 @@
 ### **主な環境変数（抜粋）**
 
 | 変数 | 既定 | 説明 |
-|---|---|---|
+| --- | --- | --- |
 | `BUTTON_BCM_PIN` / `BUTTON_BOARD_PIN` | `5`（BCM 優先） | ボタン入力ピン |
 | `BUTTON_DEBOUNCE_MS` | `30` | デバウンス時間 |
 | `BUTTON_LED_BCM_PIN` / `BUTTON_LED_BOARD_PIN` | `13` | LED 出力ピン |
@@ -71,7 +71,7 @@
 ### **必要な環境変数（`/etc/signage/iot.env` 由来）**
 
 | ENV | 用途 |
-|---|---|
+| --- | --- |
 | `IOT_ENDPOINT` | IoT データエンドポイント |
 | `IOT_THING_NAME` | 接続時の **client_id** 兼 Thing 名 |
 | `IOT_CERT_PATH` | デバイス証明書 `cert.pem` |

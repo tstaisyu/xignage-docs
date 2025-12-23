@@ -24,7 +24,7 @@
 - Secret: `ContentDbSecret`（Secrets Manager に自動生成）
 - SG: EC2 からの 5432 のみ許可
 
-**接続経路**
+### 接続経路
 
 - EC2（RelayInstance）→ RDS（ContentDbInstance）: SG 許可あり
 - 外部からの直接接続は想定されていません（`publiclyAccessible: false`）

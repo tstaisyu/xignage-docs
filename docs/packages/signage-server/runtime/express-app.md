@@ -11,7 +11,7 @@
 ## **静的配信**
 
 | URL パス | 実体 | 備考 |
-|---|---|---|
+| --- | --- | --- |
 | `/` | `public/`（リポ内） | `express.static(path.join(__dirname, 'public'))` |
 | `/videos` | `config.VIDEOS_DIR` | コンテンツ動画 |
 | `/images` | `config.IMAGES_DIR` | コンテンツ画像 |
@@ -25,7 +25,7 @@
 すべて **`/api` プレフィックス**（※一部例外あり）
 
 | Base | ルーター | 概要 |
-|---|---|---|
+| --- | --- | --- |
 | `/api/kiosk` | `kioskRoutes` | キオスク HTML 配信 |
 | `/api/test` | `testRoutes` | テスト用エンドポイント |
 | `/api/ai-assist` | `aiAssistRoutes` | AI テキスト |
@@ -36,7 +36,7 @@
 ### **例外（非 `/api`）**
 
 | Path | 役割 |
-|---|---|
+| --- | --- |
 | `/localPlaylist` | ローカルプレイリスト取得（`main.js` が利用） |
 | `/forceKiosk` | Chromium 再起動トリガ（`chromiumManager.forceKiosk()`） |
 | `/ping` | 疎通確認（200） |

@@ -4,7 +4,7 @@
 
 中核スタック。IoT イベント処理、メトリクス、WebRTC、通知、監視をまとめて構築します。（根拠: `xignage-infra-aws/lib/xignage-infra-aws-stack.ts`）
 
-### 主なリソース
+### XignageInfraAwsStack の主なリソース
 
 - **SNS**: `xignage-ops-alerts`（運用アラート通知）
 - **SQS**
@@ -27,15 +27,15 @@
   - MetricFilter（Adalo 成否・再試行・期限切れ・鮮度落ち）
   - Alarm（DLQ/失敗率/リトライ遅延/メトリクスエラー等）
   - Dashboard（Device/KPI）
- - **EventBridge（Scheduler）**
-   - 1 分間隔で `xignage-doorbell-timeout-worker` を実行
+- **EventBridge（Scheduler）**
+  - 1 分間隔で `xignage-doorbell-timeout-worker` を実行
 
 ### 採用（既存リソース取り込み）
 
 - `xignage-events-logger` と `xignage-push-retry-consumer` の LogGroup は **既存 LogGroup を import** します。
 - `xignage-metrics-ingestor` の LogGroup も既存の `/aws/lambda/xignage-metrics-ingestor` を adopt します。
 
-### Outputs
+### XignageInfraAwsStack の Outputs
 
 - `DevicesSsmParam`
 - `ResolvedDevicesCount`
@@ -51,7 +51,7 @@
 
 GitHub Actions OIDC 用の CDK デプロイロールを作成します。（根拠: `xignage-infra-aws/lib/ci-access.ts`）
 
-### 主なリソース
+### CiAccessStack の主なリソース
 
 - **OIDC Provider**: `token.actions.githubusercontent.com`
 - **IAM Role**: `cdk-deploy-role`
@@ -67,7 +67,7 @@ GitHub Actions OIDC 用の CDK デプロイロールを作成します。（根�
 - `ghBranch`（既定: `main`）
 - `ghOidcArn` / `GH_OIDC_ARN`（省略時は既定 OIDC）
 
-### Outputs
+### CiAccessStack の Outputs
 
 - `RoleArn`
 
@@ -75,7 +75,7 @@ GitHub Actions OIDC 用の CDK デプロイロールを作成します。（根�
 
 Relay EC2 と Content 管理の基盤（RDS + S3 + Media Lambda）を構築します。（根拠: `xignage-infra-aws/lib/relay-ec2-stack.ts`）
 
-### 主なリソース
+### RelayEc2Stack の主なリソース
 
 - **EC2**
   - Ubuntu 22.04 / `t2.micro` / Public subnet / EIP 付与
@@ -96,7 +96,7 @@ Relay EC2 と Content 管理の基盤（RDS + S3 + Media Lambda）を構築し�
   - `MediaThumbnailFn`（Node.js 20, `sharp`）
   - `MediaVideoThumbnailFn`（DockerImageFunction）
 
-### Outputs
+### RelayEc2Stack の Outputs
 
 - `RelayInstanceId`
 - `RelayPublicIp`

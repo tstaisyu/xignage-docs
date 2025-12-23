@@ -32,7 +32,7 @@
 ## **イベント早見表**
 
 | 受信元 | 受信イベント | 主なペイロード | 送出先（forward 先） | 概要 |
-|---|---|---|---|---|
+| --- | --- | --- | --- | --- |
 | `/admin` | `setVolume` | `{ volume, ... }` | `/`・`/admin`・`ioCloud?` | ローカルUIからの音量変更を全方面へ中継 |
 | `/admin` | `toggleVolume` | 任意 | `/`・`/admin`・`ioCloud?` | ミュート切替等のトグルを中継 |
 | `ioCloud?` | `setVolume` | `{ volume, ... }` | `/`・`/admin`・`ioCloud?` | クラウド指示の音量変更をローカルへ中継（未注入） |

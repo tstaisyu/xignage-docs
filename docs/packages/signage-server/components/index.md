@@ -6,7 +6,7 @@
 ## **サマリー**
 
 | コンポーネント | 役割 / 概要 | 主な入出力 | ドキュメント |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | **Cloud Socket** | 端末→クラウドの **Socket.IO クライアント**。接続時に `registerDevice`、DNS のオンライン監視、クラウド指示を端末内へ橋渡し | 受信（cloud→device）：Device / Config / System / Playlist / View / Misc の各イベント。送信：`registerDevice` / 各種応答 | [`cloud-socket.md`](./cloud-socket.md) |
 | **Local Socket** | 端末内の **Socket.IO サーバ（ioLocal）**。`/` と `/admin` NS を運用し、**setVolume / toggleVolume** 等をローカル内にブリッジ | 受信：`/admin` のイベント。送出：`/`・`/admin` に forward | [`local-socket.md`](./local-socket.md) |
 

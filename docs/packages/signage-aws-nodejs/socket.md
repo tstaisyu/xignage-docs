@@ -28,7 +28,7 @@
 - `io.on('connection', socket => { ...汎用 ACK をバインド... })`
 - `getIO()` をエクスポート（サービス層や HTTP ハンドラから利用）
 
-**汎用 ACK（接続毎にバインド）**
+### 汎用 ACK（接続毎にバインド）
 
 - `thumbnailResponse({ requestId, buffer, error })`  
   → `thumbnailRequests` を解決／タイムアウト解除
@@ -42,18 +42,18 @@
 
 > ## **デバイス登録（`socket/deviceRegistry.js`）**
 
-**イベント**
+### イベント
 
 - `registerDevice(deviceId)`  
   `socket.join(deviceId)`／`deviceSockets.set(deviceId, socket.id)`
 - `disconnect(reason)`  
   `deviceSockets` を逆引きして `deviceId` を削除
 
-**ヘルパ**
+### ヘルパ
 
 - `getSocketId(deviceId)`／`isDeviceOnline(deviceId)`
 
-**挙動**
+### デバイス登録の挙動
 
 1) デバイスが接続 → `registerDevice` を送信  
 2) サーバは `deviceId ⇢ socket.id` を `deviceSockets` に記録  
@@ -65,13 +65,13 @@
 
 > ## **バージョン・パッチ状態 ACK（`socket/commonRequests.js`）**
 
-**versionsResponse**
+### versionsResponse
 
 - `data = { requestId, serverVersion, uiVersion, farmVersion, error }`
 - 同一 `requestId` の待機者に  
   `{ server, ui, farm }` で解決／`error` なら reject
 
-**patchMigStateResponse**
+### patchMigStateResponse
 
 - `data = { requestId, state, error }`
 - 同一 `requestId` の待機者に `{ state }` で解決／`error` なら reject
@@ -84,12 +84,12 @@
 
 > ## **HTTP → Socket ブリッジ（音量トグル：`socket/toggleVolume.js`）**
 
-**エクスポート**
+### エクスポート
 
 - `setGetIO(fn)`：テストで `getIO` を差し替えるためのフック  
 - `toggleVolumeHandler(req, res)`：`POST /api/commands/send` から呼ばれる
 
-**挙動**
+### 音量トグルの挙動
 
 1) `deviceId` を検証 → `deviceSockets` から `sockId` を取得  
 2) `getIO()` で `sock` を取り出し、`requestId = uuidv4()` を生成  

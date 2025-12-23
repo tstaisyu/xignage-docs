@@ -1,17 +1,17 @@
 # signage-aws-nodejs
 
-> ## [**Runtime（Server / Middleware）**](./runtime.md)
+> ## [Runtime（Server / Middleware）](./runtime.md)
 
 **server.js** が `.env` と `/etc/signage/secret.env` を読み込み、Express → HTTP Server → Socket.IO → ルーティング登録までをまとめる層です。  
 `ADMIN_UI_DIST_DIR` がある場合は `/admin` に静的配信を行い、末尾の `/*` は `index.html` へフォールバックします。
 
-**主な流れ**
+### 主な流れ
 
 - `dotenv` → `express.json()` / `bodyParser.json()` → `http.createServer(app)`
 - `initSocket(server)` → `app.use('/', routes(io))` → 共通エラーハンドラ
 - `server.listen(PORT)`（既定 3000）
 
-**主要な環境変数**
+### 主要な環境変数
 
 - `PORT` / `ADMIN_UI_DIST_DIR`
 - `OPENAI_API_KEY` / `OPENAI_MODEL` / `OPENAI_MAX_TOKENS`
@@ -22,12 +22,12 @@
 - `WIFI_PRIORITY_INTERFACES`
 - `DAILY_API_KEY` / `CALL_UI_BASE_URL` / `DOORBELL_MAX_CALL_DURATION_SEC`
 
-> ## [**ルーティング（HTTP API）**](./routes.md)
+> ## [ルーティング（HTTP API）](./routes.md)
 
 `/api` 配下に **device / player / admin** を束ね、別途 `/call/*` に通話 UI を提供します。  
 認証は `requireHumanUser` による **`userExternalId` 必須**が基本です。
 
-**主要エンドポイント（概要）**
+### 主要エンドポイント（概要）
 
 - `/api/commands/*`：再生・停止・回転・更新・音量・ネットワークレポート
 - `/api/content/*`：メディア／プレイリスト管理、S3 アップロード URL 発行
@@ -38,22 +38,22 @@
 - `/api/admin/*` / `/api/user/*`：管理者・ユーザ向け一覧
 - `/call/join/*`：Daily 通話用の HTML UI
 
-> ## [**ソケット層（双方向通信）**](./socket.md)
+> ## [ソケット層（双方向通信）](./socket.md)
 
 `socket/*` は Jetson / Raspberry Pi とサーバのリアルタイム通信を担当します。  
 `registerDevice` で `deviceId ⇢ socketId` を保持し、ACK 応答は `requests` / `thumbnailRequests` の Map で相関管理します。
 
-**主な ACK イベント**
+### 主な ACK イベント
 
 - `versionsResponse` / `patchMigStateResponse`
 - `volumeStatusChanged`
 - `thumbnailResponse`
 
-> ## [**Services（サービス層）**](./services.md)
+> ## [Services（サービス層）](./services.md)
 
 **HTTP ルートと Socket 層の橋渡し**に加え、DB／S3／アクセス制御のロジックが含まれます。
 
-**主なコンポーネント**
+### 主なコンポーネント
 
 - `emitCommand`（ACK なしコマンド送信）
 - `deviceSettingsService` / `emitWithAck`
@@ -65,7 +65,7 @@
 
 このパッケージの CI は **fmt / lint / test** を回す基本ワークフローに加え、**依存ライセンス検査**、Release 公開時の **バッジ更新** を行います。Node は `22` を使用し、PR/Push をトリガに **失敗早期化**で品質を担保します。Release 時は `jq`＋`curl` で Gist の `release.json` を更新し、Shields.io の endpoint バッジに反映させます（`GH_PAT` は **gist スコープ**に限定）。
 
-**内訳**
+### 内訳
 
 - **AWS Node.js CI**：`fmt` → `lint` → `test`（`push`/`pull_request` 対象：`main`）
 - **License Check**：`npm run check:license`（依存の法的健全性を継続監視）

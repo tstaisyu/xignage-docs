@@ -5,7 +5,7 @@
 ## **早見表**
 
 | ファイル | 役割（要約） | 主な関数 |
-|---|---|---|
+| --- | --- | --- |
 | `deviceInfo.js` | 端末情報の統合取得 | `getDeviceInfo()`, `getDeviceModel()` |
 | `systemInfo.js` | OS/JetPack/Python/Timezone/NTP の取得 | `getOsReleaseInfo()`, `getJetpackVersion()`, `getPythonVersion()`, `getSystemTimezone()`, `getSystemTimeAndNtp()` |
 | `gpuStats.js` | Jetson/RasPi/汎用の GPU 統計 | `getGpuStatsByDevice()`, `getJetsonGpuStats()`, `getRaspiGpuStats()`, `getGenericGpuStats()` |

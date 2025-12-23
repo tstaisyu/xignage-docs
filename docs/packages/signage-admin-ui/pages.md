@@ -7,17 +7,17 @@
 
 | ルート | 画面 | 概要 |
 | --- | --- | --- |
-| `/admin/` | Dashboard | 主要画面へのショートカット
-| `/admin/upload` | Upload | メディアアップロード（簡易）
-| `/admin/media` | MediaList | メディア一覧・編集・削除
-| `/admin/playlists` | PlaylistsList | プレイリスト一覧・割当
-| `/admin/playlists/new` | PlaylistCreate | プレイリスト作成
-| `/admin/playlists/:playlistId` | PlaylistDetail | プレイリスト詳細・並び替え
-| `/admin/playlists/:playlistId/add` | PlaylistAddItem | プレイリストへメディア追加
-| `/admin/login` | AdminLogin | 管理者用ログイン
-| `/admin/system/customers` | SystemCustomers | 管理者用: 顧客管理
-| `/admin/system/devices` | SystemDevices | 管理者用: デバイス管理
-| `/admin/system/device-users` | SystemDeviceUsers | 管理者用: デバイス-ユーザー紐付け
+| `/admin/` | Dashboard | 主要画面へのショートカット |
+| `/admin/upload` | Upload | メディアアップロード（簡易） |
+| `/admin/media` | MediaList | メディア一覧・編集・削除 |
+| `/admin/playlists` | PlaylistsList | プレイリスト一覧・割当 |
+| `/admin/playlists/new` | PlaylistCreate | プレイリスト作成 |
+| `/admin/playlists/:playlistId` | PlaylistDetail | プレイリスト詳細・並び替え |
+| `/admin/playlists/:playlistId/add` | PlaylistAddItem | プレイリストへメディア追加 |
+| `/admin/login` | AdminLogin | 管理者用ログイン |
+| `/admin/system/customers` | SystemCustomers | 管理者用: 顧客管理 |
+| `/admin/system/devices` | SystemDevices | 管理者用: デバイス管理 |
+| `/admin/system/device-users` | SystemDeviceUsers | 管理者用: デバイス-ユーザー紐付け |
 
 ## Layout（`signage-admin-ui/src/page/Layout.tsx`）
 

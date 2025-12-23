@@ -6,7 +6,7 @@
 ## **早見表（Routes ↔ Controllers 対応）**
 
 | Group | Method | Path | Controller (Function) | 成功時レスポンス例 | 備考 |
-|---|---|---|---|---|---|
+| --- | --- | --- | --- | --- | --- |
 | AI Assist | POST | `/ai-assist/update` | `aiAssistController.updateText` | `{ status: "OK" }` | `textStore` に保存 |
 | AI Assist | GET | `/ai-assist/latest` | `aiAssistController.getLatestText` | `{ text: "<current>" }` | |
 | Test | GET | `/test/csi-snapshot` | `cameraController.getCsiSnapshot` | `image/jpeg` | `rpicam-jpeg` を実行 |
@@ -43,7 +43,7 @@ AI アシスト用のテキストを保存・取得するシンプルな API。
 AI アシスト用の「最新テキスト」を **プロセス内メモリ**に保持する最小ストア。再起動で内容は消えます。
 
 | 関数 | 引数 | 戻り値 | 説明 |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `getLatestText()` | なし | `string` | 現在保持しているテキストを返す |
 | `setLatestText(value)` | `string value` | `void` | 最新テキストを更新する |
 

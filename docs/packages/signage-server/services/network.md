@@ -6,7 +6,7 @@
 ## **早見表**
 
 | ファイル | 役割（要約） | 主な関数 |
-|---|---|---|
+| --- | --- | --- |
 | `deviceInfoRegistration.js` | 端末情報の **クラウド登録** | `registerDeviceInfo(deviceId)` |
 | `netManager.js` | Wi-Fi 設定の **全削除 + 再起動**（IF 指定） | `clearWifiConfAndReboot()` |
 | `networkRegistration.js` | **ローカル IP / MAC** の取得・登録（再試行/差分送信） | `safeRegisterLocalIp()`, `registerLocalIp()`, `registerMacAddress()`, `startNetworkReporter()` |

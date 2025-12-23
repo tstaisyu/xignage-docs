@@ -2,7 +2,7 @@
 
 本ページは `sockets/cloudSocket/` 配下のファイル群の**仕様を1ページに統合**したものです。  
 
-## **概要**
+## 概要
 
 - **役割**：クラウド側エンドポイント（`SERVER_URL`）へ Socket.IO クライアントで接続し、端末指示（ビュー切替/同期/音量/電源など）を**受信→処理→端末内へ橋渡し**する。  
 - **接続**: `ioClient(SERVER_URL, { path: '/socket.io', transports: ['websocket'] })`  
@@ -10,7 +10,7 @@
 - **定期タスク（5s）**: `dns.resolve('google.com')` によるオンライン監視（ログ出力）  
 - **クリーンアップ**: `initCloudSocket()` の戻り `{ cleanup }` で interval 停止 & ソケット close
 
-## **ライフサイクル / 接続（`index.js`）**
+## ライフサイクル / 接続（`index.js`）
 
 1) 接続: `SERVER_URL`（`/socket.io`、transport=`websocket`）  
 2) 接続成功 → `registerDevice(DEVICE_ID)` を送出 → `safeRegisterLocalIp(DEVICE_ID)`  
@@ -20,7 +20,7 @@
 6) 5秒ごとに DNS 解決でオンライン監視  
 7) `cleanup()` でタイマー停止＆ソケットクローズ
 
-## **サブモジュール登録（イベント受信の委譲）**
+## サブモジュール登録（イベント受信の委譲）
 
 `initCloudSocket()` 内で以下を登録:
 
@@ -32,38 +32,38 @@
 - `handleConfigCommands(cloudSocket, ioLocal)`
 - `handlePlaylistCommands(cloudSocket, ioLocal)`
 
-## **イベント早見表（cloud → device／device → cloud / ioLocal）**
+## イベント早見表（cloud → device／device → cloud / ioLocal）
 
-| グループ | 受信イベント | 主ペイロード | 応答 / 送出 | 概要 |
+|グループ|受信イベント|主ペイロード|応答 / 送出|概要|
 |---|---|---|---|---|
-| **Device** | `getVersions` | `{ requestId }` | `versionsResponse { requestId, serverVersion, uiVersion, farmVersion }` | 各パッケージのバージョン |
-|  | `requestDeviceInfo` | `{ requestId }` | `deviceInfoResponse { requestId, info }` | 端末情報 |
-|  | `getPatchMigState` | `{ requestId }` | `patchMigStateResponse { requestId, state｜error }` | パッチ＋マイグ状態 |
-| **Config** | `getConfig` | `{ deviceId, requestId }` | `configResponse { deviceId, …settings }` | ローカル設定取得 |
-|  | `updateConfig` | `{ deviceId, requestId, ...updates }` | `configUpdated { deviceId, …settings }` | ローカル設定更新 |
-| **System** | `shutdownCommand` | — | — | 電源断 |
-|  | `rebootCommand` | — | — | 再起動 |
-|  | `startUpdate` | 任意 | — | `systemctl start signage-update.service` |
-|  | `networkResetCommand` | 任意 | — | wpa_cli 全削除 → 再起動 |
-|  | `toggleRotation` | 任意 | — | 画面回転トグル |
-|  | `forceKiosk` | — | — | キオスク再起動 |
-|  | `deleteAllFiles` | `{ requestId }` | `deleteAllFilesResponse { requestId, success｜error }` | 画像/動画配下の全ファイル削除 |
-| **Playlist** | `startPlaylist` | 任意 | `ioLocal.emit('startPlaylist', payload)` | ローカルへ開始通知 |
-|  | `stopPlaylist` | 任意 | `ioLocal.emit('stopPlaylist', payload)` | ローカルへ停止通知 |
-|  | `syncContentFromCloud` | `{ deviceId? }` | `ioLocal.emit('contentSyncResult', result)` | クラウド正本の同期 |
-| **View** | `switchView` | `<viewName>` | `ioLocal.emit('switchView', viewName)` | ビュー切替 |
-|  | `showImage` | `<imageFileName>` | `ioLocal.emit('showImage', …)` or **保留**→`clientReady` で再送 | 未接続時はキュー |
-|  | `playVideo` | `<payload>` | `ioLocal.emit('playVideo', …)` or **保留**→`clientReady` で再送 | 未接続時はキュー |
-|  | `playYoutube` | `{ youtubeUrl? , playlistId? }` | `ioLocal.emit('playYoutubeLocal', { youtubeUrl })` | URL を決定して送出 |
-| **Misc** | `updateText` | `{ text }` | — | `textStore` を更新 |
-|  | `setVolume` | `{ volume }` | — | `pactl set-sink-volume` |
-|  | `toggleVolume` | 任意 | `ioLocal.emit('toggleVolume', payload)` | ローカルへ転送 |
-| *(local→cloud)* | — | — | `volumeStatusChanged` を cloud / `/admin` に転送 | local-bridge |
-| **Network** | `net:report` | `ack` | `ack({ ok, snap|error })` | IP/MAC 再登録とスナップショット |
+|**Device**|`getVersions`|`{ requestId }`|`versionsResponse { requestId, serverVersion, uiVersion, farmVersion }`|各パッケージのバージョン|
+||`requestDeviceInfo`|`{ requestId }`|`deviceInfoResponse { requestId, info }`|端末情報|
+||`getPatchMigState`|`{ requestId }`|`patchMigStateResponse { requestId, state｜error }`|パッチ＋マイグ状態|
+|**Config**|`getConfig`|`{ deviceId, requestId }`|`configResponse { deviceId, …settings }`|ローカル設定取得|
+||`updateConfig`|`{ deviceId, requestId, ...updates }`|`configUpdated { deviceId, …settings }`|ローカル設定更新|
+|**System**|`shutdownCommand`|—|—|電源断|
+||`rebootCommand`|—|—|再起動|
+||`startUpdate`|任意|—|`systemctl start signage-update.service`|
+||`networkResetCommand`|任意|—|wpa_cli 全削除 → 再起動|
+||`toggleRotation`|任意|—|画面回転トグル|
+||`forceKiosk`|—|—|キオスク再起動|
+||`deleteAllFiles`|`{ requestId }`|`deleteAllFilesResponse { requestId, success｜error }`|画像/動画配下の全ファイル削除|
+|**Playlist**|`startPlaylist`|任意|`ioLocal.emit('startPlaylist', payload)`|ローカルへ開始通知|
+||`stopPlaylist`|任意|`ioLocal.emit('stopPlaylist', payload)`|ローカルへ停止通知|
+||`syncContentFromCloud`|`{ deviceId? }`|`ioLocal.emit('contentSyncResult', result)`|クラウド正本の同期|
+|**View**|`switchView`|`<viewName>`|`ioLocal.emit('switchView', viewName)`|ビュー切替|
+||`showImage`|`<imageFileName>`|`ioLocal.emit('showImage', …)` or **保留**→`clientReady` で再送|未接続時はキュー|
+||`playVideo`|`<payload>`|`ioLocal.emit('playVideo', …)` or **保留**→`clientReady` で再送|未接続時はキュー|
+||`playYoutube`|`{ youtubeUrl? , playlistId? }`|`ioLocal.emit('playYoutubeLocal', { youtubeUrl })`|URL を決定して送出|
+|**Misc**|`updateText`|`{ text }`|—|`textStore` を更新|
+||`setVolume`|`{ volume }`|—|`pactl set-sink-volume`|
+||`toggleVolume`|任意|`ioLocal.emit('toggleVolume', payload)`|ローカルへ転送|
+|*(local→cloud)*|—|—|`volumeStatusChanged` を cloud / `/admin` に転送|local-bridge|
+|**Network**|`net:report`|`ack`|`ack({ ok, snap&#124;error })`|IP/MAC 再登録とスナップショット|
 
-## **コマンド詳細**
+## コマンド詳細
 
-> ### **Device（`deviceCommands.js`）**
+> ### Device（`deviceCommands.js`）
 
 - **`getVersions`** → `versionsResponse`  
   serverVersion：`/opt/signage-core/signage-server/current/package.json`  
@@ -74,7 +74,7 @@
     - 管理 UI は signage-server が配信しませんが、**バージョン取得用に `VERSION.txt` を参照**しています。  
       TODO: `admin-ui` の配備パスが固定かを確認（根拠: `signage-server/sockets/cloudSocket/deviceCommands.js`）。
 
-> ### **Playlist（`playlistCommands.js`）**
+> ### Playlist（`playlistCommands.js`）
 
 - `startPlaylist` / `stopPlaylist`：`ioLocal` へ中継  
 - `syncContentFromCloud`：`cloudContentSync.syncOnceFromCloud()` を実行し、`contentSyncResult` を `ioLocal` へ送出
@@ -83,31 +83,31 @@
     - `syncContentFromCloud` は `payload.deviceId` を優先して使います。  
       TODO: `payload.deviceId` 未指定時に `config.DEVICE_ID` を参照する実装だが、当該モジュールで `config` が import されていない（根拠: `signage-server/sockets/cloudSocket/playlistCommands.js`）。
 
-> ### **View（`viewCommands.js`）**
+> ### View（`viewCommands.js`）
 
 - `showImage` / `playVideo` は**未接続時に1件だけ保留**し、`clientReady` でフラッシュ  
 - `playYoutube` は `youtubeUrl` / `playlistId` をそのまま `playYoutubeLocal` に転送
 
-> ### **Network（`index.js`）**
+> ### Network（`index.js`）
 
 - `net:report` 受信時に `safeRegisterLocalIp` / `registerMacAddress` / `getNetworkSnapshot` を実行し、`ack()` で結果を返す
 
-## **設定（Environment Variables）**
+## 設定（Environment Variables）
 
-| Key | Required | Default | Note |
+|Key|Required|Default|Note|
 |---|---|---|---|
-| `SERVER_URL` | yes | `https://api.xrobotics.jp` | Cloud Socket.IO エンドポイント（`/socket.io`） |
-| `DEVICE_ID` | yes | — | 接続時に `registerDevice` で送信 |
-| `WIFI_PRIORITY_INTERFACES` | no | `wlP1p1s0,wlanUSB,wlanINT` | IP/MAC 検出の優先IF順 |
-| `BOARD_TYPE` | no | `raspi` 相当 | `setVolume` の sink 推定に使用 |
+|`SERVER_URL`|yes|`https://api.xrobotics.jp`|Cloud Socket.IO エンドポイント（`/socket.io`）|
+|`DEVICE_ID`|yes|—|接続時に `registerDevice` で送信|
+|`WIFI_PRIORITY_INTERFACES`|no|`wlP1p1s0,wlanUSB,wlanINT`|IP/MAC 検出の優先IF順|
+|`BOARD_TYPE`|no|`raspi` 相当|`setVolume` の sink 推定に使用|
 
-## **失敗時挙動**
+## 失敗時挙動
 
 - **接続失敗/切断**: Socket.IO の自動再接続に準拠（独自再試行なし）
 - **IP再登録失敗**: 例外はログのみ → 次の周期や `net:report` で再試行
 - **DNS失敗**: `isOnline=false` としてログ（復帰時に `online` へ）
 
-## **監視/運用メモ**
+## 監視/運用メモ
 
 - 5秒周期のログが出るため **ログローテーション**に留意
 - **deviceId フィルタ**：`getConfig/updateConfig` は `payload.deviceId === config.DEVICE_ID` のときのみ応答します。**他イベントにも同様のフィルタ導入を検討**（誤配送防止）。
