@@ -51,6 +51,7 @@ nav:
   - Home: index.md
   - Architecture:
       - Overview: architecture/index.md
+      - 横断APIリファレンス: architecture/api_reference.md
 #      - Software Stack: architecture/software_stack.md
   - Hardware:
       - Overview: hardware/index.md
