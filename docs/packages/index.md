@@ -24,7 +24,7 @@
 
 > ## signage-server
 
-- **目的**：画像・動画・YouTube・AI テキストの**配信と制御**を担うバックエンド。REST/HTTP と Socket を提供。
+- **目的**：画像・動画・AI テキストの**配信と制御**を担うバックエンド。REST/HTTP と Socket を提供。
 - **現状**：ドキュメント整備中（API・ユーティリティ・設定の章から順次拡充）。
 - **入口**：[`signage-server / index`](./signage-server/index.md)
 

@@ -54,7 +54,6 @@
 |**View**|`switchView`|`<viewName>`|`ioLocal.emit('switchView', viewName)`|ビュー切替|
 ||`showImage`|`<imageFileName>`|`ioLocal.emit('showImage', …)` or **保留**→`clientReady` で再送|未接続時はキュー|
 ||`playVideo`|`<payload>`|`ioLocal.emit('playVideo', …)` or **保留**→`clientReady` で再送|未接続時はキュー|
-||`playYoutube`|`{ youtubeUrl? , playlistId? }`|`ioLocal.emit('playYoutubeLocal', { youtubeUrl })`|URL を決定して送出|
 |**Misc**|`updateText`|`{ text }`|—|`textStore` を更新|
 ||`setVolume`|`{ volume }`|—|`pactl set-sink-volume`|
 ||`toggleVolume`|任意|`ioLocal.emit('toggleVolume', payload)`|ローカルへ転送|
@@ -86,7 +85,6 @@
 > ### View（`viewCommands.js`）
 
 - `showImage` / `playVideo` は**未接続時に1件だけ保留**し、`clientReady` でフラッシュ  
-- `playYoutube` は `youtubeUrl` / `playlistId` をそのまま `playYoutubeLocal` に転送
 
 > ### Network（`index.js`）
 

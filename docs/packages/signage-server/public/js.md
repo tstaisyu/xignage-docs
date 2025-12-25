@@ -29,9 +29,7 @@
   文字列なら単体動画ループ（`playSingleVideo(name)`）  
   オブジェクト `{ fileName, isSingle }` で `isSingle`=true のとき単体動画ループ
 - `switchView(tv)`  
-  文字列トリム → `https://meet.jit.si/` 始まりなら **外部 Jitsi** へ  
-  それ以外は **ローカル遷移**：`'kiosk'` → `'/kiosk'`（拡張子なし）
-- `playYoutubeLocal({ youtubeUrl })` → `/youtube.html?youtubeUrl=...` へ遷移
+  **ローカル遷移**：`'kiosk'` → `'/kiosk'`（拡張子なし）
 - `doorbell:startCall` → `sessionStorage.doorbellCall` を保存し `/videocall.html` へ遷移
 - **プレイリスト制御**：`startPlaylist`（`isSingleMode=false; player.start()`）、`stopPlaylist`（`player.stop()`）
 - 割り込み：`interruptPlay({ fileName, isVideo, duration })` → `player.interrupt(...)`、`endInterrupt` → `player.resume()`
@@ -51,7 +49,6 @@
 4) `socket.emit('clientReady')`
 
 !!! note
-    - **`/youtube.html`**：遷移先 HTML が `public/` に存在しないため、現行の静的配信では 404 になります。
     - **`showImage` の `this`**：関数内で `this.isStopped/this.nextItem()` を参照していますが、`PlaylistPlayer` の `this` とは無関係（`this` は暗黙に `window`）。  
       TODO: 既存の動作意図（プレイリスト復帰の要否）を確認（根拠: `signage-server/public/js/main.js`）。
 
@@ -82,8 +79,7 @@
 
 > ## **switchViewHandler.js**
 
-**ローカル UI ページ** で `switchView` を受け取り、  
-**Jitsi 外部 URL** ならそのまま遷移、そうでなければ **ローカル遷移**（`'kiosk'`→`'/kiosk'`）します。
+**ローカル UI ページ** で `switchView` を受け取り、**ローカル遷移**（`'kiosk'`→`'/kiosk'`）します。
 
 ### **公開関数**
 

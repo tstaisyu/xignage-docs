@@ -76,7 +76,7 @@ Admin UI から実際に叩く API 例:
 | startPlaylist / stopPlaylist | Cloud → Device | なし | 任意 payload | Human + device access | signage-aws-nodejs/services/command/emitCommand.js |
 | toggleRotation / forceKiosk / startUpdate / networkResetCommand | Cloud → Device | なし | deviceId | Human + device access | signage-aws-nodejs/routes/admin/command/systemRoutes.js |
 | setVolume / toggleVolume | Cloud → Device | なし | volume, requestId | Human + device access | signage-aws-nodejs/routes/admin/command/volumeRoutes.js |
-| playVideo / showImage / switchView / playYoutube | Cloud → Device | なし | fileName など | Human + device access | signage-aws-nodejs/routes/admin/command/playRoutes.js |
+| playVideo / showImage / switchView | Cloud → Device | なし | fileName など | Human + device access | signage-aws-nodejs/routes/admin/command/playRoutes.js |
 | syncContentFromCloud | Cloud → Device | なし | deviceId | Human + customer access | signage-aws-nodejs/routes/admin/command/systemRoutes.js |
 | getVersions / versionsResponse | Cloud ↔ Device | あり | requestId / version info | Human + device access | signage-aws-nodejs/routes/admin/versionRoutes.js |
 | getPatchMigState / patchMigStateResponse | Cloud ↔ Device | あり | requestId / state | Human + device access | signage-aws-nodejs/routes/admin/patchMigRoutes.js |

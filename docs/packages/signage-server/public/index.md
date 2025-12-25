@@ -25,14 +25,10 @@
 
 ## **イベントとハンドシェイク（共通）**
 
-- 受信想定：`switchView`, `showImage`, `playVideo`, `playYoutubeLocal`, `startPlaylist`, `stopPlaylist`, `setVolume`, `toggleVolume` など  
+- 受信想定：`switchView`, `showImage`, `playVideo`, `startPlaylist`, `stopPlaylist`, `setVolume`, `toggleVolume` など  
 - 初期化完了後：**`clientReady`** を送信（保留イベントのフラッシュ受信に必須）
 
 !!! note "参考"
     ソケット設計とブリッジは **Components** にまとめています：  
     - Cloud ↔ Device：[`components/cloud-socket.md`](../components/cloud-socket.md)  
     - Local （`/`・`/admin`）：[`components/local-socket.md`](../components/local-socket.md)
-
-!!! note "未配置ページ"
-    `main.js` は `/youtube.html` へ遷移する分岐を持ちますが、`public/` 配下に該当 HTML が見当たりません。  
-    現行の静的配信は `public/` のみのため、遷移時は 404 となります。

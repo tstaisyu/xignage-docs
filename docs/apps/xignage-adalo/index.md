@@ -34,7 +34,7 @@
 - **Home**：登録端末一覧、プレイリスト編集への導線、ボトムナビ（5 アイコン）
 - **写真／動画**：一覧表示／再生／削除／新規アップロード
 - **設定**：アカウント・デバイス情報、**アップデート/再起動**コマンド
-- **機能ページ（β）**：YouTube 再生、AI 対話、ビデオ通話、ミラー、スクリーンセーバー
+- **機能ページ（β）**：AI 対話、ビデオ通話、ミラー、スクリーンセーバー
 - **サポート**：外部 URL → 公式 LINE（マニュアル/サポート）
 
 ## データモデル（Adalo）
@@ -50,8 +50,6 @@
 | Device | text | | 選択中の **deviceId**（文字列） |
 | preupload_image | image file | | |
 | preupload_video | video file | | |
-| Youtube | text | | |
-| screen saver | text | | |
 | status | text | | 例：online/offline |
 | MAC Address | text | | |
 | Devices | Relationship → **Devices** | | ユーザ所持デバイス一覧 |
@@ -125,7 +123,6 @@
 | Delete_all_contents | POST | `{BASE_URL}/api/delete/all` | Content-Type: application/json | `{"deviceId":"<user.device>"}` | 全消去 |
 | volume_level | POST | `{BASE_URL}/api/commands/send` | Content-Type: application/json | `{"deviceId":"<user.device>","command":"setVolume","payload":{"volume":"<volume level>%"}}` | 例：`"50%"` |
 | Update_deviceInfo | POST | `{BASE_URL}/api/device-info/update` | Content-Type: application/json | `{"deviceId":"<user.device>"}` | 端末情報更新 |
-| youtube_playlist_play | POST | `{BASE_URL}/api/commands/send` | Content-Type: application/json | `{"deviceId":"<user.device>","command":"playYoutube","payload":{"youtubeUrl":"<youtubeUrl>"}}` | YouTube 再生 |
 | kiosk_bt | GET | `{BASE_URL}/api/commands/send?deviceId=<user.device>&command=switchView&fileName=kiosk.html` | — | — | 表記確認：`kiost_bt` → `kiosk_bt`? |
 | end_call | POST | `{BASE_URL}/api/commands/kioskRestart` | Content-Type: application/json | `{"deviceId":"<user.device>"}` | 通話終了/キオスク再起動 |
 | randomNameAlpha | GET | `{BASE_URL}/api/random/roomNameAlpha` | — | — | ランダム名取得 |
@@ -135,7 +132,6 @@
 | pause_loop | POST | `{BASE_URL}/api/commands/stop` | Content-Type: application/json | `{"deviceId":"<user.device>"}` | ループ停止 |
 | setAutoPlaylist | PATCH | `{BASE_URL}/api/deviceSettings/<user.device>` | Content-Type: application/json | `{"autoPlaylist": true}` | 設定ON |
 | system_update | POST | `{BASE_URL}/api/commands/update` | Content-Type: application/json | `{"deviceId":"<user.device>"}` | システム更新 |
-| kiosk_before_youtube | GET | `{BASE_URL}/api/commands/send?deviceId=<user.device>&command=switchViewYT&fileName=kiosk.html` | — | — | YT 前面表示切替 |
 | play_video | GET | `{BASE_URL}/api/commands/send?deviceId=<user.device>&command=playVideo&fileName=<selected video>&isSingle=true` | — | — | 単発再生 |
 | toggleVolume | POST | `{BASE_URL}/api/commands/send` | Content-Type: application/json | `{"deviceId":"<user.device>","command":"toggleVolume","payload":{}}` | ミュート切替 |
 | wifi_reconfig | POST | `{BASE_URL}/api/commands/network/reset` | Content-Type: application/json | `{"deviceId":"<user.device>"}` | Wi-Fi リセット |
