@@ -15,7 +15,7 @@
 ## 2) 認証/権限モデル (Human / Device / master/system)
 
 | Actor | 認証情報/ID | 主な判定/権限条件 | 備考 | 根拠 |
-|---|---|---|---|---|
+| --- | --- | --- | --- | --- |
 | Human Admin(通常) | userExternalId | requireHumanUser + customer/device アクセスチェック | userExternalId はクエリ/ボディから取得 | signage-aws-nodejs/middlewares/humanAuth.js |
 | System(master) | userExternalId | isMasterUser が true ならアクセスチェックをスキップ | MASTER_USER_EXTERNAL_IDS に依存 | signage-aws-nodejs/services/userDevicesService.js |
 | Internal (system) | x-internal-token | INTERNAL_API_TOKEN と一致 | 一部 API で内部トークン必須 | signage-aws-nodejs/middlewares/internalAuth.js |
@@ -31,7 +31,7 @@ TODO: userExternalId の真正性を担保するトークン/署名検証は rep
 ### Cloud HTTP endpoints (主要 route groups)
 
 | ルート群 | 代表パス | 主な用途 | 主要パラメータ(必須) | 権限 | 根拠 |
-|---|---|---|---|---|---|
+| --- | --- | --- | --- | --- | --- |
 | Device registration | `/api/ip/register` `/api/mac/register` `/api/device-info/register` | 端末 IP/MAC/情報の登録 | deviceId, localIp/macAddress/info | Device (未認証) | signage-aws-nodejs/routes/device/*.js |
 | Device sync | `/api/devices/:deviceId/sync-complete` | 同期完了の記録 | deviceId, (playlistId または既存紐付け) | Device (未認証) | signage-aws-nodejs/routes/device/deviceSyncRoutes.js |
 | Player playlist | `/api/devices/:deviceId/playlist` | 再生プレイリスト取得 | deviceId, (customerId/playlistId は任意) | Device (未認証) | signage-aws-nodejs/routes/player/devicePlaylistRoutes.js |
@@ -48,7 +48,7 @@ TODO: userExternalId の真正性を担保するトークン/署名検証は rep
 Admin UI から実際に叩く API 例:
 
 | 機能 | エンドポイント | 必須パラメータ | 根拠 |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | デバイス一覧 | `/api/user/devices` | userExternalId | signage-admin-ui/src/context/UserContext.tsx |
 | 同期ステータス | `/api/devices/:deviceId/sync-status` | customerId, userExternalId | signage-admin-ui/src/page/Layout.tsx |
 | 同期開始 | `/api/commands/sync-content` | deviceId, customerId, userExternalId | signage-admin-ui/src/page/Layout.tsx |
@@ -59,7 +59,7 @@ Admin UI から実際に叩く API 例:
 ### Device local HTTP endpoints (存在するもののみ)
 
 | ルート群 | 代表パス | 主な用途 | 備考 | 根拠 |
-|---|---|---|---|---|
+| --- | --- | --- | --- | --- |
 | Kiosk | `/api/kiosk` | kiosk.html 表示 | Device local | signage-server/routes/kioskRoutes.js |
 | Views | `/api/views/switch/:view` | ローカル UI 切替 | Socket.IO へ switchView | signage-server/routes/viewRoutes.js |
 | AI Assist | `/api/ai-assist` `/api/ai-assist/update` `/api/ai-assist/latest` | AI assist 画面/更新 | Device local | signage-server/routes/aiAssistRoutes.js |
@@ -71,11 +71,11 @@ Admin UI から実際に叩く API 例:
 ### Socket events (方向/ACK/payload/権限)
 
 | イベント | 方向 | ACK | payload 要点 | 権限 | 根拠 |
-|---|---|---|---|---|---|
+| --- | --- | --- | --- | --- | --- |
 | registerDevice | Device → Cloud | なし | deviceId | Device (未認証) | signage-aws-nodejs/socket/deviceRegistry.js |
 | startPlaylist / stopPlaylist | Cloud → Device | なし | 任意 payload | Human + device access | signage-aws-nodejs/services/command/emitCommand.js |
 | toggleRotation / forceKiosk / startUpdate / networkResetCommand | Cloud → Device | なし | deviceId | Human + device access | signage-aws-nodejs/routes/admin/command/systemRoutes.js |
-| setVolume / toggleVolume | Cloud → Device | volume, requestId | Human + device access | signage-aws-nodejs/routes/admin/command/volumeRoutes.js |
+| setVolume / toggleVolume | Cloud → Device | なし | volume, requestId | Human + device access | signage-aws-nodejs/routes/admin/command/volumeRoutes.js |
 | playVideo / showImage / switchView / playYoutube | Cloud → Device | なし | fileName など | Human + device access | signage-aws-nodejs/routes/admin/command/playRoutes.js |
 | syncContentFromCloud | Cloud → Device | なし | deviceId | Human + customer access | signage-aws-nodejs/routes/admin/command/systemRoutes.js |
 | getVersions / versionsResponse | Cloud ↔ Device | あり | requestId / version info | Human + device access | signage-aws-nodejs/routes/admin/versionRoutes.js |
@@ -92,8 +92,8 @@ TODO: Socket.IO 接続時の認証/署名方式はコード上確認できず。
 ### IoT / MQTT topics
 
 | Topic | Pub/Sub | 用途 | 前提 | 根拠 |
-|---|---|---|---|---|
-| `xignage/v1/devices/{DEVICE_ID}/events/{button|presence}` | Device pub → IoT rule sub | ボタン/ToF イベント通知 | IOT_ENDPOINT, IOT_THING_NAME, 証明書 | signage-jetson/scripts/io/aws_iot_pub.py |
+| --- | --- | --- | --- | --- |
+| `xignage/v1/devices/{DEVICE_ID}/events/{button\|presence}` | Device pub → IoT rule sub | ボタン/ToF イベント通知 | IOT_ENDPOINT, IOT_THING_NAME, 証明書 | signage-jetson/scripts/io/aws_iot_pub.py |
 | `xignage/v1/devices/{DEVICE_ID}/events/button` | Device pub → IoT rule sub | ドアベルテスト通知 | AWS_IOT_ENDPOINT | signage-server/services/iotDoorbellPublisher.js |
 | `xignage/v1/devices/{DEVICE_ID}/metrics/system` | Device pub → IoT rule sub | メトリクス送信 | IOT_* env / mqtts | signage-jetson/scripts/metrics/index.js |
 | `SELECT * FROM 'xignage/v1/devices/+/events/#'` | IoT rule | events → Lambda | IoT ルール | xignage-infra-aws/README.md |
@@ -102,7 +102,7 @@ TODO: Socket.IO 接続時の認証/署名方式はコード上確認できず。
 ## 権限マトリクス
 
 | 対象 | Admin(通常) | System(master) | Device | 未認証 | 根拠 |
-|---|---|---|---|---|---|
+| --- | --- | --- | --- | --- | --- |
 | Cloud HTTP: `/api/content/*` | 許可 (userExternalId + customerId) | 許可 (master bypass) | 禁止 | 禁止 (userExternalId 必須) | signage-aws-nodejs/routes/admin/contentRoutes.js |
 | Cloud HTTP: `/api/commands/*` | 許可 (device access) | 許可 (master bypass) | 禁止 | 禁止 | signage-aws-nodejs/routes/admin/command/*.js |
 | Cloud HTTP: `/api/admin/*` | 禁止 | 許可 (requireMasterUser) | 禁止 | 禁止 | signage-aws-nodejs/routes/admin/adminRoutes.js |
