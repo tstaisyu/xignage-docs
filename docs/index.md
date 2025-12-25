@@ -7,10 +7,38 @@
 
 ```mermaid
 flowchart LR
-  Cloud["Cloud API"] -- HTTPS/WSS --> Device[Device Server]
-  Mobile["Mobile Apps"] -- HTTPS --> Cloud
-  Admin["/admin UI"] --- Device
+  classDef cloud fill:#eaf2ff,stroke:#4a90e2,color:#0b3d91
+  classDef device fill:#eaffea,stroke:#34a853,color:#0b5b14
+  classDef user fill:#fff6e5,stroke:#f5a623,color:#6b4e00
+  classDef obs fill:#fff0f5,stroke:#d63384,color:#6b113a
+
+  subgraph Cloud["Cloud (AWS)"]
+    CloudAPI["EC2: Cloud API (signage-aws-nodejs)"]:::cloud
+    RDS["RDS (PostgreSQL)"]:::cloud
+    S3["S3 (media/logs)"]:::cloud
+    IoTCore["IoT Core"]:::cloud
+    CloudWatch["CloudWatch Logs/Metrics"]:::obs
+  end
+
+  Admin["Admin UI (signage-admin-ui, Adalo/Browser)"]:::user
+  Device["Device (signage-server)"]:::device
+
+  Admin -- "HTTPS" --> CloudAPI
+  Device -- "HTTPS/WSS" --> CloudAPI
+  CloudAPI -- "Socket.IO" --> Device
+
+  CloudAPI -- "SQL" --> RDS
+  CloudAPI -- "presign" --> S3
+  Admin -- "HTTPS PUT" --> S3
+  Device -- "HTTPS GET" --> S3
+
+  Device -- "MQTT/HTTPS" --> IoTCore
+  CloudAPI -- "logs/metrics" --> CloudWatch
 ```
+
+TODO:
+
+- Cognito の適用範囲（WebRTC API 認証の本番有効化など）は未確認: xignage-infra-aws/lib/webrtc-api.ts
 
 データフロー要約と設計原則の詳細は → **[Architecture / Overview](architecture/index.md)** を参照。
 
@@ -22,24 +50,26 @@ flowchart LR
 1. **端末セットアップ** → [signage-jetson](packages/signage-jetson/index.md)  
    Openbox+Chromium キオスク、ネットワーク/APフォールバック、更新基盤の導入。
 2. **端末バックエンド** → [signage-server](packages/signage-server/index.md)  
-   再生・プレイリスト・管理UI(/admin) を端末上で提供。
+   再生・プレイリスト・端末ローカルAPI/Socket.IO を提供。
 3. **クラウド制御** → [signage-aws-nodejs](packages/signage-aws-nodejs/index.md)  
    アップロード/一覧/設定/電源/バージョン等を HTTP/Socket.IO で制御。
-4. **エッジ検知（任意）** → [xignage-edge-detection](packages/xignage-edge-detection/index.md)  
+4. **ブラウザ管理 UI** → [signage-admin-ui](packages/signage-admin-ui/index.md)  
+   `VITE_API_BASE` で接続先を切替。
+5. **エッジ検知（任意）** → [xignage-edge-detection](packages/xignage-edge-detection/index.md)  
    YOLOX による人物検知。最新結果を JSON に**アトミック書き込み**。
-5. **モバイル運用** → [Mobile Apps（Adalo）](apps/xignage-adalo/index.md)  
+6. **モバイル運用** → [Mobile Apps（Adalo）](apps/xignage-adalo/index.md)  
    スマホからのアップロード／操作。まずは招待制の Android / iOS で試験運用。
-6. **ハード要件の確認** → [Hardware / System Composition](hardware/system_composition.md)
+7. **ハード要件の確認** → [Hardware / System Composition](hardware/system_composition.md)
 
 > ## パッケージと役割（Overview）
 
 - **signage-jetson**：端末の**初期化・運用基盤**（冪等スクリプト／分割フェーズ）  
   → [docs](packages/signage-jetson/index.md)
-- **signage-server**：端末ローカルの**再生サーバ**（Express + /admin UI）  
+- **signage-server**：端末ローカルの**再生サーバ**（Express + Socket.IO）  
   → [docs](packages/signage-server/index.md)
 - **signage-aws-nodejs**：**クラウド側バックエンド**（REST + Socket.IO + Upload）  
   → [docs](packages/signage-aws-nodejs/index.md)
-- **signage-admin-ui**：端末ローカルの**管理 UI**（/admin ベース）  
+- **signage-admin-ui**：ブラウザの**管理 UI**（`VITE_API_BASE` で API 接続先を指定）  
   → [docs](packages/signage-admin-ui/index.md)
 - **xignage-edge-detection**：**人物検知パイプライン**（YOLOX、将来 OpenFace 連携）  
   → [docs](packages/xignage-edge-detection/index.md)
@@ -83,7 +113,7 @@ Rev 管理・BOM・CAD への導線をまとめ、ソフト要件（電源・熱
 - プレイリスト：`/api/playlist`（add/move/remove/thumbnail）が往復（ACK）で成功  
 - 設定：`/api/deviceSettings/:deviceId` の **get/update**  
 - バージョン/パッチ：`/api/version/versions` / `api/patchMigState` が 5s タイムアウト内に応答  
-- 管理 UI：`/admin` が端末で表示・操作可能
+- 管理 UI：signage-admin-ui から API へアクセスできる（`VITE_API_BASE`）
 
 > ## 変更履歴 / リリース
 
