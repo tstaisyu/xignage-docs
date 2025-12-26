@@ -6,11 +6,20 @@
 
 | パッケージ | 役割 / 概要 | 対象 / 実行環境 | ステータス | ドキュメント |
 | --- | --- | --- | --- | --- |
+| **jetson-ab-flash** | Jetson Orin Nano の A/B rootfs + NVMe フラッシュを自動化するスクリプト群 | Ubuntu 22.04 ホスト + Jetson Orin Nano DevKit | **Complete** | [`packages/jetson-ab-flash`](./jetson-ab-flash/index.md) |
 | **signage-jetson** | Jetson / Raspberry Pi を**サイネージ端末化**するセットアップスクリプト群（ネットワーク統一、AP フォールバック、更新基盤、キオスク起動 等を冪等適用） | Ubuntu 系（Jetson L4T/Ubuntu・Ubuntu for Raspberry Pi） | **Complete** | [`packages/signage-jetson`](./signage-jetson/index.md) |
 | **signage-server** | 端末上で動作する**バックエンド**。Express API、コンテンツ管理、プレイリスト、サムネイル生成、Socket 連携など | Node.js（Jetson / Raspberry Pi / Linux） | **Complete** | [`packages/signage-server`](./signage-server/index.md) |
 | **signage-aws-nodejs** | AWS 上で常駐する**クラウド側バックエンド**。Express + Socket.IO で端末制御／メディアアップロード／プレイリスト操作／設定更新／バージョン・パッチ照会などを提供 | Node.js 22（AWS / Linux, EC2・Lightsail・Container） | **Complete** | [`packages/signage-aws-nodejs`](./signage-aws-nodejs/index.md) |
 | **signage-admin-ui** | 端末ローカルで操作・管理する**フロント UI**（音量ミュート/スライダー、D&D アップロード、状態確認） | ブラウザ（Vite ビルドを Nginx 等で静的配信、**/admin** ベース） | **Complete** | [`packages/signage-admin-ui`](./signage-admin-ui/index.md) |
 | **xignage-edge-detection** | Jetson 上で動作する**人物検知パイプライン**（YOLOX）＋将来の視線推定（OpenFace, 現状はプレースホルダ）。カメラ入力→最新結果を **JSON にアトミック書き込み** | Python 3.9+（Jetson Orin / JetPack, CUDA/TensorRT 対応ホイール） | **Complete** | [`developers/packages/xignage-edge-detection`](./xignage-edge-detection/index.md) |
+
+---
+
+> ## jetson-ab-flash
+
+- **目的**：Jetson Orin Nano DevKit の A/B rootfs + NVMe フラッシュを自動化。
+- **特徴**：ベースイメージ生成（`--no-flash`）／Recovery USB 自動検出／cloud-init による `/userdata` 初期化。
+- **入口**：[`jetson-ab-flash / index`](./jetson-ab-flash/index.md)
 
 ---
 

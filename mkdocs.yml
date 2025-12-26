@@ -28,6 +28,7 @@ plugins:
       fallback_to_build_date: true
       timezone: Asia/Tokyo
       locale: ja
+      enable_parallel_processing: false
 
 extra_javascript:
   - https://unpkg.com/mermaid@10.9.1/dist/mermaid.min.js
@@ -64,6 +65,7 @@ nav:
       - Revisions (Baseline): hardware/revisions.md
   - Packages:
       - Overview: packages/index.md
+      - jetson-ab-flash: packages/jetson-ab-flash/index.md
       - signage-server: 
           - overview: packages/signage-server/index.md
           - Runtime:
