@@ -90,7 +90,7 @@ mkdir -p logs
 
 ## ディレクトリ構成（要約）
 
-```
+```text
 jetson-ab-flash/
 ├── configs/
 │   └── jetson-orin-nano-devkit.conf
