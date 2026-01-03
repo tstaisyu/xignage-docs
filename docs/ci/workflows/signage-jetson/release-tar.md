@@ -36,7 +36,7 @@
 1. **Checkout**
 2. **VERSION 注入**：タグ名と日付で `VERSION.txt` を生成（タグ push 時のみ）
 3. **tar.gz 作成**  
-   - 収録：`migrations/`, `scripts/`, `setup_all.sh`, `update.sh`, `web/wifi_manager.py`, `static/index.html`, `static/index_autoresearch.html`, `VERSION.txt`  
+   - 収録：`migrations/`, `scripts/`, `setup_all.sh`, `update.sh`, `web/wifi_manager.py`, `static/index.html`, `VERSION.txt`  
    - 一時コピー：`static/index.html → ./index.html`, `web/wifi_manager.py → ./wifi_manager.py`（収録のため）  
    - 除外：`.github/`, `*.md`, バックアップ/スワップなど
 4. **SHA256 生成**：`signage-scripts.tar.gz.sha256`
