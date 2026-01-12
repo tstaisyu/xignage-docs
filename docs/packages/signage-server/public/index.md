@@ -11,8 +11,6 @@
 
 - **kiosk.html**：メイン再生ビュー（画像/動画のフルスクリーン表示）
 - **welcome.html**：起動直後。`/api/config` で `autoPlaylist` を見て **自動遷移（/kiosk.html）**
-- **loading.html**：3秒後に **/kiosk.html** へ
-- **offline.html**：オフライン通知
 - **ai_assist.html**：`/api/ai-assist/latest` を1.5秒間隔でポーリングして表示更新
 - **videocall.html**：`sessionStorage.doorbellCall` を元に通話 URL を埋め込み
 - **test-csi-camera.html**：CSI スナップショットのポーリング表示

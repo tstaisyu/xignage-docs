@@ -7,8 +7,6 @@
 | ファイル | 目的/用途 | 読み込むスクリプト | ソケット処理 | ナビゲーション/タイマー | クエリパラメータ | 補足 |
 | --- | --- | --- | --- | --- | --- | --- |
 | `kiosk.html` | メイン再生ビュー | `/socket.io/socket.io.js`, **`/js/playlistPlayer.js`**, **`/js/main.js`** | `main.js` が Socket を処理 | なし | なし | `#displayImage` `#playVideo` `#blackScreen` |
-| `loading.html` | ローディング画面 | なし | なし | **3秒後** `/kiosk.html` へ | なし | |
-| `offline.html` | オフライン通知 | なし | なし | なし | なし | 固定文言 |
 | `welcome.html` | 起動直後のウェルカム | `/socket.io/socket.io.js`, `/js/switchViewHandler.js` | `setupSwitchView(socket)` | `autoPlaylist=true` なら `/kiosk.html` へ | なし | 1.5s 後にフェードイン |
 | `ai_assist.html` | AI テキスト表示 | `/socket.io/socket.io.js`, `/js/switchViewHandler.js` | `setupSwitchView(socket)` | **1.5s 間隔**で `/api/ai-assist/latest` をポーリング | なし | フェードイン |
 | `videocall.html` | 通話ページ | `/socket.io/socket.io.js`, `/js/switchViewHandler.js` | `setupSwitchView(socket)` | `sessionStorage.doorbellCall` を元に URL 生成 | なし | `joinUrlDevice` を優先 |
