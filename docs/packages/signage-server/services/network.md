@@ -42,7 +42,7 @@ IP は **キャッシュ比較**して **変化時のみ**送信します。
 ### **主要設定**
 
 - **再試行**：`RETRY_INTERVAL_MS = 10000`（10s）、`MAX_RETRIES = 10`
-- **優先 IF**：`WIFI_PRIORITY_INTERFACES`（既定 `wlP1p1s0,wlanUSB,wlanINT`）
+- **優先 IF**：`WIFI_PRIORITY_INTERFACES`（既定 `wlanUSB,wlanINT,eth0`）
 - **無視 IF**：`lo`, `docker*`, `veth*`, `br-*`, `tun*`, `tap*`, `wg*`, `tailscale*`, `zt*`
 - **ポーリング**：`NETREG_POLL_MS`（既定 30000ms）で `startNetworkReporter()` が動作
 
@@ -68,7 +68,7 @@ IP は **キャッシュ比較**して **変化時のみ**送信します。
 
 !!! note
     - **フォールバック**：IP は `127.0.0.1`、MAC は `00:00:00:00:00:00` へフォールバックします。  
-    - **IF 名**：環境に合わせ `WIFI_PRIORITY_INTERFACES` を調整（例：`wlP1p1s0` はドライバに依存）。  
+    - **IF 名**：環境に合わせ `WIFI_PRIORITY_INTERFACES` を調整。  
     - **登録トリガ**：IP 変化検知は **プロセス内キャッシュ**基準です（プロセス再起動でリセット）。  
     - **認証/到達性**：サーバ API の認可方式/到達性確認は別途実装が必要。  
     - **ルータ/コンテナ環境**：`os.networkInterfaces()` の見え方は実行環境に依存します。

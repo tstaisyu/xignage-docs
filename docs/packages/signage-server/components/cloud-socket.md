@@ -96,7 +96,7 @@
 |---|---|---|---|
 |`SERVER_URL`|yes|`https://api.xrobotics.jp`|Cloud Socket.IO エンドポイント（`/socket.io`）|
 |`DEVICE_ID`|yes|—|接続時に `registerDevice` で送信|
-|`WIFI_PRIORITY_INTERFACES`|no|`wlP1p1s0,wlanUSB,wlanINT`|IP/MAC 検出の優先IF順|
+|`WIFI_PRIORITY_INTERFACES`|no|`wlanUSB,wlanINT,eth0`|IP/MAC 検出の優先IF順|
 |`BOARD_TYPE`|no|`raspi` 相当|`setVolume` の sink 推定に使用|
 
 ## 失敗時挙動

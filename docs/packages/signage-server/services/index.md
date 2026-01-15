@@ -22,7 +22,7 @@
 - 主な機能
   - 端末情報のクラウド登録（`deviceInfoRegistration.js`：`POST ${SERVER_URL}/api/device-info/register`）
   - IP/MAC 検出と登録（`networkRegistration.js`）
-    - 優先IF順：`WIFI_PRIORITY_INTERFACES`（例：`wlP1p1s0,wlanUSB,wlanINT`）
+    - 優先IF順：`WIFI_PRIORITY_INTERFACES`（例：`wlanUSB,wlanINT,eth0`）
     - 再試行：`MAX_RETRIES=10`、`RETRY_INTERVAL_MS=10000`（10秒）
     - フォールバック：IP=`127.0.0.1`、MAC=`00:00:00:00:00:00`
     - API：`/api/ip/register`・`/api/mac/register`
