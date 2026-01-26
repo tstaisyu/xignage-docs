@@ -1,36 +1,43 @@
 # Wi-Fi ブートツール（ap_start / wifi_or_ap）
 
-起動後に **既知 Wi-Fi へ接続**を試み、失敗時は **AP モードへフォールバック**するためのツール群です。
+起動後に **既知 Wi-Fi へ接続**を試み、失敗時は **AP モードへフォールバック**するためのツール群です。  
+Wi-Fi 管理は **NetworkManager** を使用します。
 
 ## **wifi_or_ap**
 
-- 早期疎通チェック（`PING_TARGET` への ping が成功すれば終了）
-- `wpa_supplicant-<iface>.conf` が無ければ AP へフォールバック
-- `wpa_supplicant@<iface>` を起動し、`wpa_state=COMPLETED` まで待機
-- 成功時は networkd に DHCP を委任し、`networkctl reconfigure/renew` を実行
-- 失敗時は `ap_start` を起動し、`/run/ap_hold` で再試行を抑制
+- NetworkManager の接続状態と IP 付与状況を確認
+- **オンライン判定**に応じて AP を起動/停止
+- 状態を `/run/wifi_or_ap.state` に保存し、
+  `OFFLINE_GRACE_SEC` / `ONLINE_STABLE_SEC` / `AP_MIN_UP_SEC` でヒステリシス制御
 
 ### **主な変数**
 
 | 種別 | 変数名 | 既定 | 説明 |
 | --- | --- | --- | --- |
-| 任意 | `AP_HOLD_DURATION` | `300` | AP 移行後の STA 再試行抑制（秒） |
-| 任意 | `PING_TARGET` | `8.8.8.8` | 早期疎通確認の宛先 |
+| 任意 | `OFFLINE_GRACE_SEC` | `60` | オフライン判定の猶予（秒） |
+| 任意 | `ONLINE_STABLE_SEC` | `20` | オンライン安定判定（秒） |
+| 任意 | `AP_MIN_UP_SEC` | `30` | AP 起動後の最短維持時間（秒） |
+| 任意 | `STA_IF_ORDER` | `wlanUSB wlanINT`（Pi）/`wlanINT`（Jetson） | STA 接続確認の順序 |
+| 任意 | `NM_HOTSPOT_CONN` | `xignage-hotspot` | NM の AP 接続名 |
 
-### **STA 設定ファイル**
+### **状態ファイル**
 
-`/etc/wpa_supplicant/wpa_supplicant-<iface>.conf` を参照します。
+- `/run/wifi_or_ap.state`：最終オンライン/オフライン時刻、AP 起動時刻など
+- `/run/wifi_or_ap.lock`：同時実行防止ロック
 
 ---
 
 ## **ap_start**
 
-- 指定 IF に静的 IP を付与
-- `dnsmasq` と `hostapd` を起動して AP を立ち上げ
+- NetworkManager のホットスポットを作成・起動
+- SSID / PSK / IP は `config.sh` の設定を使用
+- Captive portal 用 DNS リダイレクトを
+  `/etc/NetworkManager/dnsmasq-shared.d/captive-portal.conf` に作成
 
 ---
 
 ## **systemd ユニット**
 
 - `wifi-or-ap.service`：oneshot
-- `wifi-or-ap.timer`：**起動 30 秒後** + **5 分間隔**
+- `wifi-or-ap.timer`：**起動 30 秒後** + **非アクティブ後 20 秒**で再実行
+

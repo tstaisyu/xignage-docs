@@ -6,9 +6,23 @@
 ## **関連スクリプト**
 
 - `update_manager` … `signage-update.service` から起動。GUI停止→`/tmp/UPDATING`→`update_runner` 実行→`/tmp/update_done` 待機→**再起動**。
-- `update_runner` … **NTP 同期確認**→パッチ適用→`signage-jetson` TAR 展開・マイグレーション・切替→metrics 同期→`update.sh` 実行→完了フラグ。
+- `update_runner` … **NTP 同期確認**→パッチ適用→`signage-jetson` TAR 展開・**migrations** 実行→`xignage-metrics` 同期→`update.sh` 実行→完了フラグ。
 - `update.sh` … `signage-server` 更新（TAR + healthcheck）＋ **Jetson の `xignage-edge-detection` 更新**。
-- `healthcheck` … 必須ファイル存在と **トップレベルの bash/python 構文チェック**。
+- `healthcheck` … 必須ファイル存在と **トップレベルのみの bash/python 構文チェック**。
+
+---
+
+## **OTA manifest（mTLS）**
+
+`update_runner` / `update.sh` / セットアップの一部は、
+`/etc/signage/iot.env` の証明書で **mTLS** を行い、
+`https://device.api.xrobotics.jp/api/ota/manifest` から **プリサインド URL** を取得します。
+
+必要な環境変数（`/etc/signage/iot.env`）:
+
+- `IOT_CERT_PATH`
+- `IOT_KEY_PATH`
+- `IOT_CA_PATH`
 
 ---
 
@@ -26,8 +40,8 @@
 
 1) **Wi-Fi 設定確認**：`$FLAG_FILE` が無ければ更新スキップ
 2) **NTP 同期待機**：未同期ならスキップ
-3) **パッチ適用**：`patches_all.zip` を取得・展開し、`PATCH_MARK` より新しい `*.sh` を昇順実行
-4) **TAR 更新**：`signage-scripts.tar.gz` を展開し、**migrations** を実行
+3) **パッチ適用**：OTA manifest から `signage-jetson-patches` ZIP を取得し、`PATCH_MARK` より新しい `*.sh` を昇順実行
+4) **TAR 更新**：OTA manifest から `signage-jetson` を取得 → 展開 → `migrations/*.sh` 実行
 5) **ヘルスチェック（before/after）**：失敗時はロールバック
 6) **metrics 同期**：`/opt/xignage-metrics` を `rsync` + `npm ci`、サービス再起動
 7) **`update.sh` 実行**
@@ -42,7 +56,7 @@
 
 ### **signage-server 更新**
 
-- Releases から `signage-server.tar.gz` / `.sha256` を取得
+- OTA manifest から `signage-server` を取得
 - `releases/<timestamp>` に展開して `npm ci --omit=dev --ignore-scripts`
 - `current` を切替
 - `http://127.0.0.1:3000/health` を **最大 20 秒**確認
@@ -50,9 +64,8 @@
 
 ### **xignage-edge-detection 更新（Jetson のみ）**
 
-- Releases から TAR/SHA を取得・検証
+- OTA manifest から TAR/SHA を取得・検証
 - `releases/<timestamp>` に展開し `current` を切替
-- `xignage-metrics.service` を停止 → `rsync` + `npm ci` → **手動再起動を促すログ**
 
 ログ: `/var/log/update/update_*.log` / `update_debug_*.log`
 
@@ -63,4 +76,6 @@
 - 必須ファイル群の存在確認（`update.sh`, `scripts/bin/*`, `scripts/lib/*.sh`, `scripts/**/*.py`, `web/wifi_manager.py`, `setup_all.sh`）
 - **トップレベルのみ**の bash / python 構文チェック
 
-> `scripts/**/*.py` は **globstar 無効のため再帰展開されません**。再帰検査が必要なら `find` に置換してください。
+> `scripts/**/*.py` は **globstar 無効**のため再帰展開されません。  
+> また `find` は `-maxdepth 1` で実行されるため、深い階層は検査対象外です。
+

@@ -12,21 +12,24 @@
 ## **APT（Jetson）**
 
 ```text
+fontconfig
 fonts-noto-cjk
+fonts-noto-color-emoji
 language-pack-ja
 git
 unzip
 jq
 curl
 netplan.io
+network-manager
 chrony
-hostapd
-dnsmasq
+dnsmasq-base
 ufw
-lighttpd
 nginx
 python3-pip
+python3-venv
 xserver-xorg
+xinput
 xinit
 openbox
 unclutter
@@ -49,18 +52,19 @@ ninja-build
 ## **APT（Raspberry Pi）**
 
 ```text
+fontconfig
 fonts-noto-cjk
+fonts-noto-color-emoji
 language-pack-ja
 git
 unzip
 jq
 curl
 netplan.io
+network-manager
 chrony
-hostapd
-dnsmasq
+dnsmasq-base
 ufw
-lighttpd
 nginx
 python3-pip
 xserver-xorg
@@ -74,6 +78,7 @@ gstreamer1.0-plugins-base
 gstreamer1.0-plugins-good
 gstreamer1.0-x
 x11-xserver-utils
+xinput
 pulseaudio
 avahi-daemon
 libnss-mdns
@@ -103,3 +108,4 @@ openface
 ## **pip（Raspberry Pi）**
 
 `deps/pip-raspi.txt` は現在 **空**（追加依存なし）。
+

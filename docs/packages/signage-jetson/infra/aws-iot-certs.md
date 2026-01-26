@@ -1,79 +1,78 @@
-# AWS IoT デバイス単位のプロビジョニング — `scripts/infra/create_device_thing.sh` + `get_iot_creds.sh`
+# IoT 証明書（bundle 方式）
 
-開発機で **デバイスごとの Thing 作成／証明書発行／ポリシー付与**を行い、生成した  
-**`cert.pem` / `private.key` / `AmazonRootCA1.pem`** を **端末側へ配布**します。  
-端末側は **`/etc/signage/iot.env` + `/etc/signage/iot-certs`** に統一して格納します。
+端末は **AWS 資格情報を保持しない**前提です。  
+**Thing + 証明書**は管理側で発行し、**bundle.tgz** として端末に渡します。
 
 ---
 
 ## **前提**
 
-- AWS 資格情報
-  - 直接実行（既存プロファイル/環境変数）**または**
-  - `get_iot_creds.sh` による **AssumeRole**（一時クレデンシャル）
-- 依存コマンド：`aws`, `jq`, `curl`
+- `/etc/signage/iot.env` に **`IOT_ENDPOINT`** が記載されていること
+- 端末側の導入は **`099_write_iot_env.sh`** が担当
 
 ---
 
-## **スクリプト概要**
+## **端末側の導入フロー**
 
-### `scripts/infra/get_iot_creds.sh`（任意）
-
-- `ASSUME_ROLE_ARN` を使って **一時クレデンシャルを export** します
-- MFA 対応：`ASSUME_MFA_SERIAL` + `ASSUME_MFA_CODE`
+### **方法 A: bundle.tgz を配布して展開**
 
 ```bash
-export ASSUME_ROLE_ARN=arn:aws:iam::123456789012:role/iot-provisioner-role
-# export ASSUME_MFA_SERIAL=arn:aws:iam::123456789012:mfa/you
-# export ASSUME_MFA_CODE=123456
+# bundle.tgz を端末へ配置した後
+sudo rm -rf /tmp/iot-certs
+sudo tar -C /tmp -xzf bundle.tgz
 
-source scripts/infra/get_iot_creds.sh
-aws sts get-caller-identity
+# その後
+sudo bash scripts/setup/099_write_iot_env.sh
 ```
 
-> `ASSUME_ROLE_ARN` が未設定、または `-` の場合は **何もしません**。
+### **方法 B: URL を渡して自動取得**
+
+`setup_all.sh` 実行時に `IOT_BUNDLE_URL` / `IOT_BUNDLE_SHA256` を渡すと、
+`000_write_env_files.sh` が `/etc/signage/bootstrap.env` に保存し、
+`099_write_iot_env.sh` が **自動取得 → 展開 → 設定反映**を行います。
 
 ---
 
-### `scripts/infra/create_device_thing.sh`
+## **配置されるファイル**
 
-- **Thing 作成 → 証明書発行 → ポリシー付与 → Thing へアタッチ**
-- **Thing Group（`xignage-devices`）へ追加**
-- Thing 属性 `monitor=true` を **冪等で設定**
-- 出力先：`/tmp/aws-iot-certs/{cert.pem, private.key, AmazonRootCA1.pem}`
+- 証明書ディレクトリ: `/etc/signage/iot-certs/<DEVICE_ID>/`
+  - `cert.pem`
+  - `private.key`
+  - `AmazonRootCA1.pem`
+- 設定ファイル: `/etc/signage/iot.env`
 
-```bash
-scripts/infra/create_device_thing.sh <DEVICE_ID> [POLICY_NAME]
+```dotenv
+IOT_ENDPOINT=<existing>
+IOT_THING_NAME=<DEVICE_ID>
+IOT_CERT_PATH=/etc/signage/iot-certs/<DEVICE_ID>/cert.pem
+IOT_KEY_PATH=/etc/signage/iot-certs/<DEVICE_ID>/private.key
+IOT_CA_PATH=/etc/signage/iot-certs/<DEVICE_ID>/AmazonRootCA1.pem
 ```
 
----
-
-## **端末側での配置（112_write_iot_env.sh）**
-
-端末側では `scripts/setup/112_write_iot_env.sh` を実行します。
-
-- `/etc/signage/iot.env` に **IOT_ENDPOINT** が必要
-  - 例：`iot.env.sample` から作成（`105_install_metrics_service.sh` が自動配置）
-- `/tmp/aws-iot-certs` から証明書を取り込み
-- `/etc/signage/iot-certs/<DEVICE_ID>/` に安全配置
-- `/etc/signage/iot.env` を更新（`IOT_*`）
-
-```bash
-# 端末側
-sudo CREATE_THING=0 bash scripts/setup/112_write_iot_env.sh
-```
+`bootstrap.env` は成功時に削除されます。
 
 ---
 
 ## **証明書ローテーション**
 
-`112_write_iot_env.sh` は **既存 Thing がある場合も証明書ローテーション**を行います。  
-`ROTATE_CERT_ON_EXISTING=0` を指定するとスキップ可能です。
+### **手動ローテーション**
+
+```bash
+sudo IOT_BUNDLE_URL=... IOT_BUNDLE_SHA256=... rotate_iot_cert.sh
+```
+
+`rotate_iot_cert.sh` は **mTLS で疎通確認**後に切替を行います。
+
+### **自動ローテーション**
+
+- `iot-cert-rotate.timer` が **daily** で起動
+- `iot_cert_rotate_if_due` が **ROTATE_AFTER_DAYS（既定 365 日）** を超えた場合に
+  `https://device.api.xrobotics.jp/api/iot/bundle` へ mTLS リクエスト
 
 ---
 
-## **トラブルシュート**
+## **管理側（bundle 発行）**
 
-- `Unable to locate credentials`：`aws configure` または `get_iot_creds.sh` を使用
-- `AccessDeniedException`：`iot:*` / `sts:AssumeRole` 権限を確認
-- エンドポイント不一致：`aws iot describe-endpoint --endpoint-type iot:Data-ATS` を確認し `/etc/signage/iot.env` に反映
+管理側で **Thing + 証明書**を作成し、`bundle.tgz` を生成します。  
+この手順は本リポジトリ外のため、具体フローは別途運用資料に従ってください。
+

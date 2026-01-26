@@ -8,22 +8,24 @@
 ### 1) 目的
 
 - **即戦力のサイネージ端末化**：起動＝表示・配信可能な状態（Openbox+Chromium キオスク、Node サーバ、Wi-Fi 管理 UI）
-- **運用の安定化**：systemd-networkd への統一、Wi-Fi 命名・経路メトリック固定、AP 自動化、ログ永続化、UFW 設定
+- **運用の安定化**：NetworkManager による Wi-Fi 管理と AP フォールバック、経路メトリック固定、ログ永続化、UFW 設定
 - **保守性の確保**：`signage-update.service` による更新／復旧、メトリクス送出、パッチ／マイグレーションの適用状態管理
 
 ### 2) 設計方針
 
 - **ボード自動判別**（Jetson / Pi）＋**安全スキップ**（対象外処理は実行しない）
 - **冪等性**（差分適用・上書き条件判定・再実行耐性）
-- **最小権限**（機密は `/etc/signage/secret.env` 600、sudoers は限定コマンドのみ）
-- **クラウド正本型への移行**：端末内の Admin UI（`/admin` 配信）を廃止し、セットアップ/更新フローからも排除
+- **最小権限**（`/etc/signage` は root 管理、実行ユーザに必要最低限のアクセス）
+- **IoT 証明書は bundle 方式**：端末側で AWS 資格情報を持たない
 
 ### 3) 前提
 
 - OS:
-  - **Raspberry Pi：Ubuntu Server 24.04 LTS（arm64）**
-  - Jetson：TODO（Jetson の OS/JetPack 版はイメージ側に依存。根拠：`signage-jetson/README.md`）
-- 必須変数：`DEVICE_ID`, `BOARD_TYPE`, `GH_TOKEN`, `AWS_*`（`/etc/signage/*.env` に配置）
+  - **Raspberry Pi：Ubuntu Server 24.04 LTS（preinstalled image, arm64）**
+  - **Jetson：L4T / Ubuntu-based image（systemd）**
+    - TODO: JetPack/L4T の具体バージョンはイメージ側に依存。根拠: `signage-jetson/README.md` の「Supported platforms」
+- 必須変数：`DEVICE_ID`, `BOARD_TYPE`, `IOT_BUNDLE_URL`, `IOT_BUNDLE_SHA256`
+- IoT 環境: `/etc/signage/iot.env` に `IOT_ENDPOINT` が必要
 - Python：**venv**（既定 `/opt/signage-core/venv`）に集約
 - GPIO：Jetson は `Jetson.GPIO`、Pi は **libgpiod**
 
@@ -36,90 +38,90 @@ sudo mkdir -p /opt/signage-core/signage-jetson/releases
 sudo chown -R "$USER:$USER" /opt/signage-core
 cd /opt/signage-core/signage-jetson/releases
 
-# signage-jetsonリポのクローン
-git clone https://github.com/<your-org-or-user>/signage-jetson.git initial
+# signage-jetson リポのクローン
+
+git clone https://github.com/tstaisyu/signage-jetson.git initial
 cd initial
 ```
 
 #### 4-2. 一括セットアップの実行（`setup_all.sh`）
 
-`setup_all.sh` は `scripts/setup/` の `nnn_*.sh` を **番号順**に実行します。**000 のみ** 次の **5 必須引数**（`DEVICE_ID`, `BOARD_TYPE`, `GH_TOKEN`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`）と、**6つ目の任意引数** **`[ASSUME_ROLE_ARN]`** を受け取ります。
-（`000_*.sh` は `if [ $# -lt 5 ]; then ... exit 1` で必須引数数を検証。`ASSUME_ROLE_ARN` は **引数 > 環境変数 > sample > 既定値** の優先度で解決されます）
-
-- 事前検証：5 つの必須引数（下記）を**起動直後に検証**（未設定で即エラー）
+`setup_all.sh` は `scripts/setup/nnn_*.sh` を **番号順**に実行します。  
+必要な値は **環境変数**で渡します（`SETUP_STAGE=all|rootfs|userdata` で段階実行）。
 
 ```bash
-sudo bash setup_all.sh \
-  <DEVICE_ID> \
-  <BOARD_TYPE> \
-  <GH_TOKEN> \
-  <AWS_ACCESS_KEY_ID> \
-  <AWS_SECRET_ACCESS_KEY> \
-  [ASSUME_ROLE_ARN]
-
-# 例（任意引数なし：自動解決）
-sudo bash setup_all.sh \
-  XIG-JON-000 \
-  jetsonorinnano \
-  ghp_xxxxxxxxxxxxxxxxxxxxx \
-  AKIAxxxxxxxxxxxxxxxx \
-  wJalrXUtnFEMI/K7MDENG/bPxRfiCYxxxxxxxx
-
-# 例（任意引数あり：明示指定）
-sudo bash setup_all.sh \
-  XIG-JON-000 \
-  jetsonorinnano \
-  ghp_xxxxxxxxxxxxxxxxxxxxx \
-  AKIAxxxxxxxxxxxxxxxx \
-  wJalrXUtnFEMI/K7MDENG/bPxRfiCYxxxxxxxx \
-  arn:aws:iam::123456789012:role/iot-provisioner-role
+sudo env \
+  DEVICE_ID="<DEVICE_ID>" \
+  BOARD_TYPE="<BOARD_TYPE>" \
+  IOT_BUNDLE_URL="<URL>" \
+  IOT_BUNDLE_SHA256="<SHA256>" \
+  bash setup_all.sh
 ```
 
-!!! note "注意"
-    - ネットワーク統一／AP 構成の適用中は **SSH が切断**される可能性があります。可能ならローカルコンソールで実行してください。  
-    - すべて **冪等（再実行可）** です。失敗時も同じ手順で再実行できます。  
-    - `releases/initial` の命名は後続スクリプト（例：`090_symlink_initial.sh`）の前提です。
+sudo で環境変数が落ちる場合は `--preserve-env` を使います。
 
-#### 4-3. 引数の意味
+```bash
+export DEVICE_ID=... BOARD_TYPE=... IOT_BUNDLE_URL=... IOT_BUNDLE_SHA256=...
+sudo --preserve-env=DEVICE_ID,BOARD_TYPE,IOT_BUNDLE_URL,IOT_BUNDLE_SHA256 \
+  bash setup_all.sh
+```
 
-| 引数 | 例 | 説明 |
+#### 4-3. A/B（/userdata）環境の例
+
+`/userdata` を前提にする場合は **rootfs → userdata** に分けて実行します。
+
+```bash
+# Stage 1: rootfs
+sudo REQUIRE_USERDATA=1 SETUP_STAGE=rootfs \
+  DEVICE_ID=... BOARD_TYPE=... \
+  IOT_BUNDLE_URL=... IOT_BUNDLE_SHA256=... \
+  bash setup_all.sh
+
+# Stage 2: userdata
+sudo REQUIRE_USERDATA=1 SETUP_STAGE=userdata \
+  DEVICE_ID=... BOARD_TYPE=... \
+  IOT_BUNDLE_URL=... IOT_BUNDLE_SHA256=... \
+  bash setup_all.sh
+```
+
+#### 4-4. 変数の意味
+
+| 変数 | 例 | 説明 |
 | --- | --- | --- |
-| `DEVICE_ID` | `XIG-JON-000` | 端末識別子（監視・ログ・ホスト名整合に使用） |
-| `BOARD_TYPE` | `jetsonorinnano`／`raspberrypi4` | ボード種別（Jetson / Pi の分岐・最適化） |
-| `GH_TOKEN` | `ghp_xxx...` | GitHub PAT（Releases 取得・検証に使用） |
-| `AWS_ACCESS_KEY_ID` | `AKIA...` | AWS アクセスキー ID |
-| `AWS_SECRET_ACCESS_KEY` | `wJalrXUtnF...` | AWS シークレットアクセスキー（機密） |
-| `ASSUME_ROLE_ARN`（任意） | `arn:aws:iam::123456789012:role/iot-provisioner-role` | **任意引数**。未指定時は **引数 > 環境変数 > `signage.env.sample` > 既定値** の順で解決し、`/etc/signage/signage.env` に出力（STEP 000 / 111）。 |
+| `DEVICE_ID` | `XIG-JON-000` | 端末識別子（ログ・メトリクス・ホスト名） |
+| `BOARD_TYPE` | `jetson-orin` / `raspi-64` | ボード種別（Jetson / Pi 分岐） |
+| `IOT_BUNDLE_URL` | `https://.../bundle.tgz` | IoT 証明書 bundle の URL |
+| `IOT_BUNDLE_SHA256` | `...` | bundle の SHA256（任意だが推奨） |
 
-#### 4-4. 依存パッケージ（ `deps` ）
+#### 4-5. 依存パッケージ（`deps`）
 
 - **APT 依存**は `scripts/lib/config.sh` の `DEPENDENCIES` 配列（ボード別）で管理
 - **pip 依存**は venv (`/opt/signage-core/venv`) へ集約
   - 共通：`deps/pip-common.txt`
   - Raspberry Pi：`deps/pip-raspi.txt`
-  - Jetson：`deps/pip-jetson.txt`（`081_install_jetson_deps.sh` で任意）
+  - Jetson：`deps/pip-jetson.txt`
 
 ### 5) 各ユニットドキュメントの詳細
 
 > [**setup(000-099) - 初期セットアップ**](units/setup-000-099.md)
 
-APT ブートストラップ、Wi-Fi 名称の安定化（`wlanINT`/`wlanUSB`）と経路メトリックによる主従切替、journald 永続化、AWS CLI v2 / Fluent Bit の導入、Python venv 準備など、運用前に必要な初期化を **冪等（再実行可）**なスクリプト群として提供します。Jetson / Raspberry Pi を自動判別し、不要処理は安全にスキップします。
+環境ファイル作成、Wi-Fi 名称の安定化（`wlanINT`/`wlanUSB`）、NetworkManager 用の経路メトリック、journald 永続化、Fluent Bit、Python venv 準備、IoT 証明書導入までを **冪等**に実行します。
 
 > [**setup(100-199) - アプリ導入・サービス常駐化**](units/setup-100-199.md)
 
-Node.js の指定バージョン導入、`signage-server` の GitHub Releases 配布・展開・`current` 切替、（Jetson のみ）`xignage-edge-detection` 導入、`xignage-metrics` の配置・依存導入・systemd 常駐化、`call-button.service`（IO 常駐）、IoT 証明書の安全配置と `/etc/signage/iot.env` 更新、Chromium 管理ポリシー導入までをカバーします。**端末内 Admin UI の配信は行いません。**
+Node.js の導入、`signage-server` / `xignage-edge-detection` の OTA バンドル導入、`xignage-metrics` / `call-button` の常駐化、IoT 証明書ローテーションのタイマー導入、Chromium の管理ポリシー適用までをカバーします。
 
 > [**setup(200-599) - ネットワーク／AP／ブート最適化**](units/setup-200-599.md)
 
-ネットワーク管理を **systemd-networkd に統一**（競合サービス無効化＋`eth0` netplan 適用）、**AP モード（hostapd/dnsmasq）**の冪等構成、Wi-Fi 接続失敗時の **AP 自動起動（oneshot＋timer）**、ブラウザからの **Wi-Fi 設定 GUI** 配備、そして **起動最適化**（snapd の hold／不要サービスのマスク等）をカバーします。すべて **冪等（再実行可）**で、ボード種別や構成に応じて不要処理は安全にスキップします。
+有線は `systemd-networkd`、Wi-Fi は **NetworkManager** を使う構成へ統一し、AP フォールバックと Wi-Fi 管理 UI を配置します。AP は **NetworkManager ホットスポット**で起動します。
 
 > [**setup(600-899) - 更新基盤・推論ランタイム・公開設定**](units/setup-600-899.md)
 
-`update_runner` / `update_manager` / `healthcheck` の配置と **oneshot ユニット `signage-update.service`** による更新実行、**Jetson 向け TensorRT/PyCUDA/OpenCV 最小ランタイム**導入（Pi は自動スキップ）、コンテンツ格納ディレクトリ整備・**linger 有効化**・**ホスト名設定＋mDNS**・**systemd --user での Node サービス起動**、**PORT=3001** の drop-in 上書き、**Nginx リバースプロキシ（:3000 → 127.0.0.1:3001）**、および **UFW 許可ルール**の適用までをカバーします。**/admin の静的配信は行いません。**
+`update_runner` / `update_manager` / `healthcheck` の配置と **`signage-update.service`** による更新実行、（Jetson 向け）推論ランタイム、Nginx・UFW・PORT=3001 の調整までをカバーします。
 
 > [**setup(900-999) - ブート見た目／キオスク化／電源・権限**](units/setup-900-999.md)
 
-Jetson の `extlinux.conf`／Raspberry Pi の `config.txt`・`cmdline.txt` を調整して起動ログ/スプラッシュを抑制し、`tty1` 自動ログイン → Openbox + Chromium の **キオスク起動**を設定、GDM を停止します。音声は **HDMI を既定 sink** に固定。Pi 向けに **ブートローダ電源設定（halt で電源断／GPIO wake）** と **GPIO シャットダウン**を提供。運用用に **sudoers ドロップイン**（電源・更新・Wi-Fi リセット）を最小権限で追加し、適用済みパッチ識別の **パッチマーカー**（`999_patch_mig_marker.sh`）も生成します。
+自動ログイン → Openbox + Chromium の **キオスク起動**、Jetson/Pi の起動設定最適化、HDMI 音声固定、sudoers の最小権限化、パッチ/マイグレーションのマーカー初期化を行います。
 
 ---
 
@@ -154,11 +156,9 @@ Jetson は `Jetson.GPIO`、それ以外（Pi）は **libgpiod** を使用しま�
 
 前提となる証明書の用意は ↓  
 
-### インフラ（AWS IoT 証明書）
+### インフラ（IoT 証明書）
 
-> [**AWS IoT デバイス単位のプロビジョニング — `create_device_thing.sh` + `get_iot_creds.sh`**](infra/aws-iot-certs.md)
-
-開発機で **Thing/証明書/ポリシー付与**をデバイス単位で行い、`/tmp/aws-iot-certs` に出力 → 端末側の **`112_write_iot_env.sh`** が安全配置します。
+> [**IoT 証明書（bundle 方式） — `infra/aws-iot-certs.md`**](infra/aws-iot-certs.md)
 
 ---
 
@@ -168,12 +168,12 @@ Jetson は `Jetson.GPIO`、それ以外（Pi）は **libgpiod** を使用しま�
 
 | 区分 | スクリプト | 概要 | 主な連携/ログ |
 | --- | --- | --- | --- |
-| Wi-Fi/AP | `wifi_or_ap` | STA 接続試行 → 失敗で AP へフォールバック。優先 IF の順序付け・疎通/ゲートウェイ検証・`/run/ap_hold` 管理を実施。 | `wifi-or-ap.service/.timer`、`$WIFI_OR_AP_LOG` |
-| Wi-Fi/AP | `ap_start` | 指定 IF に静的 IP を設定し、`dnsmasq` と `hostapd` を起動して AP を立ち上げ。 | `dnsmasq` / `hostapd`、`$AP_START_LOG_FILE` |
+| Wi-Fi/AP | `wifi_or_ap` | NetworkManager の接続状態を見て **Wi-Fi 維持** or **AP 起動**。状態を `/run/wifi_or_ap.state` に保持し、`OFFLINE_GRACE_SEC` などでヒステリシス制御。 | `wifi-or-ap.service/.timer`、`$WIFI_OR_AP_LOG` |
+| Wi-Fi/AP | `ap_start` | **NM ホットスポット**を作成・起動（`nmcli`）。AP DNS を captive portal へ誘導。 | `NetworkManager`、`$AP_START_LOG_FILE` |
 | 更新 | `update_manager` | `signage-update.service` から起動。GUI停止 → ランナー実行 → `/tmp/update_done` 待機 → **再起動**。 | `/var/log/update_manager/…`（30日ローテ） |
-| 更新 | `update_runner` | NTP同期確認 → パッチ適用 → `signage-jetson` TAR ステージング・切替・世代保持 → **metrics 同期** → `update.sh` 実行 → `/tmp/update_done`。 | `/var/log/update_runner/update_runner_*.log` |
-| 更新 | `update.sh` | アプリ単体更新（`signage-server` / Jetson では `xignage-edge-detection`）。**staging → current** 切替、失敗時**即ロールバック**。 | `/var/log/update/update_*.log` / `update_debug_*.log` |
-| 更新 | `healthcheck` | 必須ファイル存在と **Bash/Python 構文**をトップレベルで検査。OK で `0`。 | `journalctl`（各サービスの稼働確認の補助） |
+| 更新 | `update_runner` | NTP 同期 → **パッチ ZIP 適用** → **signage-jetson TAR** 展開/マイグレーション → **metrics 同期** → `update.sh` 実行 → `/tmp/update_done`。 | `/var/log/update_runner/update_runner_*.log` |
+| 更新 | `update.sh` | `signage-server` 更新（TAR + healthcheck）＋ Jetson では `xignage-edge-detection` 更新。失敗時はロールバック。 | `/var/log/update/update_*.log` / `update_debug_*.log` |
+| 更新 | `healthcheck` | 必須ファイル存在と **Bash/Python 構文**をトップレベルで検査。OK で `0`。 | `journalctl`（稼働確認の補助） |
 
 ### 起動時 Wi-Fi/AP → [Wi-Fi ブートツール](components/wifi-boot-tools.md)
 
@@ -198,16 +198,7 @@ Jetson は `Jetson.GPIO`、それ以外（Pi）は **libgpiod** を使用しま�
 
 > migrations：番号付き移行（**番号順に続行 & 成功を .done で記録**）
 
-- **目的**：アプリのデータ移行・設定生成など、**何度でも呼べるが成功は一度でよい**処理を番号順に適用。
-- **命名規則**：`<num/3桁>_<内容>.sh`
-- **実行順**：**3桁番号の昇順**で実行。
-- **状態管理**：**成功したスクリプト**と同名で **`.done` フラグファイル**を `/opt/signage-core/signage-migrations/` に生成。
-- **戻り値の扱い**：`0=OK`, `11=skip` は成功扱い・`.done` 作成（`11` は `.done` を作成しない実装）。  
-  **それ以外の非 0 は失敗**としてログ記録し、更新処理は中断。
-
----
-
-## 共通ライブラリ（config.sh / functions.sh）
-
-- [環境変数リファレンス - config.sh](files/config-sh.md)
-- [ユーティリティ関数リファレンス - functions.sh](files/functions-sh.md)
+- **目的**：更新バンドル内の構造変更・移行処理を段階適用。
+- **実行順**：`migrations/*.sh` の **ファイル名順**。
+- **状態管理**：`/opt/signage-core/signage-migrations/*.done` を記録。
+- **スキップ**：`exit 11` は「要件未達」で **次回再試行**。

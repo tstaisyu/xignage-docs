@@ -6,8 +6,8 @@
 - 共通 ENV: `/etc/signage/io.env`, `/etc/signage/iot.env`
 - GPIO 番号体系: **BCM を既定**（互換のため BOARD 変数も受理）
 - GPIO バックエンド:
-  - Jetson: `Jetson.GPIO`
-  - Raspberry Pi / その他: **libgpiod**（`/dev/gpiochip0`）
+  - Jetson: `Jetson.GPIO` が利用可能なら使用
+  - それ以外: **libgpiod**（`/dev/gpiochip0`）
 
 ---
 
@@ -18,6 +18,7 @@
   2) **イベントログ**を `/var/log/signage/io_events.jsonl` に JSON Lines で追記、
   3) **AWS IoT へイベント送信**（ベストエフォート）を行う常駐プロセス。
 - ループ周期は約 **50Hz**（20ms スリープ）。例外時も可能な範囲で処理継続。
+- `io_events.jsonl` は `/etc/logrotate.d/xignage-io` で日次ローテーション。
 
 ### **GPIO バックエンド**
 
@@ -67,6 +68,8 @@
 - 端末から **AWS IoT Core** へ安全に MQTT パブリッシュ
 - **client_id は Thing 名**（`IOT_THING_NAME`）
 - 送信先トピック：`xignage/v1/devices/<thing>/events/<kind>`
+- `IOT_*` が不足している場合は **起動時に例外**になりますが、
+  `app.py` 側で **警告ログを出してスキップ**します（ベストエフォート）。
 
 ### **必要な環境変数（`/etc/signage/iot.env` 由来）**
 
@@ -78,8 +81,6 @@
 | `IOT_KEY_PATH` | デバイス秘密鍵 `private.key` |
 | `IOT_CA_PATH` | ルート CA `AmazonRootCA1.pem` |
 
-> いずれか未設定なら起動時にエラーで停止します。
-
 ---
 
 ## **運用時の注意**
@@ -87,3 +88,4 @@
 - **時刻同期**：`ts` の信頼性確保のため NTP 同期を推奨
 - **証明書権限**：`private.key` は **0600**、CA は **0644** を維持
 - **libgpiod**：Pi では `/dev/gpiochip0` と line offset（BCM）を使用
+

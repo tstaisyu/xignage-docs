@@ -14,7 +14,7 @@
 3. その後に **シェル上で上書きした環境変数** があれば、それが最終値
 
 !!! note
-    `config.sh` は **`/etc/signage/secret.env` を読み込みません**（機密は systemd の `EnvironmentFile=` 等で別途注入）。  
+    `config.sh` は **`/etc/signage/secret.env` を読み込みません**。  
     端末ごとの恒久設定は `/etc/signage/signage.env` に記載するのが推奨です。
 
 ## **変数リファレンス（グループ別）**
@@ -24,10 +24,10 @@
 | 名前 | 既定値 | 説明 |
 | --- | --- | --- |
 | `BOARD_TYPE` | `pi` | `*jetson*` / `*pi*` / `*rasp*` を含む文字列で分岐 |
-| `FALLBACK_USERNAME` / `FALLBACK_HOME` | Jetson:`jetson`/`/home/jetson`、Pi/その他:`ubuntu`/`/home/ubuntu` | 実行ユーザ検出に失敗した際のフォールバック |
+| `FALLBACK_USERNAME` / `FALLBACK_HOME` | `xig` / `/home/xig` | 実行ユーザ検出に失敗した際のフォールバック |
 | `DEPENDENCIES` | 配列 | APT 依存（Jetson/Pi で内容差あり） |
 | `WIFI_INTERFACE` | `wlanINT` | 代表 Wi-Fi IF 名 |
-| `WIFI_INTERFACES` | `("wlanINT" "wlanUSB")`（Jetson は `"wlanINT"` のみ） | 命名固定対象 IF 群 |
+| `WIFI_INTERFACES` | `("wlanUSB" "wlanINT")` | 命名固定対象 IF 群（Jetson は `wlanINT` のみ） |
 
 ### **1) ユーザ／ホーム／ログ**
 
@@ -61,10 +61,10 @@
 | `TARGET_NS` | `nameserver 8.8.8.8` | 既定 NS |
 | `NETPLAN_FILE` | `/etc/netplan/50-ap.yaml` | netplan 適用ファイル |
 | `AP_IP` / `AP_STATIC_IP` | `192.168.4.1` / `192.168.4.1/24` | AP IP |
-| `SSID` / `PASSPHRASE` | `Xignage-Setup` / `setupwifi` | AP SSID/PSK |
-| `HOSTAPD_CONF` / `DNSMASQ_CONF` | `/etc/hostapd/hostapd.conf` / `/etc/dnsmasq.conf` | 設定 |
-| `HOSTAPD_SERVICE` / `DNSMASQ_SERVICE` | `hostapd` / `dnsmasq` | サービス名 |
+| `SSID` / `PASSPHRASE` | `Device-Setup` / `setupwifi` | AP SSID/PSK |
+| `HOSTAPD_CONF` / `DNSMASQ_CONF` | `/etc/hostapd/hostapd.conf` / `/etc/dnsmasq.conf` | 旧設定ファイル（cleanup 用） |
 | `WIFI_CONNECT_SLEEP` | `1` | 接続待ち秒数 |
+| `STA_IF_ORDER` | `wlanUSB wlanINT` | STA 接続確認の優先順 |
 
 ### **5) AP／Wi-Fi ヘルパー**
 
@@ -74,7 +74,13 @@
 | `WIFI_OR_AP_SRC` / `…_DEST` | `scripts/bin/wifi_or_ap` / `/usr/local/bin/wifi_or_ap` | Wi-Fi or AP 切替ヘルパー |
 | `WIFI_OR_AP_SERVICE_FILE` / `…_TIMER_FILE` | `/etc/systemd/system/wifi-or-ap.service` / `.timer` | ユニット |
 | `WIFI_OR_AP_LOG` | `/var/log/wifi_or_ap.log` | ログ |
-| `WPA_SUPPLICANT_MAX_WAIT` / `…_INTERVAL` | `30` / `2` | 接続待ち制御 |
+| `WIFI_OR_AP_ENV_FILE` | `/etc/signage/wifi-or-ap.env` | しきい値上書き用 |
+| `WIFI_OR_AP_STATE_FILE` | `/run/wifi_or_ap.state` | 状態ファイル |
+| `WIFI_OR_AP_LOCK_FILE` | `/run/wifi_or_ap.lock` | ロックファイル |
+| `AP_START_LOCK_FILE` | `/run/ap_start.lock` | AP 起動ロック |
+| `OFFLINE_GRACE_SEC` | `60` | オフライン判定猶予 |
+| `ONLINE_STABLE_SEC` | `20` | オンライン安定判定 |
+| `AP_MIN_UP_SEC` | `30` | AP 最小維持時間 |
 
 ### **6) Web UI（Wi-Fi 管理）**
 
@@ -110,7 +116,10 @@
 
 | 名前 | 既定値 | 説明 |
 | --- | --- | --- |
-| `FIREWALL_PORTS` | `80/tcp`, `53`, `67/udp`, `22/tcp`, `123/udp`, `5000` | 許可ルール群 |
+| `FIREWALL_PORTS` | `22/tcp`, `3000/tcp`, `3001/tcp`, `443/tcp` | グローバル許可 |
+| `FIREWALL_AP_IF_ALLOW_PORTS` | `53`, `67/udp` | AP IF で許可 |
+| `FIREWALL_AP_ALLOW_PORTS` | `5000/tcp`, `80/tcp` | AP サブネットで許可 |
+| `FIREWALL_AP_DENY_PORTS` | `22/tcp`, `3000/tcp`, `3001/tcp`, `443/tcp` | AP サブネットで拒否 |
 
 ### **10) EXTLINUX**
 
