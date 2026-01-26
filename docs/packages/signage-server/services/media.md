@@ -20,7 +20,7 @@
 ### **syncOnceFromCloud({ apiBaseUrl, deviceId })**
 
 - **入力**：
-  - `apiBaseUrl`（例: `https://api.xrobotics.jp`）
+  - `apiBaseUrl`（例: `https://device.api.xrobotics.jp`）
   - `deviceId`
 - **出力**：`{ ok, playlistId, downloaded, skipped, failed, syncCompletePosted, error? }`
 
@@ -65,13 +65,13 @@
 - **入力**：`deviceId`（必須）
 - **publish topic**：`xignage/v1/devices/${deviceId}/events/button`
 - **payload**：`{ event, deviceId, title, body, event_id, ts, type, value, src }`
-- **例外**：`deviceId` 未指定は例外。`AWS_IOT_ENDPOINT` 未指定は **起動時に例外**。
+- **例外**：`deviceId` 未指定は例外。`IOT_ENDPOINT` 未指定は **起動時に例外**。
 
 ### **必要環境変数**
 
 | Key | Required | Default | Note |
 | --- | --- | --- | --- |
-| `AWS_IOT_ENDPOINT` | yes | — | `xxxxx-ats.iot.<region>.amazonaws.com` |
+| `IOT_ENDPOINT` | yes | — | `xxxxx-ats.iot.<region>.amazonaws.com` |
 | `AWS_REGION` | no | `ap-northeast-1` | IoT Data Plane のリージョン |
 
 ### iotDoorbellPublisher.js の関連ルート

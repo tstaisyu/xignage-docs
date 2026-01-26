@@ -7,7 +7,7 @@
 
 | Export 名 | 型 | 既定値 / 由来 | 上書き可能な環境変数 | 説明 |
 | --- | --- | --- | --- | --- |
-| `SERVER_URL` | string | `'https://api.xrobotics.jp'` | `SERVER_URL` | クラウド API のベース URL。 |
+| `SERVER_URL` | string | `'https://device.api.xrobotics.jp'` | `SERVER_URL` | クラウド API のベース URL。 |
 | `SERVER_PORT` | string | `'3000'`（`PORT` → `SERVER_PORT` → 既定 の優先） | `PORT`, `SERVER_PORT` | HTTP サーバの待受ポート。 |
 | `DEVICE_ID` | string | `'jetson001'` | `DEVICE_ID` | 端末一意識別子。 |
 | `DEFAULT_ROTATION` | string | `'right'` | `DEFAULT_ROTATION` | 既定の画面回転（例：`right`）。 |

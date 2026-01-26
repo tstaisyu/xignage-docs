@@ -24,7 +24,7 @@
 
 - `getDeviceInfo(): object` … 下記キーを含むオブジェクト
   `model, os, version, jetpack, kernel, os_arch, pythonVersion, node, gpuUsage, gpuClock, gpuTemp, timezone, currentTime, ntpSyncStatus`
-  **備考**：`model` に "Raspberry Pi" を含む場合、`jetpack`/`jetpackVersion` を削除
+  **備考**：`jetpack` は `isJetson()` が真のときのみ付与
 
 > 処理の流れ
 
@@ -136,13 +136,13 @@ Jetson なら `tegrastats` + sysfs、Raspberry Pi なら `vcgencmd`、それ以�
 
 2) 回転の適用  
 **Jetson**：`/etc/X11/xorg.conf.d/10-nvidia-rotate.conf` 内の `Rotation=` を `sed -i` で切替 → `pkill Xorg`  
-**RasPi/Other**：`xrandr --query` で出力と回転を検出し、`xrandr --rotate <mode>`（`DISPLAY=:0`, `sudo -u ubuntu`）
+**RasPi/Other**：`xrandr --query` で出力と回転を検出し、`xrandr --rotate <mode>`（`DISPLAY=:0`）
 
 3) タッチ：`xinput list` で **"WingCoolTouch WingCoolTouch"** の pointer を特定し、行列を適用  
 （right/left/inverted/normal に対応する 3x3 行列を設定）
 
 !!! note
-    - `xrandr`/`xinput` の DISPLAY/権限に注意（`sudo -u ubuntu DISPLAY=:0` で実行）。  
+    - `xrandr`/`xinput` の DISPLAY/権限に注意（`DISPLAY=:0`）。  
     - タッチデバイス名はハード依存。該当名称が無い場合はスキップされる。  
     - Jetson 回転は Xorg の設定ファイルを編集するため、**権限と再起動**が伴う（`pkill Xorg`）。
 

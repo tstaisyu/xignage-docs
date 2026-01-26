@@ -26,7 +26,7 @@
     - 再試行：`MAX_RETRIES=10`、`RETRY_INTERVAL_MS=10000`（10秒）
     - フォールバック：IP=`127.0.0.1`、MAC=`00:00:00:00:00:00`
     - API：`/api/ip/register`・`/api/mac/register`
-  - Wi-Fi設定の全削除＆再起動（`netManager.js`：`clearWifiConfAndReboot()`）
+  - mTLS クライアント設定の補助（`mtlsClient.js`：axios / socket.io / fetch 用 TLS オプション生成）
     - 対象IF：`WIFI_INTERFACES`（例：`wlanUSB,wlanINT`）
     - `wpa_cli remove_network all → save_config → reconfigure`、最後に `sudo reboot`
 

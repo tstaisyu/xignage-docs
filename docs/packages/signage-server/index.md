@@ -71,7 +71,7 @@ Jetson / Raspberry Pi などの端末上でデジタルサイネージの再生�
 ### クラウド接続（Socket.IO）
 
 - **方向**：デバイス → クラウド（client）
-- **エンドポイント**：`SERVER_URL`（既定: `https://api.xrobotics.jp`）、`path: /socket.io`
+- **エンドポイント**：`SERVER_URL`（既定: `https://device.api.xrobotics.jp`）、`path: /socket.io`
 - **トランスポート**：`websocket` 固定
 - **接続時の挙動**：
   - `registerDevice` を `DEVICE_ID` と共に送信
@@ -82,7 +82,7 @@ Jetson / Raspberry Pi などの端末上でデジタルサイネージの再生�
 
 | Key         | Required | Default                | Note                                     |
 |-------------|----------|------------------------|------------------------------------------|
-| SERVER_URL  | yes      | `https://api.xrobotics.jp` | クラウドの Socket.IO エンドポイント（`/socket.io`） |
+| SERVER_URL  | yes      | `https://device.api.xrobotics.jp` | クラウドの Socket.IO エンドポイント（`/socket.io`） |
 | DEVICE_ID   | yes      | —                      | 端末識別子。`registerDevice` に使用        |
 
 ## 運用（Runbook）

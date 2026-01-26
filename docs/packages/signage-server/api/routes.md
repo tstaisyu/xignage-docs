@@ -7,7 +7,7 @@
 
 - **責務**：HTTP エンドポイントの入口。静的 HTML の配信、設定値の取得、ローカルプレイリストの取得、ビュー切替、クラウド同期テスト、ドアベル通知を提供。
 - **関連モジュール**（`routes/index.js` がエクスポート）：
-  - `kioskRoutes`, `testRoutes`, `viewRoutes`, `aiAssistRoutes`,
+  - `kioskRoutes`, `testRoutes`, `viewRoutes`,
     `localPlaylistRoutes`, `configRoutes`, `doorbellRoutes`
 - **主な依存**：`controllers/*`, `services/*`, `config/*`, `public/*`, `middlewares/errorHandler.js`
 
@@ -21,9 +21,6 @@
 
 |Group|Method|Path|概要|成功時レスポンス|備考|
 |---|---|---|---|---|---|
-|**AI Assist**|GET|`/`|`public/ai_assist.html` を配信|HTML||
-||POST|`/update`|テキスト更新（Controller 委譲）|`{ status: "OK" }`||
-||GET|`/latest`|最新テキスト取得（Controller 委譲）|`{ text: "<current>" }`||
 |**Config**|GET|`/`|端末ローカル設定を返す|`{ autoPlaylist, screenRotation }`|失敗時はデフォルト|
 |**Kiosk**|GET|`/`|`public/kiosk.html` を配信|HTML||
 |**LocalPlaylist**|GET|`/`|`playlist.json` を読み取り→正規化して返却|`{ records: Item[] }`|ない場合は空配列を書き出し|
@@ -35,12 +32,6 @@
 ||POST|`/start-call`|通話開始ダミー応答|`{ success, callId, joinUrlDevice, ... }`|実装はスタブ|
 
 ## 各ルーター詳細
-
-> ### AI Assist（`routes/aiAssistRoutes.js`）
-
-- **GET `/`**：`public/ai_assist.html` を送信。  
-- **POST `/update`**：`aiAssistController.updateText` に委譲。  
-- **GET `/latest`**：`aiAssistController.getLatestText` に委譲。
 
 > ### Config（`routes/configRoutes.js`）
 

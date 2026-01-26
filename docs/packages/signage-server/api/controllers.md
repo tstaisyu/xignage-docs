@@ -7,45 +7,7 @@
 
 | Group | Method | Path | Controller (Function) | 成功時レスポンス例 | 備考 |
 | --- | --- | --- | --- | --- | --- |
-| AI Assist | POST | `/ai-assist/update` | `aiAssistController.updateText` | `{ status: "OK" }` | `textStore` に保存 |
-| AI Assist | GET | `/ai-assist/latest` | `aiAssistController.getLatestText` | `{ text: "<current>" }` | |
 | Test | GET | `/test/csi-snapshot` | `cameraController.getCsiSnapshot` | `image/jpeg` | `rpicam-jpeg` を実行 |
-
-## **aiAssistController.js**
-
-AI アシスト用のテキストを保存・取得するシンプルな API。  
-内部の `store/textStore` を介して最新テキストを保持します。
-
-### **updateText(req, res)**
-
-- 期待ボディ：`{ text: string }`
-- 戻り値：`200 { status: "OK" }`
-- 例外：`text` 未指定でも 200 を返す
-
-> 処理の流れ
-
-1) `req.body.text` を取得  
-2) `text` があれば `textStore.setLatestText(text)` を実行  
-3) `res.json({ status: 'OK' })` を返す
-
-### **getLatestText(req, res)**
-
-- 引数：なし
-- 戻り値：`200 { text: <currentText> }`
-
-> 処理の流れ
-
-1) `textStore.getLatestText()` で現在値を取得  
-2) `res.json({ text: currentText })` を返す
-
-### **Store（`store/textStore.js`）**
-
-AI アシスト用の「最新テキスト」を **プロセス内メモリ**に保持する最小ストア。再起動で内容は消えます。
-
-| 関数 | 引数 | 戻り値 | 説明 |
-| --- | --- | --- | --- |
-| `getLatestText()` | なし | `string` | 現在保持しているテキストを返す |
-| `setLatestText(value)` | `string value` | `void` | 最新テキストを更新する |
 
 ## **cameraController.js**
 
