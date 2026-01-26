@@ -8,7 +8,7 @@
 ## **構成（役割別）**
 
 - **index.js**：`initSocket(server)` で Socket.IO を初期化し、ACK を受ける  
-  `thumbnailResponse`／`versionsResponse`／`patchMigStateResponse`／`volumeStatusChanged`
+  `thumbnailResponse`／`versionsResponse`／`patchMigStateResponse`／`volumeStatusChanged`  
   `getIO()` を公開（サービス層から利用）
 - **commonRequests.js**：ACK 共通ハンドラ  
   `handleVersionResponse()`／`handlePatchMigResponse()`／`handleListResponse()`
@@ -25,6 +25,9 @@
 
 - `io = new Server(server, { path: '/socket.io', cors: { origin: '*', methods: ['GET','POST'] } })`
 - `deviceRegistry.bind(io)` を呼び出し
+- `io.use(...)` で **mTLS 判定**（Host が `device.api.xrobotics.jp` の場合のみ）
+  - `x-client-cert` から certId を算出 → IoT で thingName 解決
+  - `socket.data.mtlsDeviceId` を設定し、`mtlsLastSeenStore` に last-seen を記録
 - `io.on('connection', socket => { ...汎用 ACK をバインド... })`
 - `getIO()` をエクスポート（サービス層や HTTP ハンドラから利用）
 
@@ -33,7 +36,7 @@
 - `thumbnailResponse({ requestId, buffer, error })`  
   → `thumbnailRequests` を解決／タイムアウト解除
 - `volumeStatusChanged({ requestId, muted })`  
-  → `requests` を解決（`toggleVolume` の応答）
+  → `requests` を解決（`toggleVolume` の応答、`resolveFn(muted)`）
 - `versionsResponse(data)` → `handleVersionResponse(data, requests)`
 - `patchMigStateResponse(data)` → `handlePatchMigResponse(data, requests)`
 
@@ -45,7 +48,7 @@
 ### イベント
 
 - `registerDevice(deviceId)`  
-  `socket.join(deviceId)`／`deviceSockets.set(deviceId, socket.id)`
+  mTLS 検証済み接続の場合は `socket.data.mtlsDeviceId` を優先し、`deviceId ⇢ socket.id` を登録
 - `disconnect(reason)`  
   `deviceSockets` を逆引きして `deviceId` を削除
 
@@ -98,6 +101,11 @@
 5) `index.js` の `volumeStatusChanged({ requestId, muted })` で一致したら  
    `clearTimeout` → `requests.delete(requestId)` → `res.json({ muted })`
 
+> ## **ACK 付きユーティリティ（`services/socket/emitWithAck.js`）**
+
+- `deviceSettingsService` / `deviceWifiService` は `emitWithAck` を利用して ACK を待機
+- ACK イベントは `configResponse` / `configUpdated` / `wifiNetworksResponse` / `wifiNetworkDeleted`
+
 > ## **共有ストア（`requestStores.js`）**
 
 - `deviceSockets = new Map()`  
@@ -106,13 +114,11 @@
   接続／切断時に `deviceRegistry` が更新
 - `requests = new Map()`  
   **Key**: `requestId`（UUID）  
-  **Value**: 呼び出し元により `{ resolve, reject, timeout }` や  
-  `{ resolveFn, rejectFn, timeout }` などの形を取る  
-  （versions/patchMig/toggleVolume などの待機に使用）
+  **Value**: ルートにより `{ resolve, reject, timeout }` または  
+  `{ resolveFn, rejectFn, timeout }` の形を取る
 - `thumbnailRequests = new Map()`  
   **Key**: `requestId`（UUID）  
-  **Value**: `{ resolve, reject, timeout }`  
-  サムネイル用（`buffer` を受け取る）
+  **Value**: `{ resolve, reject, timeout }`
 
 !!! warning "後始末（必須）"
     いずれの Map も **resolve/reject 時に `clearTimeout` と `delete` を必ず実施**してください。  

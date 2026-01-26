@@ -12,19 +12,20 @@
 - `routes/apiRoutes.js`（/api 配下）
   - `routes/device/*`（端末向け）  
   - `routes/player/*`（プレイヤ向け）  
-  - `routes/admin/*`（人間向け、`userExternalId` 必須）
+  - `routes/admin/*`（人間向け）
 
 ## 認証・認可の前提
 
-- `requireHumanUser` により **`userExternalId` 必須**  
-  （主に `/api/*` の human/admin 系）
-- `requireCustomerIdForAdminUi` により **`customerId` 必須**
+- `requireHumanUser` により **`userExternalId` 必須**（query/body/params のいずれか）
+- `assertUserCanAccessDevice` / `assertUserCanAccessCustomer` は **RDS 参照**でアクセス確認
 - `requireMasterUser` は `MASTER_USER_EXTERNAL_IDS` による管理者限定
-- `requireInternalToken` は `x-internal-token` ヘッダ必須（内部 API 用）
+- `requireInternalToken` は `x-internal-token` ヘッダ必須（`INTERNAL_API_TOKEN` と一致）
+- 端末 mTLS 系 API は **Host が `device.api.xrobotics.jp`** かつ **`x-client-cert` ヘッダ必須**
+  - X.509 から certId を計算し、IoT で thingName を解決して `deviceId` として扱う
 
 ## 1) Device 向け（/api）
 
-> ### IP/MAC/Device Info 登録
+> ### IP/MAC/Device Info 登録（認証なし）
 
 - `POST /api/ip/register`  
   Body: `{ deviceId, localIp, iface?, byInterface? }`
@@ -33,11 +34,26 @@
 - `POST /api/device-info/register`  
   Body: `{ deviceId, info }`
 
-> ### 同期完了通知
+> ### 同期完了通知（RDS 更新）
 
 - `POST /api/devices/:deviceId/sync-complete`  
   Body: `{ customerId?, playlistId?, syncedAt? }`  
-  `syncedAt` が指定された場合は日時として検証し、`device_playlists` の `last_sync_at` を更新。
+  `syncedAt` が指定された場合は日時として検証し、`device_playlists.last_sync_at` を更新。
+
+> ### 端末ログ転送（mTLS）
+
+- `POST /api/logs/journal`  
+  `x-client-cert` 必須。CloudWatch Logs に書き込み。
+
+> ### IoT バンドル取得（mTLS）
+
+- `GET /api/iot/bundle`  
+  署名付き URL と SHA256 を返す（存在しない場合は `204`）。
+
+> ### OTA マニフェスト取得（mTLS）
+
+- `GET /api/ota/manifest`  
+  `signage-jetson` / `signage-server` / `xignage-edge-detection` / `signage-jetson-patches` をまとめて返却。
 
 ## 2) Player 向け（/api）
 
@@ -69,18 +85,25 @@
 - `POST /api/commands/send`  
   Body: `{ deviceId, command, payload }`  
   `command` は `setVolume|toggleVolume` のみ
-- `POST /api/commands/start` / `stop` / `rotate` / `update`
+- `POST /api/commands/start` / `/stop` / `/rotate` / `/update`
 - `POST /api/commands/network/reset`
 - `POST /api/commands/sync-content`（admin-ui 向け）
 - `POST /api/commands/network/report`  
-  Socket 側へ `net:report` を emit し、ACK を 8 秒待機
+  Socket 側へ `net:report` を emit し、ACK を 15 秒待機
 
 ### Device Settings（/api/deviceSettings）
 
-- `GET /api/deviceSettings?deviceId=...`  
-- `GET /api/deviceSettings/:deviceId`  
-- `PATCH /api/deviceSettings/:deviceId`（`autoPlaylist` 必須）  
-  Socket で `getConfig` / `updateConfig` を送信し ACK を待機
+- `GET /api/deviceSettings?deviceId=...`
+- `GET /api/deviceSettings/:deviceId`
+- `PATCH /api/deviceSettings/:deviceId`  
+  `autoPlaylist` 必須。Socket で `getConfig` / `updateConfig` を送信し ACK を待機
+
+### Device Wi-Fi（/api/deviceWifi）
+
+- `GET /api/deviceWifi/:deviceId`
+- `GET /api/deviceWifi/:deviceId/networks`
+- `DELETE /api/deviceWifi/:deviceId/:ssid`  
+  Socket で `getWifiNetworks` / `deleteWifiNetwork` を送信し ACK を待機
 
 ### Device Info / Status
 
@@ -93,13 +116,13 @@
 
 ### IP / MAC 参照
 
-- `GET /api/ip?deviceId=...&iface?&full?`  
+- `GET /api/ip?deviceId=...&iface?&full?`
 - `GET /api/mac?deviceId=...&iface?&full?`  
   `full=1` の場合は既知インタフェースを埋めたスナップショットを返す
 
 ### Power
 
-- `POST /api/device/power/shutdown`  
+- `POST /api/device/power/shutdown`
 - `POST /api/device/power/reboot`
 
 ### Versions / Patch
@@ -117,8 +140,7 @@
 - `POST /api/doorbell/start-call`  
   Daily の Room を作成し、`doorbell:startCall` をデバイスへ送信
 - `POST /api/doorbell/end-call`  
-  `switchView('kiosk.html')` をデバイスへ送信  
-  `DOORBELL_MAX_CALL_DURATION_SEC` で自動終了タイマーを制御
+  `switchView('kiosk.html')` をデバイスへ送信
 
 ### Content（/api/content/*）
 
@@ -152,6 +174,13 @@
 - `GET /api/devices/:deviceId/playlist-assignment`
 - `GET /api/devices/:deviceId/sync-status`
 
+### User（/api/user/*）
+
+- `GET /api/user/devices`  
+  `devices` / `customers` / `selectedDeviceId` / `selectedCustomerId` を返却
+
+## 4) Admin/Master & Internal（/api）
+
 ### Admin 管理（/api/admin/*）
 
 `requireMasterUser` を必須とし、DB を直接操作します。
@@ -160,12 +189,29 @@
 - `GET/POST/DELETE /api/admin/device-users`
 - `GET/POST/PATCH/DELETE /api/admin/customers`
 
-### User（/api/user/*）
+### IoT 管理（/api/admin/iot/*）
 
-- `GET /api/user/devices`  
-  `devices` / `customers` / `selectedDeviceId` / `selectedCustomerId` を返却
+- `GET /api/admin/iot/drift/:deviceId`（IoT と DynamoDB の差分検出）
+- `POST /api/admin/iot/publish/:deviceId`（バンドル再発行）
+- `POST /api/admin/iot/cleanup/:deviceId`（古い証明書の削除）
 
-## 4) Call UI（/call/*）
+### IoT Drift（/api/iot/*）
+
+- `GET /api/iot/drift/:deviceId`（`x-internal-token` 必須）
+
+### mTLS Last Seen（/api/mtls/*）
+
+- `GET /api/mtls/last-seen/:deviceId`（`x-internal-token` 必須）
+- `GET /api/admin/mtls/last-seen/:deviceId`（Master ユーザ or 内部トークン）
+
+### DynamoDB Ledger（/api/ledger/*）
+
+- `GET /api/ledger/devices`（Master ユーザ）
+- `GET /api/ledger/devices/:deviceId`（Master ユーザ）
+- `GET /api/admin/ledger/devices`（Master ユーザ）
+- `GET /api/admin/ledger/devices/:deviceId`（Master ユーザ）
+
+## 5) Call UI（/call/*）
 
 - `GET /call/join/mobile/:callId`  
   Daily 通話用の HTML UI を返す（モバイル参加用）

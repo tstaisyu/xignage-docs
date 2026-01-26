@@ -39,6 +39,12 @@ Routes／Socket／Services と連携し、HTTP と WebSocket を束ねます。
 - **認可**: `MASTER_USER_EXTERNAL_IDS`
 - **端末ネットワーク**: `WIFI_PRIORITY_INTERFACES`
 - **Doorbell/通話**: `DAILY_API_KEY`, `CALL_UI_BASE_URL`, `DOORBELL_MAX_CALL_DURATION_SEC`
+- **IoT バンドル**: `IOT_BUNDLE_BUCKET`, `IOT_BUNDLE_PREFIX`, `IOT_BUNDLE_PRESIGN_EXPIRES_IN`
+- **OTA バンドル**: `OTA_BUNDLE_BUCKET`, `OTA_BUNDLE_PREFIX`, `OTA_BUNDLE_PRESIGN_EXPIRES_IN`
+- **DynamoDB レジャー**: `DEVICE_LEDGER_TABLE`
+- **mTLS キャッシュ**: `MTLS_CERT_CACHE_TTL_SEC`
+- **CloudWatch Logs**: `DEVICE_ERROR_LOG_GROUP`
+- **内部バッチ/中継**: `RELAY_BASE_URL`
 
 ## **Middleware**
 
