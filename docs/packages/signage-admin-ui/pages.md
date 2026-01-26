@@ -18,14 +18,18 @@
 | `/admin/system/customers` | SystemCustomers | 管理者用: 顧客管理 |
 | `/admin/system/devices` | SystemDevices | 管理者用: デバイス管理 |
 | `/admin/system/device-users` | SystemDeviceUsers | 管理者用: デバイス-ユーザー紐付け |
+| `/admin/system/iot-devices` | SystemIotDevices | 管理者用: IoT(DeviceLedger) 一覧・Publish |
+| `/admin/system/iot-devices/:deviceId` | SystemIotDeviceDetail | 管理者用: IoT(DeviceLedger) 詳細 |
 
 ## Layout（`signage-admin-ui/src/page/Layout.tsx`）
 
-- `UserContext` を参照し、**ユーザー/デバイス情報を解決**
-- `embedded=1` クエリで **下部ナビを非表示**
+- `UserContext` を参照し、ユーザー/デバイス情報を解決
+- `embedded=1` クエリで下部ナビを非表示
 - `UserContextBar` でユーザー/顧客/デバイス選択と同期状態を表示
 - 同期ボタンは `POST /api/commands/sync-content` を発行し、
-  `GET /api/devices/:deviceId/sync-status` を **最大 3 分**ポーリング
+  `GET /api/devices/:deviceId/sync-status` を最大 3 分ポーリング
+- `/system/*` は簡易レイアウト（UserContextBar を非表示）
+- `isMasterAdmin !== true` の場合は `/system/*` へ遷移できない
 
 ### SetupScreen
 
@@ -34,7 +38,7 @@
 
 ## Dashboard（`signage-admin-ui/src/page/Dashboard.tsx`）
 
-- 現行は **ショートカットのみ**（メディア/プレイリスト）
+- 現行はショートカットのみ（メディア/プレイリスト）
 
 ## Upload（`signage-admin-ui/src/page/Upload.tsx`）
 
@@ -46,19 +50,19 @@
 - メディア一覧の取得・削除・タイトル編集
 - メディアタイプのフィルタ（画像/動画/その他）
 - ページサイズ/ソート切替
-- `useUpload` でアップロード → 追加したメディアを先頭に反映
+- `useUpload` でアップロードし、追加したメディアを先頭に反映
 
 ## PlaylistsList（`signage-admin-ui/src/page/PlaylistsList.tsx`）
 
 - プレイリストの一覧・作成・編集・削除
-- **デバイス割当**: `POST /api/devices/:deviceId/sync-complete`
-- **割当確認**: `GET /api/devices/:deviceId/playlist-assignment`
-- **同期状態の更新**: `GET /api/devices/:deviceId/sync-status`
+- デバイス割当: `POST /api/devices/:deviceId/sync-complete`
+- 割当確認: `GET /api/devices/:deviceId/playlist-assignment`
+- 同期状態の更新: `GET /api/devices/:deviceId/sync-status`
 
 ## PlaylistDetail（`signage-admin-ui/src/page/PlaylistDetail.tsx`）
 
 - プレイリストアイテムの取得/並び替え（`PUT /items`）
-- 画像アイテムのみ再生時間の上書き可能
+- 画像アイテムのみ再生時間を上書き可能
 - アイテム削除（`DELETE /items/:playlistItemId`）
 
 ## PlaylistAddItem（`signage-admin-ui/src/page/PlaylistDetail.tsx`）
@@ -68,7 +72,29 @@
 
 ## 管理者画面（System / Login）
 
-- `AdminLogin` は **ローカルのパスワード認証のみ**（`VITE_ADMIN_MASTER_PASSWORD`）
-- System 系 API は **バックエンドで master ユーザー判定**が必要
-  - `MASTER_USER_EXTERNAL_IDS` に含まれる `userExternalId` のみ許可
-  - 参照: `signage-aws-nodejs/middlewares/humanAuth.js`, `signage-aws-nodejs/routes/admin/adminRoutes.js`
+- `AdminLogin` はローカルのパスワード認証のみ（`VITE_ADMIN_MASTER_PASSWORD`）
+- `/system/*` は `RequireAdmin` でログイン必須
+- `isMasterAdmin` が `true` の場合のみ System 画面を表示
+
+### SystemCustomers
+
+- 顧客の作成/編集/削除
+
+### SystemDevices
+
+- デバイスの作成/編集/削除（Customer ID の紐付け含む）
+
+### SystemDeviceUsers
+
+- デバイスとユーザーのリンク作成/解除（role 任意）
+
+### SystemIotDevices
+
+- DeviceLedger の一覧を表示
+- IoT Publish により bundle の `presignedUrl` / `sha256` を生成
+- `setup_all.sh` 用のセットアップコマンドを表示
+
+### SystemIotDeviceDetail
+
+- DeviceLedger 詳細、mTLS last-seen、drift 状態を表示
+- Publish の再実行、Cleanup（dry-run/force/seenWithinSec）を実行

@@ -2,8 +2,10 @@
 
 ## useUpload（`signage-admin-ui/src/hook/useUpload.ts`）
 
-- 署名付き URL を使った **クラウドアップロード**を担当
+- 署名付き URL を使ったクラウドアップロードを担当
 - 3 ステップ構成: `upload-url` → S3 PUT → `complete-upload`
+- 動画の場合は duration を自動計測して送信
+- `createdByUserId` は `admin-ui` 固定
 
 ### 返り値
 

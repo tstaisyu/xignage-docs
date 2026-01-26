@@ -3,7 +3,8 @@
 ## UserContextBar（`signage-admin-ui/src/components/UserContextBar.tsx`）
 
 - ユーザー/顧客/デバイス情報と同期状態を表示
-- デバイス/顧客の **セレクタ** を提供
+- 顧客が複数ある場合はセレクタを表示
+- デバイスのセレクタを提供
 - 「同期」ボタン押下で `onSyncClick` を実行
 
 ### Props（抜粋）
