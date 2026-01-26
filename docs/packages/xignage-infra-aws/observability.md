@@ -2,12 +2,10 @@
 
 ## CloudWatch Logs
 
-- `xignage-events-logger`: LogRetention 2 週間
-- `xignage-push-retry-consumer`: LogRetention 2 週間
-- `xignage-metrics-ingestor`: LogRetention 2 週間
-- `webrtc-create-join`: LogRetention 2 週間
+- すべての Lambda に **LogRetention 2 週間** を適用（`LambdaLogRetentionAspect`）
+- `legacyLogGroups` が指定されている場合は、指定 LogGroup にも LogRetention を適用
 
-根拠: `xignage-infra-aws/lib/events.ts`, `xignage-infra-aws/lib/push-retry.ts`, `xignage-infra-aws/lib/metrics/metrics-domain.ts`, `xignage-infra-aws/lib/webrtc-api.ts`
+根拠: `xignage-infra-aws/lib/log-retention-aspect.ts`, `xignage-infra-aws/lib/xignage-infra-aws-stack.ts`, `xignage-infra-aws/lib/ci-access.ts`, `xignage-infra-aws/lib/relay-ec2-stack.ts`
 
 ## MetricFilters（Xignage/Push）
 

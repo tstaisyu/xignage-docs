@@ -7,6 +7,17 @@
 
 根拠: `xignage-infra-aws/lib/xignage-infra-aws-stack.ts`
 
+## 環境タグ（env/ENV）の影響
+
+`env` / `ENV` は以下にも影響します。
+
+- OTA バケット名: `xignage-ota-bundles-<env>-<account>`
+- OTA アップロードロール名: `xignage-ota-upload-role-<env>-<account>`
+- デバイス台帳テーブル名: `xignage-device-ledger` または `xignage-device-ledger-<env>`
+- Content DB の deletion protection（`prod` のみ有効）
+
+根拠: `xignage-infra-aws/lib/xignage-infra-aws-stack.ts`, `xignage-infra-aws/lib/relay-ec2-stack.ts`
+
 ## デバイス一覧（devices）
 
 `XignageInfraAwsStack` は監視対象デバイスの配列を次の順で解決します。
@@ -54,7 +65,9 @@
 ## その他の Context / Env
 
 - `ssmBase` / `SSM_BASE`: SSM 参照のベースパス
-- `enableDlqTest`: `true|1` のときメトリクス DLQ テストルールを作成
+- `enableDlqTest`（context）: `true|1` のときメトリクス DLQ テストルールを作成
 - `ALERT_EMAIL`: `xignage-ops-alerts` に Email サブスク追加
+- `ghOidcArn` / `GH_OIDC_ARN`: GitHub OIDC Provider ARN（`CiAccessStack` と OTA アップロードロールで参照）
+- `legacyLogGroups`: 既存 LogGroup 名の配列（LogRetention を 2 週間で適用）
 
-根拠: `xignage-infra-aws/lib/xignage-infra-aws-stack.ts`
+根拠: `xignage-infra-aws/lib/xignage-infra-aws-stack.ts`, `xignage-infra-aws/lib/ci-access.ts`, `xignage-infra-aws/lib/relay-ec2-stack.ts`, `xignage-infra-aws/lib/log-retention-aspect.ts`

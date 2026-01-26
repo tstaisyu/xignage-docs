@@ -14,6 +14,7 @@
 - `XignageInfraAwsStack`: `CDK_DEFAULT_REGION`（未指定時 `ap-northeast-1`）
 - `CiAccessStack`: `ap-northeast-1` 固定
 - `RelayEc2Stack`: `ap-northeast-1` 固定
+- `IamGuardrailsStack`: `CDK_DEFAULT_REGION` をそのまま使用（未指定時は未指定のまま）
 
 根拠: `xignage-infra-aws/bin/xignage-infra-aws.ts`
 
@@ -42,6 +43,9 @@ npx cdk deploy CiAccessStack \
 
 # Relay EC2
 npx cdk deploy RelayEc2Stack
+
+# Guardrails
+npx cdk deploy IamGuardrailsStack
 ```
 
 ## SSM 参照について

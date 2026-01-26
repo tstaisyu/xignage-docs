@@ -2,11 +2,12 @@
 
 ## 概要
 
-**xignage-infra-aws** は、Xignage の IoT イベント処理・通知・メトリクス可視化・WebRTC・リレー基盤を AWS CDK で構築するリポジトリです。現行実装では 3 つのスタックをデプロイします。
+**xignage-infra-aws** は、Xignage の IoT イベント処理・通知・メトリクス可視化・WebRTC・リレー基盤を AWS CDK で構築するリポジトリです。現行実装では 4 つのスタックをデプロイします。
 
-- **XignageInfraAwsStack**: IoT ルール、Lambda、SQS、DynamoDB、SNS、CloudWatch、Cognito、API Gateway などの中核スタック
+- **XignageInfraAwsStack**: IoT ルール、Lambda、SQS、DynamoDB、SNS、CloudWatch、Cognito、API Gateway、OTA 用 S3 + OIDC ロールなどの中核スタック
 - **CiAccessStack**: GitHub Actions OIDC 用の CDK デプロイロール
-- **RelayEc2Stack**: Relay EC2 + Content RDS + S3 + メディアサムネイル生成
+- **RelayEc2Stack**: Relay EC2 + Content RDS + S3 + メディアサムネイル生成 + IoT バンドル/デバイス台帳
+- **IamGuardrailsStack**: IAM ユーザー向けの IoT/DynamoDB 変更を抑止するガードレール
 
 このドキュメントは **現行実装（`xignage-infra-aws/**`）に一致する構成** を記載しています。
 
