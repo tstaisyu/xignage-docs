@@ -6,6 +6,7 @@ repo_url: https://github.com/tstaisyu/xignage-docs
 theme:
   name: material
   language: ja
+  favicon: assets/favicon.ico
   features:
     - navigation.indexes
 #extra:
